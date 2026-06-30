@@ -33,6 +33,92 @@ type Hotspot = {
 
 const DESIGN_WIDTH = 393;
 
+const screenNarratives: Record<Screen | Exclude<Overlay, null>, { title: string; summary: string; details: string[] }> = {
+  login: {
+    title: "Login",
+    summary: "Alva login screen with email, Google, X, Telegram, Discord, and Cloudflare verification options.",
+    details: [
+      "Slogan: Turn ideas into live investing playbooks in minutes.",
+      "Offer: sign up to unlock 3-day Pro, 8 dollars credits, and full data access.",
+    ],
+  },
+  chat: {
+    title: "Alva Agent chat",
+    summary: "Chat tab showing a FinTwit Digest setup conversation and delivery destination options.",
+    details: [
+      "User request: create today's FinTwit Digest from a chosen FinTwit list.",
+      "Alva answer includes a Daily Digest market report summary and Telegram, Discord, WhatsApp actions.",
+    ],
+  },
+  sidebar: {
+    title: "Sidebar",
+    summary: "Navigation menu with upgrade banner, Explore, Portfolio, Alva Skill, FinTwit Alpha League, playbooks, chats, and Ask Alva.",
+    details: [
+      "Playbooks include Investor Roundtable, LAB Short War Room, Citrini Operating System, Theme Tracker Humanoid Robots, and BTC Bet Scanner.",
+      "Recent chats include Crypto Price plus AI Trend Pulse, AVGO earnings recap, Macro and rates this week, Semis versus power-grid rotation, and NVDA options flow check.",
+    ],
+  },
+  playbooks: {
+    title: "Playbooks",
+    summary: "Playbooks list with All, Subscribed, and Created tabs plus status filters.",
+    details: [
+      "Visible playbooks include Investor Roundtable, LAB Short War Room, Citrini Operating System, Theme Tracker Humanoid Robots, and BTC Bet Scanner.",
+    ],
+  },
+  recentChats: {
+    title: "Recent Chats",
+    summary: "Recent chat list with a New Chat button and timestamped market conversation threads.",
+    details: [
+      "Visible chats include Crypto Price plus AI Trend Pulse, AVGO earnings recap, Macro and rates this week, Semis versus power-grid rotation, NVDA options flow check, AI infra shipment watch, and FOMC liquidity map.",
+    ],
+  },
+  explore: {
+    title: "Explore",
+    summary: "Explore feed with category chips and market playbook cards.",
+    details: [
+      "Cards include BTC Ultimate AI Trader, MAG7 Equal-Weight Monthly Rebalance, PEPE Long versus BTC Short Monitoring, Attribution Analysis Strategy, and BTC MACD 1h Simple Crossover.",
+    ],
+  },
+  playbookDetail: {
+    title: "Quality Value Stock Screener detail",
+    summary: "Playbook detail overview with performance metrics, equity curve, and floating actions.",
+    details: [
+      "Metrics include total return 18.4 percent, annualized return 49.32 percent, volatility 22.4 percent, Sharpe ratio 5.54, Sortino ratio 1.45, and max drawdown minus 9.6 percent.",
+      "Floating actions include Ask Alva, Remix, Trade, and Subscribe.",
+    ],
+  },
+  chatSelected: {
+    title: "Daily FinTwit Digest chat",
+    summary: "Selected chat thread for Daily FinTwit Digest scheduling.",
+    details: [
+      "Alva asks whether to deliver the digest automatically each morning.",
+      "User confirms Telegram delivery daily at 7:30 AM, then Alva confirms the schedule.",
+    ],
+  },
+  profile: {
+    title: "Profile",
+    summary: "Profile page for sheer with Pro and Annual badges, usage balance, referral, creator earnings, language, settings, and logout.",
+    details: [
+      "Available usage balance is 12,000, with daily, monthly, and pack limits shown.",
+    ],
+  },
+  askAlva: {
+    title: "Ask Alva overlay",
+    summary: "Bottom chat overlay opened from the playbook detail page.",
+    details: [
+      "Overlay shows Daily FinTwit Digest chat with controls for close, new chat, expand, attachment chip, and message input.",
+    ],
+  },
+  infoModal: {
+    title: "Playbook information modal",
+    summary: "Centered modal describing Quality Value Stock Screener with owner, tags, automations, metrics, and description.",
+    details: [
+      "Metrics include 2.6K views, 24 comments, 12 remix, and 138 subscribed.",
+      "Description explains AI infrastructure investment thesis tracking across silicon, networking, hyperscalers, power, and data centers.",
+    ],
+  },
+};
+
 const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
   login: { src: "/screens/login.png", height: 852, label: "Login" },
   chat: { src: "/screens/chat.png", height: 852, label: "Alva Agent chat" },
@@ -207,6 +293,8 @@ export default function App() {
     }
   }, [screen, overlay]);
 
+  const narrative = screenNarratives[viewKey];
+
   return (
     <main className="demo-root">
       <section className="desktop-gate" aria-label="Desktop unavailable">
@@ -224,7 +312,17 @@ export default function App() {
             key={`${viewKey}-${animationTick}`}
             style={{ "--screen-height": `${meta.height}px` } as React.CSSProperties}
           >
-            <img alt={meta.label} className="screen-image" draggable={false} src={meta.src} />
+            <div className="sr-only" aria-live="polite">
+              <h1>{narrative.title}</h1>
+              <p>{narrative.summary}</p>
+              <ul>
+                {narrative.details.map((detail) => (
+                  <li key={detail}>{detail}</li>
+                ))}
+              </ul>
+              <p>Available actions: {hotspots.map((hotspot) => hotspot.label).join(", ")}.</p>
+            </div>
+            <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={meta.src} />
             <div className="hotspot-layer">
               {hotspots.map((hotspot) => (
                 <HotspotButton frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />

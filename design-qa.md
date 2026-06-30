@@ -6,6 +6,8 @@ Viewport: 393 x 852 mobile. Sidebar full-page reference: 393 x 1313.
 
 Source references were exported from the requested Figma nodes and compared against local Chrome Headless captures from `http://127.0.0.1:5173/`.
 
+Product Design follow-up pass: passed. A non-visual `sr-only` semantic layer was added after the first QA pass so screen readers can identify each screen, key content, and available actions while preserving exact visual parity.
+
 ## Flow Coverage
 
 - Login: any tap completes login and enters Chat.
@@ -42,3 +44,4 @@ Source references were exported from the requested Figma nodes and compared agai
 - The visible UI uses Figma-exported state images as the visual baseline for pixel parity.
 - Interaction is implemented with scaled hotspots and React state transitions.
 - Page changes, overlay entry, and modal entry use short eased animations.
+- Rechecked after the semantic accessibility patch: every listed state still has 0 changed pixels against the Figma source.
