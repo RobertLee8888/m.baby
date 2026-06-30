@@ -19,8 +19,9 @@ Evidence captured in the current audit run:
 - Detail tab expected compositions: `.qa/detail-tabs-expected/`
 - Detail tab geometry evidence: `.qa/detail-tabs-browser/detail-geometry.json`
 - Profile entry evidence: `.qa/profile-entry/`
+- Chrome-free evidence: `.qa/chrome-free/`
 
-In-app Browser tab control timed out during this audit, so capture used local Chrome Headless with the same 393 x 852 viewport and current local server.
+Chrome-free verification uses local Chrome Headless at 393 x 659, matching the mobile browser content viewport after removing the design-only system status bar and bottom Safari/system bar.
 
 ## Step Health
 
@@ -43,10 +44,10 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 ## Findings
 
 - No P0/P1/P2 visual fidelity issues found after the follow-up pass.
-  Evidence: all 11 mobile states matched their Figma source exports with 0 changed pixels at the target viewport. Sidebar was compared against its 393 x 1313 full-page source.
+  Evidence: checked mobile states matched their chrome-free Figma source crops with 0 changed pixels at the 393 x 659 content viewport. Sidebar top and bottom scroll states were both checked.
 
 - No P0/P1/P2 issues found in the new Playbook Detail tab integration.
-  Evidence: Overview, Analytics, Strategy, and Feed each matched their composed Figma source with 0 changed pixels at 393 x 852. The content image geometry is exact: top shell y=0 height=179, tab content y=179 width=393, and fixed footer y=632 height=220.
+  Evidence: Overview, Analytics, Strategy, and Feed each matched their composed chrome-free Figma source with 0 changed pixels at 393 x 659. The content image geometry is exact: product header y=0 height=120, tab content y=120 width=393, and fixed product footer y=573 height=86.
 
 - No P0/P1/P2 issues found in the updated Profile entry.
   Evidence: the Sidebar top user hotspot covers x=0, y=123, width=393, height=64; tapping it opens Profile, and the Profile viewport from Figma node `4544:76150` matched the rendered screen with 0 changed pixels.
@@ -59,9 +60,10 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 ## Required Fidelity Surfaces
 
 - Fonts and typography: Passed visually. Typography is preserved by the Figma raster baseline, so the rendered result matches the source. Because text is rasterized, this is correct for demo fidelity but not a production text implementation.
-- Spacing and layout rhythm: Passed. Frame size, page crop, sidebar height, Safari chrome, bottom bars, and modal positions match the source exports.
+- Spacing and layout rhythm: Passed. Frame size, page crop, sidebar height, product bottom controls, and modal positions match the chrome-free source crops.
+- Chrome removal: Passed. The demo does not render Figma-only iOS status bars or bottom Safari/system bars. Product-owned bottom controls remain visible.
 - Colors and visual tokens: Passed visually. Colors, opacity, shadows, and gradients match the source exports exactly.
-- Image quality and assets: Passed visually. All source-visible logos, avatars, screenshots, icons, charts, and UI chrome are preserved exactly from the Figma exports.
+- Image quality and assets: Passed visually. All source-visible product logos, avatars, screenshots, icons, charts, and controls are preserved exactly from the Figma exports after removing system/browser chrome.
 - Copy and content: Passed visually and improved semantically. Key content is now mirrored in the hidden accessibility layer.
 - Detail tabs: Passed. The content area now uses the requested Figma node `9949:133034` directly for Overview, Analytics, Strategy, and Feed, with smooth tab transitions and scroll reset on each tab change.
 - Profile entry: Passed. Sidebar user-area navigation now opens the requested owner profile source from Figma node `4544:76150`.

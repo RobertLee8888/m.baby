@@ -26,7 +26,9 @@ type ScreenMeta = {
   src: string;
   height: number;
   label: string;
+  cropTop?: number;
   scroll?: boolean;
+  sourceHeight?: number;
 };
 
 type Hotspot = {
@@ -40,9 +42,15 @@ type Hotspot = {
 };
 
 const DESIGN_WIDTH = 393;
-const DETAIL_TOP_HEIGHT = 179;
-const DETAIL_FOOTER_VIEWPORT_Y = 632;
-const DETAIL_FOOTER_HEIGHT = 220;
+const SYSTEM_STATUS_HEIGHT = 59;
+const SAFARI_BOTTOM_BAR_HEIGHT = 134;
+const STANDARD_SOURCE_HEIGHT = 852;
+const STANDARD_VIEW_HEIGHT = STANDARD_SOURCE_HEIGHT - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT;
+const PROFILE_VIEW_HEIGHT = STANDARD_SOURCE_HEIGHT - SYSTEM_STATUS_HEIGHT;
+const DETAIL_TOP_HEIGHT = 120;
+const DETAIL_VIEW_HEIGHT = STANDARD_VIEW_HEIGHT;
+const DETAIL_FOOTER_VIEWPORT_Y = 573;
+const DETAIL_FOOTER_HEIGHT = 86;
 
 const detailTabs: Record<DetailTab, { src: string; height: number; label: string; narrative: Narrative }> = {
   overview: {
@@ -53,7 +61,7 @@ const detailTabs: Record<DetailTab, { src: string; height: number; label: string
       title: "Quality Value Stock Screener detail: Overview",
       summary: "Overview tab content from the supplied Figma frame with creator, metrics, equity curve, returns, and drawdown modules.",
       details: [
-        "Top chrome and fixed bottom actions remain aligned to the original mobile detail frame.",
+        "The product header and fixed bottom actions remain aligned to the chrome-free mobile detail frame.",
         "The Overview content area is the 393 by 2218 export from Figma node 9949:133037.",
       ],
     },
@@ -193,24 +201,45 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
   },
 };
 
+const chromeFreeScreen = (src: string, label: string): ScreenMeta => ({
+  src,
+  height: STANDARD_VIEW_HEIGHT,
+  label,
+  cropTop: SYSTEM_STATUS_HEIGHT,
+  sourceHeight: STANDARD_SOURCE_HEIGHT,
+});
+
 const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
-  login: { src: "/screens/login.png", height: 852, label: "Login" },
-  chat: { src: "/screens/chat.png", height: 852, label: "Alva Agent chat" },
-  sidebar: { src: "/screens/sidebar.png", height: 1313, label: "Sidebar", scroll: true },
-  playbooks: { src: "/screens/playbooks.png", height: 852, label: "Playbooks" },
-  recentChats: { src: "/screens/recent-chats.png", height: 852, label: "Recent Chats" },
-  explore: { src: "/screens/explore.png", height: 852, label: "Explore" },
-  playbookDetail: { src: "/screens/playbook-detail.png", height: 852, label: "Playbook detail" },
-  chatSelected: { src: "/screens/chat-selected.png", height: 852, label: "Selected chat" },
-  profile: { src: "/screens/profile.png", height: 852, label: "Profile" },
-  askAlva: { src: "/screens/ask-alva-overlay.png", height: 852, label: "Ask Alva overlay" },
-  infoModal: { src: "/screens/info-modal.png", height: 852, label: "Info modal" },
+  login: chromeFreeScreen("/screens/login.png", "Login"),
+  chat: chromeFreeScreen("/screens/chat.png", "Alva Agent chat"),
+  sidebar: {
+    src: "/screens/sidebar.png",
+    height: 1313 - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
+    label: "Sidebar",
+    cropTop: SYSTEM_STATUS_HEIGHT,
+    scroll: true,
+    sourceHeight: 1313,
+  },
+  playbooks: chromeFreeScreen("/screens/playbooks.png", "Playbooks"),
+  recentChats: chromeFreeScreen("/screens/recent-chats.png", "Recent Chats"),
+  explore: chromeFreeScreen("/screens/explore.png", "Explore"),
+  playbookDetail: chromeFreeScreen("/screens/playbook-detail.png", "Playbook detail"),
+  chatSelected: chromeFreeScreen("/screens/chat-selected.png", "Selected chat"),
+  profile: {
+    src: "/screens/profile.png",
+    height: PROFILE_VIEW_HEIGHT,
+    label: "Profile",
+    cropTop: SYSTEM_STATUS_HEIGHT,
+    sourceHeight: STANDARD_SOURCE_HEIGHT,
+  },
+  askAlva: chromeFreeScreen("/screens/ask-alva-overlay.png", "Ask Alva overlay"),
+  infoModal: chromeFreeScreen("/screens/info-modal.png", "Info modal"),
 };
 
-function HotspotButton({ hotspot, frameHeight }: { hotspot: Hotspot; frameHeight: number }) {
+function HotspotButton({ cropTop = 0, frameHeight, hotspot }: { cropTop?: number; hotspot: Hotspot; frameHeight: number }) {
   const style = {
     left: `${(hotspot.x / DESIGN_WIDTH) * 100}%`,
-    top: `${(hotspot.y / frameHeight) * 100}%`,
+    top: `${((hotspot.y - cropTop) / frameHeight) * 100}%`,
     width: `${(hotspot.width / DESIGN_WIDTH) * 100}%`,
     height: `${(hotspot.height / frameHeight) * 100}%`,
   };
@@ -257,8 +286,8 @@ function DetailScreen({
   } as CSSProperties;
 
   const contentHotspots: Hotspot[] = [
-    { id: "detail-back", label: "Back", x: 0, y: 124, width: 48, height: 48, action: onBack },
-    { id: "detail-info", label: "Open playbook info", x: 260, y: 124, width: 42, height: 48, action: onInfo },
+    { id: "detail-back", label: "Back", x: 0, y: 65, width: 48, height: 48, action: onBack },
+    { id: "detail-info", label: "Open playbook info", x: 260, y: 65, width: 42, height: 48, action: onInfo },
     ...detailTabHitAreas.map(({ tab: nextTab, x, width }) => ({
       id: `detail-tab-${nextTab}`,
       label: `Show ${detailTabs[nextTab].label}`,
@@ -307,7 +336,7 @@ function DetailScreen({
       <img alt="" aria-hidden="true" className="detail-shell-footer" draggable={false} src="/screens/detail-shell-footer.png" />
       <div className="hotspot-layer detail-fixed-hotspots">
         {fixedHotspots.map((hotspot) => (
-          <HotspotButton frameHeight={852} hotspot={hotspot} key={hotspot.id} />
+          <HotspotButton frameHeight={DETAIL_VIEW_HEIGHT} hotspot={hotspot} key={hotspot.id} />
         ))}
       </div>
     </div>
@@ -487,7 +516,13 @@ export default function App() {
             <div
               className={`screen-visual enter-${direction}`}
               key={`${viewKey}-${animationTick}`}
-              style={{ "--screen-height": `${meta.height}px` } as CSSProperties}
+              style={
+                {
+                  "--crop-top": `${meta.cropTop ?? 0}px`,
+                  "--screen-height": `${meta.height}px`,
+                  "--source-height": `${meta.sourceHeight ?? meta.height}px`,
+                } as CSSProperties
+              }
             >
               <div className="sr-only" aria-live="polite">
                 <h1>{narrative.title}</h1>
@@ -502,7 +537,7 @@ export default function App() {
               <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={meta.src} />
               <div className="hotspot-layer">
                 {hotspots.map((hotspot) => (
-                  <HotspotButton frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />
+                  <HotspotButton cropTop={meta.cropTop} frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />
                 ))}
               </div>
             </div>

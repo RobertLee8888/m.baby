@@ -94,6 +94,7 @@ button {
 .screen-visual {
   position: relative;
   width: 100%;
+  height: calc(var(--screen-height) * (100vw / var(--design-width)));
   min-height: calc(var(--screen-height) * (100vw / var(--design-width)));
   overflow: hidden;
   background: #fff;
@@ -102,9 +103,12 @@ button {
 
 .screen-image {
   display: block;
+  position: absolute;
+  left: 0;
+  top: calc(var(--crop-top, 0px) * -1 * (100vw / var(--design-width)));
   width: 100%;
   height: auto;
-  min-height: calc(var(--screen-height) * (100vw / var(--design-width)));
+  min-height: calc(var(--source-height) * (100vw / var(--design-width)));
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
@@ -159,6 +163,7 @@ button {
 .detail-scroll-content {
   position: relative;
   width: 100%;
+  height: calc(var(--detail-total-height) * (100vw / var(--design-width)));
   min-height: calc(var(--detail-total-height) * (100vw / var(--design-width)));
   overflow: hidden;
   background: #fff;
@@ -187,7 +192,7 @@ button {
 }
 
 .detail-tab-content {
-  top: calc(179px * (100vw / var(--design-width)));
+  top: calc(120px * (100vw / var(--design-width)));
 }
 
 .detail-shell-footer {
