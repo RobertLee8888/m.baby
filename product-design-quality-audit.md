@@ -7,7 +7,7 @@ Result: passed for mobile demo handoff
 
 ## Audit Scope
 
-Mobile-only Alva demo covering login, chat, sidebar, playbooks, recent chats, explore, playbook detail, Ask Alva overlay, info modal, selected chat, profile, and desktop-size blocking state.
+Mobile-only Alva demo covering login, chat, sidebar, playbooks, recent chats, explore, playbook detail with Overview, Analytics, Strategy, and Feed tabs, Ask Alva overlay, info modal, selected chat, profile, and desktop-size blocking state.
 
 Evidence captured in the current audit run:
 
@@ -15,6 +15,9 @@ Evidence captured in the current audit run:
 - After semantic patch: `.qa/product-design-audit-after/screens/`
 - Full-view comparison evidence: `.qa/product-design-audit/comparisons/`
 - Pixel summary: `.qa/product-design-audit/pixel-summary.json`
+- Detail tab PNG captures: `.qa/detail-tabs-chrome-png/`
+- Detail tab expected compositions: `.qa/detail-tabs-expected/`
+- Detail tab geometry evidence: `.qa/detail-tabs-browser/detail-geometry.json`
 
 In-app Browser tab control timed out during this audit, so capture used local Chrome Headless with the same 393 x 852 viewport and current local server.
 
@@ -29,16 +32,20 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 | 5 | Sidebar Recent Chats view all | Good |
 | 6 | Sidebar Explore entry | Good |
 | 7 | Explore or list item opens Playbook Detail | Good |
-| 8 | Ask Alva opens chat overlay | Good |
-| 9 | Info opens modal and close returns to detail | Good |
-| 10 | Avatar opens Profile | Good |
-| 11 | Chat list item opens selected chat | Good |
-| 12 | Desktop-size viewport blocks demo with full-screen message | Good |
+| 8 | Playbook Detail switches Overview, Analytics, Strategy, and Feed tabs | Good |
+| 9 | Ask Alva opens chat overlay | Good |
+| 10 | Info opens modal and close returns to detail | Good |
+| 11 | Avatar opens Profile | Good |
+| 12 | Chat list item opens selected chat | Good |
+| 13 | Desktop-size viewport blocks demo with full-screen message | Good |
 
 ## Findings
 
 - No P0/P1/P2 visual fidelity issues found after the follow-up pass.
   Evidence: all 11 mobile states matched their Figma source exports with 0 changed pixels at the target viewport. Sidebar was compared against its 393 x 1313 full-page source.
+
+- No P0/P1/P2 issues found in the new Playbook Detail tab integration.
+  Evidence: Overview, Analytics, Strategy, and Feed each matched their composed Figma source with 0 changed pixels at 393 x 852. The content image geometry is exact: top shell y=0 height=179, tab content y=179 width=393, and fixed footer y=632 height=220.
 
 - Fixed: content was visually perfect but not semantically readable.
   Location: `src/App.tsx`, `src/styles.css`.
@@ -52,6 +59,7 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 - Colors and visual tokens: Passed visually. Colors, opacity, shadows, and gradients match the source exports exactly.
 - Image quality and assets: Passed visually. All source-visible logos, avatars, screenshots, icons, charts, and UI chrome are preserved exactly from the Figma exports.
 - Copy and content: Passed visually and improved semantically. Key content is now mirrored in the hidden accessibility layer.
+- Detail tabs: Passed. The content area now uses the requested Figma node `9949:133034` directly for Overview, Analytics, Strategy, and Feed, with smooth tab transitions and scroll reset on each tab change.
 
 ## Accessibility Risks
 
@@ -64,4 +72,3 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 1. Accept this for the requested mobile demo handoff: visual parity and flow coverage are strong.
 2. If this becomes production code, rebuild the raster screens as real components using the Figma variables, typography, icons, and component structure rather than relying on full-screen image states.
 3. For the next polish pass, add production-style dialog semantics and keyboard Escape close to the Ask Alva overlay and info modal.
-

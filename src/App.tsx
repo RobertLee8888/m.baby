@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 
 type Screen =
   | "login"
@@ -13,6 +14,13 @@ type Screen =
 
 type Overlay = "askAlva" | "infoModal" | null;
 type Direction = "forward" | "back" | "overlay";
+type DetailTab = "overview" | "analytics" | "strategy" | "feed";
+
+type Narrative = {
+  title: string;
+  summary: string;
+  details: string[];
+};
 
 type ScreenMeta = {
   src: string;
@@ -32,8 +40,73 @@ type Hotspot = {
 };
 
 const DESIGN_WIDTH = 393;
+const DETAIL_TOP_HEIGHT = 179;
+const DETAIL_FOOTER_VIEWPORT_Y = 632;
+const DETAIL_FOOTER_HEIGHT = 220;
 
-const screenNarratives: Record<Screen | Exclude<Overlay, null>, { title: string; summary: string; details: string[] }> = {
+const detailTabs: Record<DetailTab, { src: string; height: number; label: string; narrative: Narrative }> = {
+  overview: {
+    src: "/screens/detail-tabs/overview.png",
+    height: 2218,
+    label: "Overview",
+    narrative: {
+      title: "Quality Value Stock Screener detail: Overview",
+      summary: "Overview tab content from the supplied Figma frame with creator, metrics, equity curve, returns, and drawdown modules.",
+      details: [
+        "Top chrome and fixed bottom actions remain aligned to the original mobile detail frame.",
+        "The Overview content area is the 393 by 2218 export from Figma node 9949:133037.",
+      ],
+    },
+  },
+  analytics: {
+    src: "/screens/detail-tabs/analytics.png",
+    height: 1644,
+    label: "Analytics",
+    narrative: {
+      title: "Quality Value Stock Screener detail: Analytics",
+      summary: "Analytics tab content from the supplied Figma frame with return, risk, and distribution analysis.",
+      details: [
+        "The Analytics content area is the 393 by 1644 export from Figma node 9949:133040.",
+        "Tab switching keeps the same playbook shell and resets the scroll position to the top.",
+      ],
+    },
+  },
+  strategy: {
+    src: "/screens/detail-tabs/strategy.png",
+    height: 1112,
+    label: "Strategy",
+    narrative: {
+      title: "Quality Value Stock Screener detail: Strategy",
+      summary: "Strategy tab content from the supplied Figma frame with objective and strategy copy blocks.",
+      details: [
+        "The Strategy content area is the 393 by 1112 export from Figma node 9949:133039.",
+        "The fixed Ask Alva, Remix, Trade, and Subscribe action area stays available over the tab content.",
+      ],
+    },
+  },
+  feed: {
+    src: "/screens/detail-tabs/feed.png",
+    height: 1956,
+    label: "Feed",
+    narrative: {
+      title: "Quality Value Stock Screener detail: Feed",
+      summary: "Feed tab content from the supplied Figma frame with playbook updates and market posts.",
+      details: [
+        "The Feed content area is the 393 by 1956 export from Figma node 9949:133038.",
+        "The tab content scrolls behind the fixed bottom shell to match the mobile composition.",
+      ],
+    },
+  },
+};
+
+const detailTabHitAreas: Array<{ tab: DetailTab; x: number; width: number }> = [
+  { tab: "overview", x: 0, width: 98 },
+  { tab: "analytics", x: 98, width: 98 },
+  { tab: "strategy", x: 196, width: 98 },
+  { tab: "feed", x: 294, width: 99 },
+];
+
+const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
   login: {
     title: "Login",
     summary: "Alva login screen with email, Google, X, Telegram, Discord, and Cloudflare verification options.",
@@ -81,9 +154,9 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, { title: string;
   },
   playbookDetail: {
     title: "Quality Value Stock Screener detail",
-    summary: "Playbook detail overview with performance metrics, equity curve, and floating actions.",
+    summary: "Playbook detail with Overview, Analytics, Strategy, and Feed tab content from the supplied Figma frame.",
     details: [
-      "Metrics include total return 18.4 percent, annualized return 49.32 percent, volatility 22.4 percent, Sharpe ratio 5.54, Sortino ratio 1.45, and max drawdown minus 9.6 percent.",
+      "The tab content area uses the four direct exports from Figma node 9949:133034.",
       "Floating actions include Ask Alva, Remix, Trade, and Subscribe.",
     ],
   },
@@ -156,12 +229,97 @@ function HotspotButton({ hotspot, frameHeight }: { hotspot: Hotspot; frameHeight
   );
 }
 
+function DetailScreen({
+  animationTick,
+  direction,
+  onAskAlva,
+  onBack,
+  onInfo,
+  onSelectTab,
+  tab,
+}: {
+  animationTick: number;
+  direction: Direction;
+  onAskAlva: () => void;
+  onBack: () => void;
+  onInfo: () => void;
+  onSelectTab: (tab: DetailTab) => void;
+  tab: DetailTab;
+}) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const activeTab = detailTabs[tab];
+  const detailHeight = DETAIL_TOP_HEIGHT + activeTab.height + DETAIL_FOOTER_HEIGHT;
+  const narrative = activeTab.narrative;
+  const style = {
+    "--detail-total-height": `${detailHeight}px`,
+    "--detail-content-height": `${activeTab.height}px`,
+  } as CSSProperties;
+
+  const contentHotspots: Hotspot[] = [
+    { id: "detail-back", label: "Back", x: 0, y: 124, width: 48, height: 48, action: onBack },
+    { id: "detail-info", label: "Open playbook info", x: 260, y: 124, width: 42, height: 48, action: onInfo },
+    ...detailTabHitAreas.map(({ tab: nextTab, x, width }) => ({
+      id: `detail-tab-${nextTab}`,
+      label: `Show ${detailTabs[nextTab].label}`,
+      x,
+      y: DETAIL_TOP_HEIGHT,
+      width,
+      height: 46,
+      action: () => {
+        scrollRef.current?.scrollTo(0, 0);
+        onSelectTab(nextTab);
+      },
+    })),
+  ];
+
+  const fixedHotspots: Hotspot[] = [
+    { id: "detail-ask-alva", label: "Ask Alva", x: 34, y: DETAIL_FOOTER_VIEWPORT_Y + 18, width: 84, height: 58, action: onAskAlva },
+  ];
+
+  return (
+    <div className="detail-frame" data-current-detail-tab={tab}>
+      <div className="sr-only" aria-live="polite">
+        <h1>{narrative.title}</h1>
+        <p>{narrative.summary}</p>
+        <ul>
+          {narrative.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+        <p>
+          Available actions: Back, Open playbook info, Show Overview, Show Analytics, Show Strategy, Show Feed, Ask Alva.
+        </p>
+      </div>
+
+      <div className="detail-scroll" ref={scrollRef}>
+        <div className={`detail-scroll-content enter-${direction}`} key={`${tab}-${animationTick}`} style={style}>
+          <img alt="" aria-hidden="true" className="detail-shell-top" draggable={false} src="/screens/detail-shell-top.png" />
+          <img alt="" aria-hidden="true" className="detail-tab-content" draggable={false} src={activeTab.src} />
+          <div className="hotspot-layer detail-content-hotspots">
+            {contentHotspots.map((hotspot) => (
+              <HotspotButton frameHeight={detailHeight} hotspot={hotspot} key={hotspot.id} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <img alt="" aria-hidden="true" className="detail-shell-footer" draggable={false} src="/screens/detail-shell-footer.png" />
+      <div className="hotspot-layer detail-fixed-hotspots">
+        {fixedHotspots.map((hotspot) => (
+          <HotspotButton frameHeight={852} hotspot={hotspot} key={hotspot.id} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [history, setHistory] = useState<Screen[]>([]);
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [direction, setDirection] = useState<Direction>("forward");
   const [animationTick, setAnimationTick] = useState(0);
+  const [detailTab, setDetailTab] = useState<DetailTab>("overview");
 
   const navigate = (next: Screen, nextDirection: Direction = "forward") => {
     setOverlay(null);
@@ -202,6 +360,21 @@ export default function App() {
     setAnimationTick((value) => value + 1);
   };
 
+  const openDetail = () => {
+    setDetailTab("overview");
+    navigate("playbookDetail");
+  };
+
+  const selectDetailTab = (nextTab: DetailTab) => {
+    if (nextTab === detailTab) {
+      return;
+    }
+
+    setDirection("forward");
+    setDetailTab(nextTab);
+    setAnimationTick((value) => value + 1);
+  };
+
   const viewKey = overlay ?? screen;
   const meta = screens[viewKey];
 
@@ -234,11 +407,11 @@ export default function App() {
           { id: "sidebar-explore", label: "Open Explore", x: 0, y: 258, width: 190, height: 58, action: () => navigate("explore") },
           { id: "sidebar-playbooks-all", label: "View all playbooks", x: 313, y: 466, width: 78, height: 45, action: () => navigate("playbooks") },
           { id: "sidebar-recent-all", label: "View all recent chats", x: 313, y: 815, width: 78, height: 45, action: () => navigate("recentChats") },
-          { id: "sidebar-playbook-1", label: "Open Investor Roundtable", x: 0, y: 502, width: 393, height: 61, action: () => navigate("playbookDetail") },
-          { id: "sidebar-playbook-2", label: "Open LAB Short War Room", x: 0, y: 563, width: 393, height: 61, action: () => navigate("playbookDetail") },
-          { id: "sidebar-playbook-3", label: "Open Citrini Operating System", x: 0, y: 624, width: 393, height: 61, action: () => navigate("playbookDetail") },
-          { id: "sidebar-playbook-4", label: "Open Theme Tracker", x: 0, y: 685, width: 393, height: 61, action: () => navigate("playbookDetail") },
-          { id: "sidebar-playbook-5", label: "Open BTC Bet Scanner", x: 0, y: 746, width: 393, height: 61, action: () => navigate("playbookDetail") },
+          { id: "sidebar-playbook-1", label: "Open Investor Roundtable", x: 0, y: 502, width: 393, height: 61, action: openDetail },
+          { id: "sidebar-playbook-2", label: "Open LAB Short War Room", x: 0, y: 563, width: 393, height: 61, action: openDetail },
+          { id: "sidebar-playbook-3", label: "Open Citrini Operating System", x: 0, y: 624, width: 393, height: 61, action: openDetail },
+          { id: "sidebar-playbook-4", label: "Open Theme Tracker", x: 0, y: 685, width: 393, height: 61, action: openDetail },
+          { id: "sidebar-playbook-5", label: "Open BTC Bet Scanner", x: 0, y: 746, width: 393, height: 61, action: openDetail },
           { id: "sidebar-chat-1", label: "Open Crypto Price chat", x: 0, y: 894, width: 393, height: 49, action: () => navigate("chatSelected") },
           { id: "sidebar-chat-2", label: "Open AVGO chat", x: 0, y: 944, width: 393, height: 49, action: () => navigate("chatSelected") },
           { id: "sidebar-chat-3", label: "Open Macro rates chat", x: 0, y: 995, width: 393, height: 49, action: () => navigate("chatSelected") },
@@ -248,11 +421,11 @@ export default function App() {
       case "playbooks":
         return [
           { id: "playbooks-back", label: "Back to sidebar", x: 0, y: 62, width: 56, height: 56, action: () => backTo("sidebar") },
-          { id: "playbooks-item-1", label: "Open Investor Roundtable", x: 0, y: 193, width: 393, height: 62, action: () => navigate("playbookDetail") },
-          { id: "playbooks-item-2", label: "Open LAB Short War Room", x: 0, y: 254, width: 393, height: 62, action: () => navigate("playbookDetail") },
-          { id: "playbooks-item-3", label: "Open Citrini Operating System", x: 0, y: 315, width: 393, height: 62, action: () => navigate("playbookDetail") },
-          { id: "playbooks-item-4", label: "Open Theme Tracker", x: 0, y: 376, width: 393, height: 62, action: () => navigate("playbookDetail") },
-          { id: "playbooks-item-5", label: "Open BTC Bet Scanner", x: 0, y: 437, width: 393, height: 62, action: () => navigate("playbookDetail") },
+          { id: "playbooks-item-1", label: "Open Investor Roundtable", x: 0, y: 193, width: 393, height: 62, action: openDetail },
+          { id: "playbooks-item-2", label: "Open LAB Short War Room", x: 0, y: 254, width: 393, height: 62, action: openDetail },
+          { id: "playbooks-item-3", label: "Open Citrini Operating System", x: 0, y: 315, width: 393, height: 62, action: openDetail },
+          { id: "playbooks-item-4", label: "Open Theme Tracker", x: 0, y: 376, width: 393, height: 62, action: openDetail },
+          { id: "playbooks-item-5", label: "Open BTC Bet Scanner", x: 0, y: 437, width: 393, height: 62, action: openDetail },
         ];
       case "recentChats":
         return [
@@ -268,18 +441,14 @@ export default function App() {
       case "explore":
         return [
           { id: "explore-menu", label: "Open sidebar", x: 0, y: 59, width: 56, height: 56, action: () => navigate("sidebar", "back") },
-          { id: "explore-card-1", label: "Open BTC Ultimate AI Trader", x: 0, y: 196, width: 393, height: 115, action: () => navigate("playbookDetail") },
-          { id: "explore-card-2", label: "Open MAG7 Equal-Weight", x: 0, y: 311, width: 393, height: 115, action: () => navigate("playbookDetail") },
-          { id: "explore-card-3", label: "Open PEPE Long vs BTC Short", x: 0, y: 426, width: 393, height: 115, action: () => navigate("playbookDetail") },
-          { id: "explore-card-4", label: "Open Attribution Analysis", x: 0, y: 541, width: 393, height: 115, action: () => navigate("playbookDetail") },
-          { id: "explore-card-5", label: "Open BTC MACD crossover", x: 0, y: 656, width: 393, height: 70, action: () => navigate("playbookDetail") },
+          { id: "explore-card-1", label: "Open BTC Ultimate AI Trader", x: 0, y: 196, width: 393, height: 115, action: openDetail },
+          { id: "explore-card-2", label: "Open MAG7 Equal-Weight", x: 0, y: 311, width: 393, height: 115, action: openDetail },
+          { id: "explore-card-3", label: "Open PEPE Long vs BTC Short", x: 0, y: 426, width: 393, height: 115, action: openDetail },
+          { id: "explore-card-4", label: "Open Attribution Analysis", x: 0, y: 541, width: 393, height: 115, action: openDetail },
+          { id: "explore-card-5", label: "Open BTC MACD crossover", x: 0, y: 656, width: 393, height: 70, action: openDetail },
         ];
       case "playbookDetail":
-        return [
-          { id: "detail-back", label: "Back", x: 0, y: 124, width: 48, height: 48, action: () => backTo("sidebar") },
-          { id: "detail-info", label: "Open playbook info", x: 260, y: 124, width: 42, height: 48, action: () => openOverlay("infoModal") },
-          { id: "detail-ask-alva", label: "Ask Alva", x: 34, y: 650, width: 84, height: 58, action: () => openOverlay("askAlva") },
-        ];
+        return [];
       case "chatSelected":
         return [
           { id: "selected-back", label: "Back", x: 0, y: 124, width: 48, height: 48, action: () => backTo("sidebar") },
@@ -291,7 +460,7 @@ export default function App() {
       default:
         return [];
     }
-  }, [screen, overlay]);
+  }, [screen, overlay, detailTab]);
 
   const narrative = screenNarratives[viewKey];
 
@@ -302,33 +471,41 @@ export default function App() {
       </section>
 
       <section className="mobile-shell" aria-label="m.baby mobile demo">
-        <div
-          className={`screen-frame ${meta.scroll ? "screen-frame-scroll" : ""}`}
-          data-current-view={viewKey}
-          data-screen-height={meta.height}
-        >
-          <div
-            className={`screen-visual enter-${direction}`}
-            key={`${viewKey}-${animationTick}`}
-            style={{ "--screen-height": `${meta.height}px` } as React.CSSProperties}
-          >
-            <div className="sr-only" aria-live="polite">
-              <h1>{narrative.title}</h1>
-              <p>{narrative.summary}</p>
-              <ul>
-                {narrative.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
+        <div className={`screen-frame ${meta.scroll ? "screen-frame-scroll" : ""}`} data-current-view={viewKey} data-screen-height={meta.height}>
+          {screen === "playbookDetail" && overlay === null ? (
+            <DetailScreen
+              animationTick={animationTick}
+              direction={direction}
+              onAskAlva={() => openOverlay("askAlva")}
+              onBack={() => backTo("sidebar")}
+              onInfo={() => openOverlay("infoModal")}
+              onSelectTab={selectDetailTab}
+              tab={detailTab}
+            />
+          ) : (
+            <div
+              className={`screen-visual enter-${direction}`}
+              key={`${viewKey}-${animationTick}`}
+              style={{ "--screen-height": `${meta.height}px` } as CSSProperties}
+            >
+              <div className="sr-only" aria-live="polite">
+                <h1>{narrative.title}</h1>
+                <p>{narrative.summary}</p>
+                <ul>
+                  {narrative.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+                <p>Available actions: {hotspots.map((hotspot) => hotspot.label).join(", ")}.</p>
+              </div>
+              <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={meta.src} />
+              <div className="hotspot-layer">
+                {hotspots.map((hotspot) => (
+                  <HotspotButton frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />
                 ))}
-              </ul>
-              <p>Available actions: {hotspots.map((hotspot) => hotspot.label).join(", ")}.</p>
+              </div>
             </div>
-            <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={meta.src} />
-            <div className="hotspot-layer">
-              {hotspots.map((hotspot) => (
-                <HotspotButton frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </main>
