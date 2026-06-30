@@ -5,16 +5,19 @@ type Screen =
   | "login"
   | "chat"
   | "sidebar"
+  | "sidebarMenu"
   | "playbooks"
   | "recentChats"
   | "explore"
   | "playbookDetail"
   | "chatSelected"
-  | "profile";
+  | "profile"
+  | "settings";
 
 type Overlay = "askAlva" | "infoModal" | null;
 type Direction = "forward" | "back" | "overlay";
 type DetailTab = "overview" | "analytics" | "strategy" | "feed";
+type SettingsTab = "account" | "usage" | "portfolio" | "alvaAgent" | "alerts" | "apiKey";
 
 type Narrative = {
   title: string;
@@ -114,6 +117,82 @@ const detailTabHitAreas: Array<{ tab: DetailTab; x: number; width: number }> = [
   { tab: "feed", x: 294, width: 99 },
 ];
 
+const settingsTabHitAreas: Array<{ tab: SettingsTab; x: number; width: number }> = [
+  { tab: "account", x: 0, width: 75 },
+  { tab: "usage", x: 75, width: 64 },
+  { tab: "portfolio", x: 139, width: 76 },
+  { tab: "alvaAgent", x: 215, width: 90 },
+  { tab: "alerts", x: 305, width: 46 },
+  { tab: "apiKey", x: 351, width: 42 },
+];
+
+const settingsTab = (
+  src: string,
+  sourceHeight: number,
+  label: string,
+  narrative: Narrative,
+): { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative } => ({
+  src,
+  sourceHeight,
+  height: sourceHeight - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
+  label,
+  narrative,
+});
+
+const settingsTabs: Record<
+  SettingsTab,
+  { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative }
+> = {
+  account: settingsTab("/screens/settings-tabs/account.png", 1231, "Account", {
+    title: "Settings: Account",
+    summary: "Account settings tab with profile identity, user information, and connected accounts from the supplied Figma frame.",
+    details: [
+      "The browser status chrome and Safari bar are cropped out for real mobile browser viewing.",
+      "Visible sections include Sheer, Nickname, User Info, and Connections.",
+    ],
+  }),
+  usage: settingsTab("/screens/settings-tabs/usage.png", 1849, "Usage", {
+    title: "Settings: Usage",
+    summary: "Usage settings tab with Pro subscription, credits, billing, and detailed usage modules.",
+    details: [
+      "This is the longest settings tab and remains fully scrollable after chrome cropping.",
+      "Tab switching resets the settings scroll position to the top.",
+    ],
+  }),
+  portfolio: settingsTab("/screens/settings-tabs/portfolio.png", 1255, "Portfolio", {
+    title: "Settings: Portfolio",
+    summary: "Portfolio settings tab with broker connections and global risk rules.",
+    details: [
+      "Broker connection cards and risk controls match the adjacent Figma settings frame.",
+      "The top settings tab row remains tappable from the rendered screenshot layer.",
+    ],
+  }),
+  alvaAgent: settingsTab("/screens/settings-tabs/alva-agent.png", 1169, "Alva Agent", {
+    title: "Settings: Alva Agent",
+    summary: "Alva Agent settings tab with connected apps, assistant customization, and generated memory settings.",
+    details: [
+      "The page preserves Figma typography, variables, icon assets, and spacing by using the direct frame export.",
+      "Back and tab controls are added as invisible interaction hotspots.",
+    ],
+  }),
+  alerts: settingsTab("/screens/settings-tabs/alerts.png", 1139, "Alerts", {
+    title: "Settings: Alerts",
+    summary: "Alerts settings tab with market digest and watch alert cards.",
+    details: [
+      "Visible alert items include Market Pulse Digest, AI Earnings Radar, GLP-1 Trial Watch, and space-rs-rotation.",
+      "The active tab state is captured from the adjacent settings design.",
+    ],
+  }),
+  apiKey: settingsTab("/screens/settings-tabs/api-key.png", 1237, "API Key", {
+    title: "Settings: API Key",
+    summary: "API Key settings tab with Alva API keys, secrets vault, and quick start content.",
+    details: [
+      "The API Key tab uses the adjacent mobile settings export from the same Figma page.",
+      "Chrome-free cropping keeps only the content that will appear inside the phone browser.",
+    ],
+  }),
+};
+
 const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
   login: {
     title: "Login",
@@ -137,6 +216,14 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
     details: [
       "Playbooks include Investor Roundtable, LAB Short War Room, Citrini Operating System, Theme Tracker Humanoid Robots, and BTC Bet Scanner.",
       "Recent chats include Crypto Price plus AI Trend Pulse, AVGO earnings recap, Macro and rates this week, Semis versus power-grid rotation, and NVDA options flow check.",
+    ],
+  },
+  sidebarMenu: {
+    title: "Sidebar account menu",
+    summary: "Account menu popover opened from the sidebar avatar with user identity, usage, referral, earnings, language, settings, and log out rows.",
+    details: [
+      "The user information area opens the full profile page.",
+      "The Settings row opens the mobile Settings page and its tabbed content.",
     ],
   },
   playbooks: {
@@ -184,6 +271,14 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
       "Visible tabs include My Playbooks, My starred, and My purchased, with All, Public, Private, and Paid filters.",
     ],
   },
+  settings: {
+    title: "Settings",
+    summary: "Mobile Settings page with Account, Usage, Portfolio, Alva Agent, Alerts, and API Key tabs from the supplied Figma frames.",
+    details: [
+      "Entered from the Settings item in the sidebar menu.",
+      "Each tab uses a direct Figma export with system status and Safari browser bars cropped out of the demo.",
+    ],
+  },
   askAlva: {
     title: "Ask Alva overlay",
     summary: "Bottom chat overlay opened from the playbook detail page.",
@@ -220,6 +315,7 @@ const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
     scroll: true,
     sourceHeight: 1313,
   },
+  sidebarMenu: chromeFreeScreen("/screens/sidebar-menu.png", "Sidebar account menu"),
   playbooks: chromeFreeScreen("/screens/playbooks.png", "Playbooks"),
   recentChats: chromeFreeScreen("/screens/recent-chats.png", "Recent Chats"),
   explore: chromeFreeScreen("/screens/explore.png", "Explore"),
@@ -231,6 +327,13 @@ const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
     label: "Profile",
     cropTop: SYSTEM_STATUS_HEIGHT,
     sourceHeight: STANDARD_SOURCE_HEIGHT,
+  },
+  settings: {
+    src: "/screens/settings-tabs/account.png",
+    height: settingsTabs.account.height,
+    label: "Settings",
+    cropTop: SYSTEM_STATUS_HEIGHT,
+    sourceHeight: settingsTabs.account.sourceHeight,
   },
   askAlva: chromeFreeScreen("/screens/ask-alva-overlay.png", "Ask Alva overlay"),
   infoModal: chromeFreeScreen("/screens/info-modal.png", "Info modal"),
@@ -343,6 +446,74 @@ function DetailScreen({
   );
 }
 
+function SettingsScreen({
+  animationTick,
+  direction,
+  onBack,
+  onSelectTab,
+  tab,
+}: {
+  animationTick: number;
+  direction: Direction;
+  onBack: () => void;
+  onSelectTab: (tab: SettingsTab) => void;
+  tab: SettingsTab;
+}) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const activeTab = settingsTabs[tab];
+  const narrative = activeTab.narrative;
+  const style = {
+    "--crop-top": `${SYSTEM_STATUS_HEIGHT}px`,
+    "--screen-height": `${activeTab.height}px`,
+    "--source-height": `${activeTab.sourceHeight}px`,
+  } as CSSProperties;
+
+  const settingsHotspots: Hotspot[] = [
+    { id: "settings-back", label: "Back to sidebar", x: 0, y: 59, width: 56, height: 56, action: onBack },
+    ...settingsTabHitAreas.map(({ tab: nextTab, x, width }) => ({
+      id: `settings-tab-${nextTab}`,
+      label: `Show ${settingsTabs[nextTab].label} settings`,
+      x,
+      y: 115,
+      width,
+      height: 48,
+      action: () => {
+        scrollRef.current?.scrollTo(0, 0);
+        onSelectTab(nextTab);
+      },
+    })),
+  ];
+
+  return (
+    <div className="settings-frame" data-current-settings-tab={tab}>
+      <div className="sr-only" aria-live="polite">
+        <h1>{narrative.title}</h1>
+        <p>{narrative.summary}</p>
+        <ul>
+          {narrative.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+        <p>
+          Available actions: Back to sidebar, Show Account settings, Show Usage settings, Show Portfolio settings, Show Alva Agent
+          settings, Show Alerts settings, Show API Key settings.
+        </p>
+      </div>
+
+      <div className="settings-scroll" ref={scrollRef}>
+        <div className={`screen-visual enter-${direction}`} key={`${tab}-${animationTick}`} style={style}>
+          <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={activeTab.src} />
+          <div className="hotspot-layer">
+            {settingsHotspots.map((hotspot) => (
+              <HotspotButton cropTop={SYSTEM_STATUS_HEIGHT} frameHeight={activeTab.height} hotspot={hotspot} key={hotspot.id} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [history, setHistory] = useState<Screen[]>([]);
@@ -350,6 +521,7 @@ export default function App() {
   const [direction, setDirection] = useState<Direction>("forward");
   const [animationTick, setAnimationTick] = useState(0);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
+  const [settingsTabName, setSettingsTabName] = useState<SettingsTab>("account");
 
   const navigate = (next: Screen, nextDirection: Direction = "forward") => {
     setOverlay(null);
@@ -395,6 +567,11 @@ export default function App() {
     navigate("playbookDetail");
   };
 
+  const openSettings = () => {
+    setSettingsTabName("account");
+    navigate("settings");
+  };
+
   const selectDetailTab = (nextTab: DetailTab) => {
     if (nextTab === detailTab) {
       return;
@@ -402,6 +579,16 @@ export default function App() {
 
     setDirection("forward");
     setDetailTab(nextTab);
+    setAnimationTick((value) => value + 1);
+  };
+
+  const selectSettingsTab = (nextTab: SettingsTab) => {
+    if (nextTab === settingsTabName) {
+      return;
+    }
+
+    setDirection("forward");
+    setSettingsTabName(nextTab);
     setAnimationTick((value) => value + 1);
   };
 
@@ -433,7 +620,7 @@ export default function App() {
         ];
       case "sidebar":
         return [
-          { id: "sidebar-user-area", label: "Open profile", x: 0, y: 123, width: 393, height: 64, action: () => navigate("profile") },
+          { id: "sidebar-avatar", label: "Open account menu", x: 337, y: 123, width: 56, height: 56, action: () => navigate("sidebarMenu") },
           { id: "sidebar-explore", label: "Open Explore", x: 0, y: 258, width: 190, height: 58, action: () => navigate("explore") },
           { id: "sidebar-playbooks-all", label: "View all playbooks", x: 313, y: 466, width: 78, height: 45, action: () => navigate("playbooks") },
           { id: "sidebar-recent-all", label: "View all recent chats", x: 313, y: 815, width: 78, height: 45, action: () => navigate("recentChats") },
@@ -447,6 +634,12 @@ export default function App() {
           { id: "sidebar-chat-3", label: "Open Macro rates chat", x: 0, y: 995, width: 393, height: 49, action: () => navigate("chatSelected") },
           { id: "sidebar-chat-4", label: "Open Semis chat", x: 0, y: 1046, width: 393, height: 49, action: () => navigate("chatSelected") },
           { id: "sidebar-chat-5", label: "Open NVDA chat", x: 0, y: 1097, width: 393, height: 49, action: () => navigate("chatSelected") },
+        ];
+      case "sidebarMenu":
+        return [
+          { id: "sidebar-menu-back", label: "Back to sidebar", x: 0, y: 59, width: 56, height: 56, action: () => backTo("sidebar") },
+          { id: "sidebar-menu-user", label: "Open profile", x: 0, y: 115, width: 393, height: 84, action: () => navigate("profile") },
+          { id: "sidebar-menu-settings", label: "Open Settings", x: 0, y: 455, width: 393, height: 46, action: openSettings },
         ];
       case "playbooks":
         return [
@@ -487,6 +680,8 @@ export default function App() {
         return [
           { id: "profile-back", label: "Back to sidebar", x: 0, y: 65, width: 56, height: 56, action: () => backTo("sidebar") },
         ];
+      case "settings":
+        return [];
       default:
         return [];
     }
@@ -511,6 +706,14 @@ export default function App() {
               onInfo={() => openOverlay("infoModal")}
               onSelectTab={selectDetailTab}
               tab={detailTab}
+            />
+          ) : screen === "settings" && overlay === null ? (
+            <SettingsScreen
+              animationTick={animationTick}
+              direction={direction}
+              onBack={() => backTo("sidebar")}
+              onSelectTab={selectSettingsTab}
+              tab={settingsTabName}
             />
           ) : (
             <div

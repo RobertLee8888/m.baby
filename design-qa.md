@@ -12,7 +12,7 @@ Product Design follow-up pass: passed. A non-visual `sr-only` semantic layer was
 
 Detail tab update pass: passed. The Playbook Detail content area now uses the four direct exports from Figma node `9949:133034`, with the product header and fixed product action bar preserved but all system/browser chrome removed. PNG comparison evidence is in `.qa/detail-tabs-chrome-png/`, expected compositions are in `.qa/detail-tabs-expected/`, and DOM geometry evidence is in `.qa/detail-tabs-browser/detail-geometry.json`.
 
-Profile entry update pass: passed. The Sidebar top user area now opens the Profile page from Figma node `4544:76150`. PNG comparison evidence is in `.qa/profile-entry/`.
+Account menu and Settings update pass: passed. The Sidebar avatar opens the Account Menu Popover from Figma node `8700:45723`; its user area opens the Profile page from Figma node `4544:76150`; its Settings row opens the Settings page from Figma node `1881:48815` plus adjacent tab frames. PNG comparison evidence is in `.qa/settings-app/`.
 
 Chrome-free pass: passed. Evidence is in `.qa/chrome-free/`; all checked states matched the chrome-free source crops with 0 changed pixels.
 
@@ -20,7 +20,10 @@ Chrome-free pass: passed. Evidence is in `.qa/chrome-free/`; all checked states 
 
 - Login: any tap completes login and enters Chat.
 - Chat: menu button opens Sidebar.
-- Sidebar: top user area opens Profile.
+- Sidebar: avatar opens the Account Menu Popover.
+- Sidebar Account Menu: user area opens Profile.
+- Sidebar Account Menu: Settings row opens Settings.
+- Settings: Account, Usage, Portfolio, Alva Agent, Alerts, and API Key tabs switch with scroll reset.
 - Sidebar: Explore opens Explore.
 - Sidebar: Playbooks view all opens Playbooks.
 - Sidebar: Chats view all opens Recent Chats.
@@ -40,6 +43,7 @@ Chrome-free pass: passed. Evidence is in `.qa/chrome-free/`; all checked states 
 | Chat | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 | Sidebar top | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 | Sidebar bottom | 393 x 659 chrome-free crop | 393 x 659 | 0 |
+| Sidebar Account Menu | 393 x 659 chrome-free crop from node `8700:45723` | 393 x 659 | 0 |
 | Playbooks | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 | Recent Chats | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 | Explore | 393 x 659 chrome-free crop | 393 x 659 | 0 |
@@ -51,6 +55,12 @@ Chrome-free pass: passed. Evidence is in `.qa/chrome-free/`; all checked states 
 | Info Modal | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 | Profile top | 393 x 659 crop from node `4544:76150` | 393 x 659 | 0 |
 | Profile bottom | 393 x 659 crop from node `4544:76150` | 393 x 659 | 0 |
+| Settings - Account | 393 x 659 chrome-free crop from node `1881:48815` | 393 x 659 | 0 |
+| Settings - Usage | 393 x 659 chrome-free crop from adjacent settings frame | 393 x 659 | 0 |
+| Settings - Portfolio | 393 x 659 chrome-free crop from adjacent settings frame | 393 x 659 | 0 |
+| Settings - Alva Agent | 393 x 659 chrome-free crop from adjacent settings frame | 393 x 659 | 0 |
+| Settings - Alerts | 393 x 659 chrome-free crop from adjacent settings frame | 393 x 659 | 0 |
+| Settings - API Key | 393 x 659 chrome-free crop from adjacent settings frame | 393 x 659 | 0 |
 | Selected Chat | 393 x 659 chrome-free crop | 393 x 659 | 0 |
 
 ## Notes
@@ -60,5 +70,6 @@ Chrome-free pass: passed. Evidence is in `.qa/chrome-free/`; all checked states 
 - Page changes, overlay entry, and modal entry use short eased animations.
 - Rechecked after the semantic accessibility patch: every listed state still has 0 changed pixels against the Figma source.
 - Rechecked after the detail-tab patch: all four Playbook Detail tab viewports have 0 changed pixels against their composed Figma source at 393 x 659.
-- Rechecked after the profile-entry patch: Sidebar top user hotspot measures x=0, y=123, width=393, height=64, and the Profile viewport has 0 changed pixels against the Figma source.
+- Rechecked after the account-menu/settings patch: Sidebar avatar hotspot measures x=337, y=123, width=56, height=56. Account Menu user area measures x=0, y=115, width=393, height=84, and Settings row measures x=0, y=455, width=393, height=46.
+- Rechecked after the account-menu/settings patch: Account Menu, Settings Account, Usage, Portfolio, Alva Agent, Alerts, API Key, Profile from menu, and Settings back-to-menu all have 0 changed pixels against their Figma source crops at 393 x 659.
 - Rechecked after the chrome-free patch: top system status bars and bottom Safari/system bars are removed from rendered demo states. Product-owned bottom controls, such as Ask Alva and the playbook action bar, remain visible.
