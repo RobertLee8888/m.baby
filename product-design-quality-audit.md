@@ -18,6 +18,7 @@ Evidence captured in the current audit run:
 - Detail tab PNG captures: `.qa/detail-tabs-chrome-png/`
 - Detail tab expected compositions: `.qa/detail-tabs-expected/`
 - Detail tab geometry evidence: `.qa/detail-tabs-browser/detail-geometry.json`
+- Profile entry evidence: `.qa/profile-entry/`
 
 In-app Browser tab control timed out during this audit, so capture used local Chrome Headless with the same 393 x 852 viewport and current local server.
 
@@ -35,7 +36,7 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 | 8 | Playbook Detail switches Overview, Analytics, Strategy, and Feed tabs | Good |
 | 9 | Ask Alva opens chat overlay | Good |
 | 10 | Info opens modal and close returns to detail | Good |
-| 11 | Avatar opens Profile | Good |
+| 11 | Sidebar top user area opens Profile | Good |
 | 12 | Chat list item opens selected chat | Good |
 | 13 | Desktop-size viewport blocks demo with full-screen message | Good |
 
@@ -46,6 +47,9 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 
 - No P0/P1/P2 issues found in the new Playbook Detail tab integration.
   Evidence: Overview, Analytics, Strategy, and Feed each matched their composed Figma source with 0 changed pixels at 393 x 852. The content image geometry is exact: top shell y=0 height=179, tab content y=179 width=393, and fixed footer y=632 height=220.
+
+- No P0/P1/P2 issues found in the updated Profile entry.
+  Evidence: the Sidebar top user hotspot covers x=0, y=123, width=393, height=64; tapping it opens Profile, and the Profile viewport from Figma node `4544:76150` matched the rendered screen with 0 changed pixels.
 
 - Fixed: content was visually perfect but not semantically readable.
   Location: `src/App.tsx`, `src/styles.css`.
@@ -60,6 +64,7 @@ In-app Browser tab control timed out during this audit, so capture used local Ch
 - Image quality and assets: Passed visually. All source-visible logos, avatars, screenshots, icons, charts, and UI chrome are preserved exactly from the Figma exports.
 - Copy and content: Passed visually and improved semantically. Key content is now mirrored in the hidden accessibility layer.
 - Detail tabs: Passed. The content area now uses the requested Figma node `9949:133034` directly for Overview, Analytics, Strategy, and Feed, with smooth tab transitions and scroll reset on each tab change.
+- Profile entry: Passed. Sidebar user-area navigation now opens the requested owner profile source from Figma node `4544:76150`.
 
 ## Accessibility Risks
 

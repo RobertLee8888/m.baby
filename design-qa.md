@@ -10,11 +10,13 @@ Product Design follow-up pass: passed. A non-visual `sr-only` semantic layer was
 
 Detail tab update pass: passed. The Playbook Detail content area now uses the four direct exports from Figma node `9949:133034`, with the original top chrome and fixed bottom action/Safari shell preserved. PNG comparison evidence is in `.qa/detail-tabs-chrome-png/`, expected compositions are in `.qa/detail-tabs-expected/`, and DOM geometry evidence is in `.qa/detail-tabs-browser/detail-geometry.json`.
 
+Profile entry update pass: passed. The Sidebar top user area now opens the Profile page from Figma node `4544:76150`. PNG comparison evidence is in `.qa/profile-entry/`.
+
 ## Flow Coverage
 
 - Login: any tap completes login and enters Chat.
 - Chat: menu button opens Sidebar.
-- Sidebar: avatar opens Profile.
+- Sidebar: top user area opens Profile.
 - Sidebar: Explore opens Explore.
 - Sidebar: Playbooks view all opens Playbooks.
 - Sidebar: Chats view all opens Recent Chats.
@@ -42,7 +44,7 @@ Detail tab update pass: passed. The Playbook Detail content area now uses the fo
 | Playbook Detail - Feed | 393 x 852 viewport, 393 x 1956 tab content | 393 x 852 | 0 |
 | Ask Alva Overlay | 393 x 852 | 393 x 852 | 0 |
 | Info Modal | 393 x 852 | 393 x 852 | 0 |
-| Profile | 393 x 852 | 393 x 852 | 0 |
+| Profile | 393 x 852 from node `4544:76150` | 393 x 852 | 0 |
 | Selected Chat | 393 x 852 | 393 x 852 | 0 |
 
 ## Notes
@@ -52,3 +54,4 @@ Detail tab update pass: passed. The Playbook Detail content area now uses the fo
 - Page changes, overlay entry, and modal entry use short eased animations.
 - Rechecked after the semantic accessibility patch: every listed state still has 0 changed pixels against the Figma source.
 - Rechecked after the detail-tab patch: all four Playbook Detail tab viewports have 0 changed pixels against their composed Figma source at 393 x 852.
+- Rechecked after the profile-entry patch: Sidebar top user hotspot measures x=0, y=123, width=393, height=64, and the Profile viewport has 0 changed pixels against the Figma source.

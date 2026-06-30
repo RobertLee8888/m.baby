@@ -170,9 +170,10 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
   },
   profile: {
     title: "Profile",
-    summary: "Profile page for sheer with Pro and Annual badges, usage balance, referral, creator earnings, language, settings, and logout.",
+    summary: "Owner profile page for YGGYLL with creator identity, social handles, stats, edit and share actions, and playbook tabs.",
     details: [
-      "Available usage balance is 12,000, with daily, monthly, and pack limits shown.",
+      "Stats include 6 playbooks, 890 stars, 12 remix, and 1,203.45 dollars earned.",
+      "Visible tabs include My Playbooks, My starred, and My purchased, with All, Public, Private, and Paid filters.",
     ],
   },
   askAlva: {
@@ -403,7 +404,7 @@ export default function App() {
         ];
       case "sidebar":
         return [
-          { id: "sidebar-avatar", label: "Open profile", x: 338, y: 128, width: 48, height: 52, action: () => navigate("profile") },
+          { id: "sidebar-user-area", label: "Open profile", x: 0, y: 123, width: 393, height: 64, action: () => navigate("profile") },
           { id: "sidebar-explore", label: "Open Explore", x: 0, y: 258, width: 190, height: 58, action: () => navigate("explore") },
           { id: "sidebar-playbooks-all", label: "View all playbooks", x: 313, y: 466, width: 78, height: 45, action: () => navigate("playbooks") },
           { id: "sidebar-recent-all", label: "View all recent chats", x: 313, y: 815, width: 78, height: 45, action: () => navigate("recentChats") },
