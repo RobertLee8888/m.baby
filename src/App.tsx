@@ -215,17 +215,18 @@ export default function App() {
 
   const stageScale = viewport.width < MIN_MOBILE_STAGE_WIDTH ? viewport.width / MIN_MOBILE_STAGE_WIDTH : 1;
   const stageHeight = stageScale < 1 ? viewport.height / stageScale : viewport.height;
-  const mobileShellStyle =
-    stageScale < 1
-      ? ({
-          "--shell-dvh": `${stageHeight}px`,
-          height: `${stageHeight}px`,
-          minHeight: `${stageHeight}px`,
+  const mobileShellStyle = {
+    "--shell-dvh": `${stageHeight}px`,
+    height: `${stageHeight}px`,
+    minHeight: `${stageHeight}px`,
+    ...(stageScale < 1
+      ? {
           transform: `scale(${stageScale})`,
           transformOrigin: "top left",
           width: `${MIN_MOBILE_STAGE_WIDTH}px`,
-        } as CSSProperties)
-      : undefined;
+        }
+      : null),
+  } as CSSProperties;
 
   return (
     <main className="demo-root">

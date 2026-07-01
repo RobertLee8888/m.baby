@@ -1147,14 +1147,19 @@ button:focus-visible {
 
 .composer input {
   min-width: 0;
-  width: 100%;
+  width: 114.2857%;
   padding: 3px 0;
   border: 0;
   outline: 0;
   background: transparent;
   color: rgba(0, 0, 0, 0.9);
-  font: inherit;
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 22px;
+  letter-spacing: 0.16px;
   text-overflow: ellipsis;
+  transform: scale(0.875);
+  transform-origin: left center;
   white-space: nowrap;
 }
 
