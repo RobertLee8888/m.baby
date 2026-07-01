@@ -236,7 +236,7 @@ function Pill({ children, active = false }: { children: React.ReactNode; active?
 }
 
 function Avatar({ src, size = 36 }: { src: string; size?: number }) {
-  return <img alt="" className="avatar" height={size} src={src} width={size} />;
+  return <img alt="" className="avatar" height={size} src={src} style={{ height: size, width: size }} width={size} />;
 }
 
 function NavRow({

@@ -229,6 +229,9 @@ button:focus-visible {
 .avatar {
   display: block;
   flex: 0 0 auto;
+  width: var(--avatar-size, 36px);
+  height: var(--avatar-size, 36px);
+  aspect-ratio: 1;
   border-radius: 50%;
   object-fit: cover;
 }
