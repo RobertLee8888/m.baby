@@ -158,62 +158,18 @@ function ChatContentLoader({ children, variant }: { children: ReactNode; variant
 function ChatLoadingState({ variant }: { variant: "agent" | "thread" }) {
   return (
     <div aria-hidden="true" className={`chat-loading chat-loading-${variant}`}>
-      <div className="loading-user-bubble skeleton-surface" />
-      <div className="loading-answer-block">
-        <div className="loading-agent-row">
-          <AgentIcon />
-          <span className="loading-agent-name skeleton-surface" />
-          <span className="typing-dots">
-            <i />
-            <i />
-            <i />
-          </span>
-        </div>
-        {variant === "agent" ? (
-          <div className="loading-card skeleton-card">
-            <div className="loading-card-header">
-              <span className="skeleton-line skeleton-title" />
-              <span className="skeleton-pill" />
-              <span className="skeleton-line skeleton-meta" />
-            </div>
-            <div className="loading-card-body">
-              <span className="skeleton-line" />
-              <span className="skeleton-line skeleton-wide" />
-              <span className="skeleton-line skeleton-short" />
-            </div>
-          </div>
-        ) : (
-          <div className="loading-message-lines loading-message-lines-first">
-            <span className="skeleton-line" />
-            <span className="skeleton-line skeleton-wide" />
-            <span className="skeleton-line skeleton-short" />
-          </div>
-        )}
+      <div className="loading-agent-row">
+        <AgentIcon />
+        <strong>Alva</strong>
       </div>
-      {variant === "thread" ? (
-        <div className="loading-thread-tail">
-          <div className="loading-user-bubble loading-user-bubble-short skeleton-surface" />
-          <div className="loading-agent-row">
-            <AgentIcon />
-            <span className="loading-agent-name skeleton-surface" />
-          </div>
-          <div className="loading-message-lines">
-            <span className="skeleton-line" />
-            <span className="skeleton-line skeleton-wide" />
-            <span className="skeleton-line skeleton-short" />
-          </div>
-        </div>
-      ) : (
-        <div className="loading-delivery-card skeleton-card">
-          <span className="skeleton-line skeleton-title" />
-          <span className="skeleton-line skeleton-wide" />
-          <div className="loading-chip-row">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      )}
+      <div className="assistant-thinking initial-thinking">
+        <span>{variant === "agent" ? "Preparing a fresh answer" : "Loading conversation"}</span>
+        <span className="typing-dots">
+          <i />
+          <i />
+          <i />
+        </span>
+      </div>
     </div>
   );
 }
