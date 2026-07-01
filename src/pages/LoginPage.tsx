@@ -40,7 +40,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
 
         <div className="login-options">
           <button className="email-button hairline-control" onClick={onLogin} type="button">
-            Login with Email
+            <span>Login with Email</span>
           </button>
 
           <div className="divider">
