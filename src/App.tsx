@@ -54,10 +54,11 @@ const DETAIL_TOP_HEIGHT = 120;
 const DETAIL_VIEW_HEIGHT = STANDARD_VIEW_HEIGHT;
 const DETAIL_FOOTER_VIEWPORT_Y = 573;
 const DETAIL_FOOTER_HEIGHT = 86;
+const assetPath = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 
 const detailTabs: Record<DetailTab, { src: string; height: number; label: string; narrative: Narrative }> = {
   overview: {
-    src: "/screens/detail-tabs/overview.png",
+    src: assetPath("screens/detail-tabs/overview.png"),
     height: 2218,
     label: "Overview",
     narrative: {
@@ -70,7 +71,7 @@ const detailTabs: Record<DetailTab, { src: string; height: number; label: string
     },
   },
   analytics: {
-    src: "/screens/detail-tabs/analytics.png",
+    src: assetPath("screens/detail-tabs/analytics.png"),
     height: 1644,
     label: "Analytics",
     narrative: {
@@ -83,7 +84,7 @@ const detailTabs: Record<DetailTab, { src: string; height: number; label: string
     },
   },
   strategy: {
-    src: "/screens/detail-tabs/strategy.png",
+    src: assetPath("screens/detail-tabs/strategy.png"),
     height: 1112,
     label: "Strategy",
     narrative: {
@@ -96,7 +97,7 @@ const detailTabs: Record<DetailTab, { src: string; height: number; label: string
     },
   },
   feed: {
-    src: "/screens/detail-tabs/feed.png",
+    src: assetPath("screens/detail-tabs/feed.png"),
     height: 1956,
     label: "Feed",
     narrative: {
@@ -132,7 +133,7 @@ const settingsTab = (
   label: string,
   narrative: Narrative,
 ): { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative } => ({
-  src,
+  src: assetPath(src),
   sourceHeight,
   height: sourceHeight - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
   label,
@@ -143,7 +144,7 @@ const settingsTabs: Record<
   SettingsTab,
   { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative }
 > = {
-  account: settingsTab("/screens/settings-tabs/account.png", 1231, "Account", {
+  account: settingsTab("screens/settings-tabs/account.png", 1231, "Account", {
     title: "Settings: Account",
     summary: "Account settings tab with profile identity, user information, and connected accounts from the supplied Figma frame.",
     details: [
@@ -151,7 +152,7 @@ const settingsTabs: Record<
       "Visible sections include Sheer, Nickname, User Info, and Connections.",
     ],
   }),
-  usage: settingsTab("/screens/settings-tabs/usage.png", 1849, "Usage", {
+  usage: settingsTab("screens/settings-tabs/usage.png", 1849, "Usage", {
     title: "Settings: Usage",
     summary: "Usage settings tab with Pro subscription, credits, billing, and detailed usage modules.",
     details: [
@@ -159,7 +160,7 @@ const settingsTabs: Record<
       "Tab switching resets the settings scroll position to the top.",
     ],
   }),
-  portfolio: settingsTab("/screens/settings-tabs/portfolio.png", 1255, "Portfolio", {
+  portfolio: settingsTab("screens/settings-tabs/portfolio.png", 1255, "Portfolio", {
     title: "Settings: Portfolio",
     summary: "Portfolio settings tab with broker connections and global risk rules.",
     details: [
@@ -167,7 +168,7 @@ const settingsTabs: Record<
       "The top settings tab row remains tappable from the rendered screenshot layer.",
     ],
   }),
-  alvaAgent: settingsTab("/screens/settings-tabs/alva-agent.png", 1169, "Alva Agent", {
+  alvaAgent: settingsTab("screens/settings-tabs/alva-agent.png", 1169, "Alva Agent", {
     title: "Settings: Alva Agent",
     summary: "Alva Agent settings tab with connected apps, assistant customization, and generated memory settings.",
     details: [
@@ -175,7 +176,7 @@ const settingsTabs: Record<
       "Back and tab controls are added as invisible interaction hotspots.",
     ],
   }),
-  alerts: settingsTab("/screens/settings-tabs/alerts.png", 1139, "Alerts", {
+  alerts: settingsTab("screens/settings-tabs/alerts.png", 1139, "Alerts", {
     title: "Settings: Alerts",
     summary: "Alerts settings tab with market digest and watch alert cards.",
     details: [
@@ -183,7 +184,7 @@ const settingsTabs: Record<
       "The active tab state is captured from the adjacent settings design.",
     ],
   }),
-  apiKey: settingsTab("/screens/settings-tabs/api-key.png", 1237, "API Key", {
+  apiKey: settingsTab("screens/settings-tabs/api-key.png", 1237, "API Key", {
     title: "Settings: API Key",
     summary: "API Key settings tab with Alva API keys, secrets vault, and quick start content.",
     details: [
@@ -297,7 +298,7 @@ const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
 };
 
 const chromeFreeScreen = (src: string, label: string): ScreenMeta => ({
-  src,
+  src: assetPath(src),
   height: STANDARD_VIEW_HEIGHT,
   label,
   cropTop: SYSTEM_STATUS_HEIGHT,
@@ -305,38 +306,38 @@ const chromeFreeScreen = (src: string, label: string): ScreenMeta => ({
 });
 
 const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
-  login: chromeFreeScreen("/screens/login.png", "Login"),
-  chat: chromeFreeScreen("/screens/chat.png", "Alva Agent chat"),
+  login: chromeFreeScreen("screens/login.png", "Login"),
+  chat: chromeFreeScreen("screens/chat.png", "Alva Agent chat"),
   sidebar: {
-    src: "/screens/sidebar.png",
+    src: assetPath("screens/sidebar.png"),
     height: 1313 - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
     label: "Sidebar",
     cropTop: SYSTEM_STATUS_HEIGHT,
     scroll: true,
     sourceHeight: 1313,
   },
-  sidebarMenu: chromeFreeScreen("/screens/sidebar-menu.png", "Sidebar account menu"),
-  playbooks: chromeFreeScreen("/screens/playbooks.png", "Playbooks"),
-  recentChats: chromeFreeScreen("/screens/recent-chats.png", "Recent Chats"),
-  explore: chromeFreeScreen("/screens/explore.png", "Explore"),
-  playbookDetail: chromeFreeScreen("/screens/playbook-detail.png", "Playbook detail"),
-  chatSelected: chromeFreeScreen("/screens/chat-selected.png", "Selected chat"),
+  sidebarMenu: chromeFreeScreen("screens/sidebar-menu.png", "Sidebar account menu"),
+  playbooks: chromeFreeScreen("screens/playbooks.png", "Playbooks"),
+  recentChats: chromeFreeScreen("screens/recent-chats.png", "Recent Chats"),
+  explore: chromeFreeScreen("screens/explore.png", "Explore"),
+  playbookDetail: chromeFreeScreen("screens/playbook-detail.png", "Playbook detail"),
+  chatSelected: chromeFreeScreen("screens/chat-selected.png", "Selected chat"),
   profile: {
-    src: "/screens/profile.png",
+    src: assetPath("screens/profile.png"),
     height: PROFILE_VIEW_HEIGHT,
     label: "Profile",
     cropTop: SYSTEM_STATUS_HEIGHT,
     sourceHeight: STANDARD_SOURCE_HEIGHT,
   },
   settings: {
-    src: "/screens/settings-tabs/account.png",
+    src: settingsTabs.account.src,
     height: settingsTabs.account.height,
     label: "Settings",
     cropTop: SYSTEM_STATUS_HEIGHT,
     sourceHeight: settingsTabs.account.sourceHeight,
   },
-  askAlva: chromeFreeScreen("/screens/ask-alva-overlay.png", "Ask Alva overlay"),
-  infoModal: chromeFreeScreen("/screens/info-modal.png", "Info modal"),
+  askAlva: chromeFreeScreen("screens/ask-alva-overlay.png", "Ask Alva overlay"),
+  infoModal: chromeFreeScreen("screens/info-modal.png", "Info modal"),
 };
 
 function HotspotButton({ cropTop = 0, frameHeight, hotspot }: { cropTop?: number; hotspot: Hotspot; frameHeight: number }) {
@@ -426,7 +427,7 @@ function DetailScreen({
 
       <div className="detail-scroll" ref={scrollRef}>
         <div className={`detail-scroll-content enter-${direction}`} key={`${tab}-${animationTick}`} style={style}>
-          <img alt="" aria-hidden="true" className="detail-shell-top" draggable={false} src="/screens/detail-shell-top.png" />
+          <img alt="" aria-hidden="true" className="detail-shell-top" draggable={false} src={assetPath("screens/detail-shell-top.png")} />
           <img alt="" aria-hidden="true" className="detail-tab-content" draggable={false} src={activeTab.src} />
           <div className="hotspot-layer detail-content-hotspots">
             {contentHotspots.map((hotspot) => (
@@ -436,7 +437,7 @@ function DetailScreen({
         </div>
       </div>
 
-      <img alt="" aria-hidden="true" className="detail-shell-footer" draggable={false} src="/screens/detail-shell-footer.png" />
+      <img alt="" aria-hidden="true" className="detail-shell-footer" draggable={false} src={assetPath("screens/detail-shell-footer.png")} />
       <div className="hotspot-layer detail-fixed-hotspots">
         {fixedHotspots.map((hotspot) => (
           <HotspotButton frameHeight={DETAIL_VIEW_HEIGHT} hotspot={hotspot} key={hotspot.id} />
