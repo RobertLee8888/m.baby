@@ -11,6 +11,17 @@ function SocialLoginButton({ label, src, onClick }: { label: string; src: string
   );
 }
 
+function GoogleLoginButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button className="google-login-button hairline-control" onClick={onClick} type="button">
+      <span className="social-login-icon">
+        <img alt="" src={asset("assets/figma/social-google.svg")} />
+      </span>
+      <span>Login with Google</span>
+    </button>
+  );
+}
+
 export function LoginPage({ onLogin }: { onLogin: () => void }) {
   return (
     <Page className="login-page">
@@ -20,7 +31,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         <div className="login-main">
           <div className="login-hero">
             <h1>Turn ideas into live investing playbooks in minutes</h1>
-            <p>Log in to build, remix, and trade.</p>
+            <p>Login to build, remix, and trade.</p>
           </div>
 
           <button className="promo-card" onClick={onLogin} type="button">
@@ -39,19 +50,10 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         </div>
 
         <div className="login-options">
-          <button className="email-button hairline-control" onClick={onLogin} type="button">
-            <span>Login with Email</span>
-          </button>
-
-          <div className="divider">
-            <span />
-            <small>or</small>
-            <span />
-          </div>
+          <GoogleLoginButton onClick={onLogin} />
 
           <div className="social-grid">
             {[
-              ["Google", "assets/figma/social-google.svg"],
               ["X", "assets/figma/social-x.svg"],
               ["Telegram", "assets/figma/social-telegram.svg"],
               ["Discord", "assets/figma/social-discord.svg"],
@@ -59,6 +61,16 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
               <SocialLoginButton key={label} label={label} onClick={onLogin} src={src} />
             ))}
           </div>
+
+          <div className="divider">
+            <span />
+            <small>or</small>
+            <span />
+          </div>
+
+          <button className="email-button hairline-control" onClick={onLogin} type="button">
+            <span>Login with Email</span>
+          </button>
 
           <button className="human-check" onClick={onLogin} type="button">
             <span className="checkbox" />

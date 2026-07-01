@@ -405,7 +405,7 @@ button:focus-visible {
   font-size: 24px;
   font-weight: 400;
   line-height: 34px;
-  letter-spacing: 0;
+  letter-spacing: 0.24px;
 }
 
 .login-hero p,
@@ -414,6 +414,7 @@ button:focus-visible {
   color: var(--text-5);
   font-size: 14px;
   line-height: 22px;
+  letter-spacing: 0.14px;
 }
 
 .promo-card {
@@ -437,7 +438,7 @@ button:focus-visible {
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  letter-spacing: 0;
+  letter-spacing: 0.14px;
 }
 
 .promo-card strong span {
@@ -450,7 +451,7 @@ button:focus-visible {
   color: var(--teal);
   font-size: 12px;
   line-height: 20px;
-  letter-spacing: 0;
+  letter-spacing: 0.12px;
 }
 
 .promo-icon {
@@ -482,7 +483,7 @@ button:focus-visible {
   color: rgba(0, 0, 0, 0.3);
   font-size: 16px;
   line-height: 26px;
-  letter-spacing: 0;
+  letter-spacing: 0.16px;
   text-align: left;
 }
 
@@ -492,6 +493,7 @@ button:focus-visible {
 }
 
 .hairline-control,
+.google-login-button,
 .social-login-button,
 .human-check {
   position: relative;
@@ -510,6 +512,24 @@ button:focus-visible {
   transform-origin: 0 0;
   width: 200%;
   height: 200%;
+}
+
+.google-login-button {
+  display: flex;
+  width: 100%;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: #ffffff;
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+  letter-spacing: 0.16px;
 }
 
 .divider {
@@ -541,7 +561,7 @@ button:focus-visible {
 
 .social-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: 100%;
 }
@@ -616,7 +636,7 @@ button:focus-visible {
   font-size: 11px;
   font-weight: 500;
   line-height: 18px;
-  letter-spacing: 0;
+  letter-spacing: 0.11px;
 }
 
 .cloudflare-row {
@@ -636,6 +656,7 @@ button:focus-visible {
   font-size: 10px;
   font-weight: 400;
   line-height: 16px;
+  letter-spacing: 0.1px;
 }
 
 .terms {
@@ -644,11 +665,11 @@ button:focus-visible {
   color: var(--text-5);
   font-size: 12px;
   line-height: 20px;
-  letter-spacing: 0;
+  letter-spacing: 0.12px;
 }
 
 .terms-link {
-  color: #000000;
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .chat-page {
