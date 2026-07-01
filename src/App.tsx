@@ -5,24 +5,27 @@ import {
   ArrowUp,
   Bot,
   Briefcase,
-  Check,
   ChevronDown,
   ChevronRight,
   Compass,
   Copy,
   Database,
   Edit3,
+  Eye,
   Gift,
   Globe2,
   Hexagon,
   Info,
   KeyRound,
+  Lock,
   LogOut,
+  Maximize2,
   Menu,
   MessageCircle,
   MessageSquare,
   MoreHorizontal,
   Plus,
+  Repeat2,
   Search,
   Send,
   Settings,
@@ -31,7 +34,6 @@ import {
   Trophy,
   WalletCards,
   X,
-  Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -191,7 +193,7 @@ function TopBar({
   right,
   border = true,
 }: {
-  title: string;
+  title: React.ReactNode;
   left?: React.ReactNode;
   right?: React.ReactNode;
   border?: boolean;
@@ -238,6 +240,14 @@ function Pill({ children, active = false }: { children: React.ReactNode; active?
 
 function Avatar({ src, size = 36 }: { src: string; size?: number }) {
   return <img alt="" className="avatar" height={size} src={src} style={{ height: size, width: size }} width={size} />;
+}
+
+function AgentIcon() {
+  return (
+    <span className="agent-icon">
+      <img alt="" src={asset("assets/figma/alva-agent-icon.png")} />
+    </span>
+  );
 }
 
 function NavRow({
@@ -295,7 +305,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
       <button className="promo-card" onClick={onLogin} type="button">
         <span className="promo-icon">
-          <Gift size={25} strokeWidth={1.7} />
+          <span>🎁</span>
         </span>
         <span>
           <strong>Sign up to unlock 3-day Pro</strong>
@@ -314,9 +324,14 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
       </div>
 
       <div className="social-grid">
-        {["G", "X", "Tg", "D"].map((item) => (
-          <button key={item} onClick={onLogin} type="button">
-            {item}
+        {[
+          ["Google", "assets/figma/social-google.png"],
+          ["X", "assets/figma/social-x.svg"],
+          ["Telegram", "assets/figma/social-telegram.png"],
+          ["Discord", "assets/figma/social-discord.svg"],
+        ].map(([label, src]) => (
+          <button aria-label={`Login with ${label}`} key={label} onClick={onLogin} type="button">
+            <img alt="" src={asset(src)} />
           </button>
         ))}
       </div>
@@ -325,7 +340,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
         <span className="checkbox" />
         <span>Verify you are human</span>
         <span className="cloudflare">
-          <Zap size={14} fill="#f59d2a" strokeWidth={0} />
+          <img alt="" src={asset("assets/figma/cloudflare.svg")} />
           Cloudflare
           <small>Privacy · Terms</small>
         </span>
@@ -363,28 +378,29 @@ function ChatPage({ onMenu }: { onMenu: () => void }) {
       <div className="chat-scroll">
         <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
         <div className="agent-label">
-          <span className="agent-icon">
-            <Bot size={18} />
-          </span>
+          <AgentIcon />
           <strong>Alva</strong>
         </div>
         <article className="digest-card">
           <header>
-            <h2>Daily Digest · Market Digest</h2>
+            <div>
+              <h2>Daily Digest · Market Digest</h2>
+              <Pill>
+                <span className="teal-dot" /> nvda-macd-hft-notify
+              </Pill>
+              <p className="muted">English · Jun 15 · Daily Digest · Previous day · Based on 53 FinTwits</p>
+            </div>
             <button type="button">Open full report</button>
           </header>
-          <Pill>
-            <span className="teal-dot" /> nvda-macd-hft-notify
-          </Pill>
-          <p className="muted">English · Jun 15 · Daily Digest · Previous day · Based on 53 FinTwits</p>
-          <div className="card-divider" />
-          <p>
-            Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.
-          </p>
-          <p>
-            The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while
-            $AVGO appears as a possible funding short.
-          </p>
+          <div className="digest-body">
+            <p>
+              Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.
+            </p>
+            <p>
+              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention
+              while $AVGO appears as a possible funding short.
+            </p>
+          </div>
         </article>
       </div>
       <Composer />
@@ -605,6 +621,46 @@ function RecentChatsPage({ onBack, onChat }: { onBack: () => void; onChat: () =>
 }
 
 function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => void }) {
+  const exploreItems = [
+    {
+      title: "BTC Ultimate AI Trader",
+      desc: "Aggregates real-time data across multiple DEX platforms to identify high-potential Gold...",
+      author: "Alva Intern",
+      avatar: asset("assets/avatars/ava-1.png"),
+      cover: asset("assets/figma/explore-thumb-1.png"),
+      price: "$50",
+    },
+    {
+      title: "MAG7 Equal-Weight Monthly Rebalance",
+      desc: "Maintains a fully invested equal-weight portfolio of the Magnificent 7 stocks and reb...",
+      author: "Maya Reynolds",
+      avatar: asset("assets/avatars/ava-2.png"),
+      cover: asset("assets/figma/explore-thumb-2.png"),
+    },
+    {
+      title: "PEPE Long vs BTC Short Monthly Rebal...",
+      desc: "The OI Abnormal Movement Monitoring Strategy tracks selected crypto tokens on a...",
+      author: "Lucas Bennett",
+      avatar: asset("assets/avatars/ava-3.png"),
+      cover: asset("assets/figma/explore-thumb-3.png"),
+    },
+    {
+      title: "Attribution Analysis Strategy for Price...",
+      desc: "Monitor selected tokens on a 4-hour timeframe to detect abnormal changes in Op...",
+      author: "Olivia Hayes",
+      avatar: asset("assets/avatars/ava-5.png"),
+      cover: asset("assets/figma/explore-thumb-4.png"),
+      price: "$5/mo",
+    },
+    {
+      title: "BTC MACD 1h Simple Crossover",
+      desc: "Trade BTC using MACD(12,26,9) line crossing with a simple risk filter.",
+      author: "Ethan Brooks",
+      avatar: asset("assets/avatars/av-zet.jpeg"),
+      cover: asset("assets/covers/cover-btcprice.webp"),
+    },
+  ];
+
   return (
     <Page className="explore-page" scroll>
       <TopBar
@@ -612,29 +668,42 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
         right={<IconButton icon={Search} label="Search" />}
         title="Explore"
       />
+      <button className="explore-sort" type="button">
+        Popular <ChevronDown size={14} strokeWidth={1.6} />
+      </button>
       <div className="explore-tabs">
-        {["All", "Trading", "Macro", "Crypto", "AI"].map((item, index) => (
-          <Pill active={index === 0} key={item}>
-            {item}
-          </Pill>
+        {["Smart Screener", "Theme Tracker", "Backtest", "AI Digest"].map((item) => (
+          <Pill key={item}>{item}</Pill>
         ))}
+        <button aria-label="More categories" className="mini-icon-button" type="button">
+          <Menu size={17} strokeWidth={1.6} />
+        </button>
       </div>
       <div className="explore-stack">
-        {[
-          "BTC Ultimate AI Trader",
-          "MAG7 Equal-Weight Monthly Rebalance",
-          "PEPE Long vs BTC Short Monitoring",
-          "Attribution Analysis Strategy",
-          "BTC MACD 1h Simple Crossover",
-        ].map((title, index) => (
-          <button className="explore-card" key={title} onClick={onOpen} type="button">
-            <img alt="" src={playbooks[index % playbooks.length].cover} />
-            <span>
-              <strong>{title}</strong>
-              <small>{index % 2 === 0 ? "Running · Public" : "Backtest · Paid"}</small>
-              <em>{index + 12} signals · {index + 3}.2K views</em>
+        {exploreItems.map((item) => (
+          <button className="explore-card" key={item.title} onClick={onOpen} type="button">
+            <span className="explore-copy">
+              <strong>{item.title}</strong>
+              <small>{item.desc}</small>
+              <span className="explore-author">
+                <Avatar size={18} src={item.avatar} />
+                {item.author}
+              </span>
             </span>
-            <ChevronRight size={17} />
+            <img alt="" src={item.cover} />
+            <span className="explore-metrics">
+              {item.price ? (
+                <span className="explore-price">
+                  <Lock size={12} strokeWidth={1.8} /> {item.price}
+                </span>
+              ) : null}
+              <span>
+                <Eye size={13} strokeWidth={1.6} /> 12.8K
+              </span>
+              <span>
+                <Repeat2 size={12} strokeWidth={1.6} /> 3
+              </span>
+            </span>
           </button>
         ))}
       </div>
@@ -876,31 +945,41 @@ function ApiKeyRow({ label, muted = false }: { label: string; muted?: boolean })
 function ChatSelectedPage({ onBack }: { onBack: () => void }) {
   return (
     <Page className="chat-page selected-chat">
+      <TopAd />
       <TopBar
-        title="Daily FinTwit Digest"
+        title={
+          <span className="title-with-caret">
+            Daily FinTwit Digest <ChevronDown size={14} strokeWidth={1.7} />
+          </span>
+        }
         left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
-        right={<IconButton icon={MoreHorizontal} label="More" />}
+        right={<IconButton icon={Hexagon} label="Settings" />}
       />
       <div className="chat-scroll">
+        <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
         <div className="agent-label">
-          <span className="agent-icon">
-            <Bot size={18} />
-          </span>
+          <AgentIcon />
           <strong>Alva</strong>
+          <time>10:28 PM</time>
         </div>
-        <article className="digest-card">
-          <p>Do you want this digest delivered automatically each morning?</p>
-          <div className="option-grid">
-            <button type="button">Telegram</button>
-            <button type="button">Discord</button>
-            <button type="button">WhatsApp</button>
-          </div>
-        </article>
-        <div className="user-bubble small">Telegram delivery daily at 7:30 AM.</div>
-        <article className="digest-card compact-card">
-          <Check size={17} />
-          <p>Done. I will send the Daily FinTwit Digest to Telegram every day at 7:30 AM.</p>
-        </article>
+        <div className="assistant-message">
+          <p>
+            On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest —
+            top calls, ticker mentions, and sentiment shifts.
+          </p>
+          <p>Want me to deliver this automatically each morning?</p>
+        </div>
+        <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
+        <div className="agent-label">
+          <AgentIcon />
+          <strong>Alva</strong>
+          <time>10:28 PM</time>
+        </div>
+        <div className="assistant-message">
+          <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
+          <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
+          <p>Highlights: NVDA bulls at 68%, BTC reclaiming $104k, and</p>
+        </div>
       </div>
       <Composer />
     </Page>
@@ -913,23 +992,39 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
       <TopBar
         border={false}
         left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
-        right={<IconButton icon={Share2} label="Share" />}
         title=""
       />
       <div className="profile-hero">
-        <Avatar size={72} src={asset("assets/avatars/av-zet.jpeg")} />
-        <h1>YGGYLL</h1>
-        <p>@sheer · alva.ai/yggyll</p>
-        <div className="profile-actions">
-          <button type="button">Edit Profile</button>
-          <button type="button">Share</button>
+        <Avatar size={64} src={asset("assets/figma/profile-avatar.png")} />
+        <div>
+          <h1>
+            YGGYLL <span>Pro</span>
+          </h1>
+          <p>@yggyll <i /> Joined Dec 23, 2025</p>
         </div>
+      </div>
+      <p className="profile-bio">
+        I am YGGYLL — building crypto trading playbooks focused on momentum, breakouts, and asymmetric risk. Mostly
+        <button type="button">Show more <ChevronDown size={12} /></button>
+      </p>
+      <div className="profile-social-row">
+        <span>X @yggyll</span>
+        <span>◉ @YGGYLLSignals</span>
+        <span>● yggyll.alva</span>
       </div>
       <div className="stats-grid">
         <Stat value="6" label="Playbooks" />
         <Stat value="890" label="Stars" />
         <Stat value="12" label="Remix" />
         <Stat value="$1,203.45" label="Earned" />
+      </div>
+      <div className="profile-actions">
+        <button type="button">
+          <Edit3 size={14} /> Edit Profile
+        </button>
+        <button type="button">
+          <Share2 size={14} /> Share Profile
+        </button>
       </div>
       <TabRow
         active="playbooks"
@@ -940,15 +1035,31 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
         ]}
         onChange={() => undefined}
       />
-      <div className="filter-row">
+      <div className="filter-row profile-filter-row">
         <Pill active>All</Pill>
         <Pill>Public</Pill>
         <Pill>Private</Pill>
         <Pill>Paid</Pill>
       </div>
-      {playbooks.slice(0, 4).map((item) => (
-        <PlaybookRow item={item} key={item.title} />
-      ))}
+      <button className="profile-feature-card" type="button">
+        <header>
+          <span>
+            <strong>EV Supply Chain</strong>
+            <small>Top 20 signals tracked by source, flow, and risk layer</small>
+          </span>
+          <em>
+            <Lock size={13} strokeWidth={1.7} /> $50
+          </em>
+          <MoreHorizontal size={17} strokeWidth={1.6} />
+        </header>
+        <img alt="" src={asset("assets/figma/profile-playbook-preview.png")} />
+        <div className="profile-card-tags">
+          <Pill>Consenso</Pill>
+          <Pill active>BTO</Pill>
+          <Pill>GOL</Pill>
+          <Pill>ROCE</Pill>
+        </div>
+      </button>
     </Page>
   );
 }
@@ -977,43 +1088,27 @@ function PlaybookDetailPage({
 }) {
   return (
     <Page className="detail-page" scroll>
+      <TopAd />
       <TopBar
         left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
         right={
           <>
             <IconButton icon={Info} label="Info" onClick={onInfo} />
-            <IconButton icon={MoreHorizontal} label="More" />
+            <IconButton icon={MessageSquare} label="Comments" />
+            <IconButton icon={Share2} label="Share" />
           </>
         }
-        title=""
+        title="Quality Value Stock Screen..."
       />
-      <div className="detail-hero">
-        <img alt="" src={asset("assets/covers/cover-roundtable.webp")} />
-        <div>
-          <h1>Quality Value Stock Screener</h1>
-          <p>AI infrastructure investment thesis tracker across silicon, networking, hyperscalers, power, and data centers.</p>
-          <div className="detail-tags">
-            <Pill>Value</Pill>
-            <Pill>Quality</Pill>
-            <Pill>US Equities</Pill>
-          </div>
-        </div>
-      </div>
-      <div className="detail-stats">
-        <Stat value="2.6K" label="Views" />
-        <Stat value="24" label="Comments" />
-        <Stat value="12" label="Remix" />
-        <Stat value="138" label="Subscribed" />
-      </div>
       <TabRow active={tab} items={detailTabs} onChange={onTab} />
       <DetailContent tab={tab} />
       <div className="detail-actions">
         <button onClick={onAsk} type="button">
           <Bot size={16} /> Ask Alva
         </button>
-        <button type="button">Remix</button>
+        <button type="button">Remix 1.2K</button>
         <button type="button">Trade</button>
-        <button className="filled" type="button">Subscribe</button>
+        <button className="filled" type="button">Subscribe 512</button>
       </div>
     </Page>
   );
@@ -1036,13 +1131,58 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   }
   if (tab === "strategy") {
     return (
-      <div className="detail-content">
-        <Panel title="Objective">
-          <p>Screen for durable quality companies that remain statistically cheap relative to historical margins, cash flow, and peer multiples.</p>
-        </Panel>
-        <Panel title="Rules">
-          <p>Rank candidates by quality score, value score, earnings revision, and risk-adjusted trend confirmation.</p>
-        </Panel>
+      <div className="detail-content strategy-content">
+        <section className="strategy-section">
+          <h2>
+            Objective <ChevronDown size={16} strokeWidth={1.5} />
+          </h2>
+          <p>
+            The strategy triggers whenever BTC long liquidations exceed $300M within any rolling 24-hour window, then
+            identifies the top 10 non-stablecoin tokens (from the top 100 by market cap) that deliver the highest 7-day
+            excess return versus BTC from the next UTC 00:00 open.
+          </p>
+        </section>
+        <section className="strategy-section">
+          <h2>
+            Strategy <ChevronDown size={16} strokeWidth={1.5} />
+          </h2>
+          <div className="strategy-switch-row">
+            <span className="strategy-mini-tabs">
+              <button className="active" type="button">Idea</button>
+              <button type="button">Code</button>
+            </span>
+            <label>
+              <span className="switch-off" />
+              Log
+            </label>
+          </div>
+          <div className="strategy-card">
+            <h3>Signal Generation</h3>
+            <ul>
+              <li>Wait until the next UTC 00:00 open.</li>
+              <li>Compute the 7-day forward return for BTC and all top-100 crypto assets (excluding stablecoins).</li>
+              <li>
+                Select the top 10 tokens with the highest 7-day excess return vs BTC historically (based on your
+                analysis dataset).
+              </li>
+            </ul>
+            <h3>Entry Rule</h3>
+            <ul>
+              <li>
+                Buy an equal-weighted basket of the top 3 outperformer tokens (i.e., the three tokens with the highest
+                historical average 7-day excess return after such events).
+              </li>
+              <li>Allocate capital equally</li>
+            </ul>
+            <h3>Exit Rule</h3>
+            <p>At the end of the 7-day holding window:</p>
+            <ul>
+              <li>Sell all tokens</li>
+              <li>Realize the basket return</li>
+              <li>Return to cash until the next liquidation-trigger event</li>
+            </ul>
+          </div>
+        </section>
       </div>
     );
   }
@@ -1060,24 +1200,69 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   }
   return (
     <div className="detail-content">
-      <Panel title="Creator">
-        <div className="creator-row">
-          <Avatar src={asset("assets/avatars/av-zet.jpeg")} />
-          <span>
-            <strong>YGGYLL</strong>
-            <small>Value systems · 6 public playbooks</small>
-          </span>
+      <div className="detail-info-row">
+        <Pill>Last Updated: 11/20/2025</Pill>
+        <Pill>Interval: 1d</Pill>
+        <Pill>Start Date: 06/12/2023</Pill>
+        <Pill>Initial Amount: 1M USD</Pill>
+      </div>
+      <div className="metric-spark-grid">
+        <MetricSpark label="Total Return" value="18.4%" tone="up" variant={0} />
+        <MetricSpark label="Annualized Return" value="49.32%" tone="up" variant={1} />
+        <MetricSpark label="Volatility" value="22.4%" tone="up" variant={2} />
+        <MetricSpark label="Sharpe Ratio" value="5.54" tone="up" variant={3} />
+        <MetricSpark label="Sortino Ratio" value="1.45" tone="up" variant={4} />
+        <MetricSpark label="Max Drawdown" value="-9.6%" tone="down" variant={5} />
+      </div>
+      <section className="equity-section">
+        <h3>
+          Equity Curve <span>USD</span>
+        </h3>
+        <div className="legend-row">
+          <span>Initial Amount</span>
+          <span>This Playbook</span>
+          <span>BTC</span>
         </div>
-      </Panel>
-      <Panel title="Equity Curve">
-        <MiniChart />
-      </Panel>
-      <Panel title="Return Snapshot">
-        <MetricLine label="1M" value="+4.8%" />
-        <MetricLine label="3M" value="+12.6%" />
-        <MetricLine label="YTD" value="+18.9%" />
-      </Panel>
+        <Sparkline height={150} tone="up" variant={6} />
+      </section>
     </div>
+  );
+}
+
+function MetricSpark({
+  label,
+  value,
+  tone,
+  variant,
+}: {
+  label: string;
+  value: string;
+  tone: "up" | "down";
+  variant: number;
+}) {
+  return (
+    <div className="metric-spark-card">
+      <span>{label} ⓘ</span>
+      <strong className={tone}>{value}</strong>
+      <Sparkline height={48} tone={tone} variant={variant} />
+    </div>
+  );
+}
+
+function Sparkline({ height, tone, variant }: { height: number; tone: "up" | "down"; variant: number }) {
+  const sets = [
+    "0,18 8,42 17,30 26,32 35,37 44,35 53,40 62,29 71,35 80,31 89,28 98,36 107,41 116,34",
+    "0,42 8,18 17,46 26,25 35,31 44,33 53,39 62,28 71,35 80,30 89,37 98,24 107,31 116,44",
+    "0,34 8,33 17,37 26,35 35,39 44,33 53,42 62,29 71,43 80,25 89,44 98,18 107,14 116,47",
+    "0,42 8,40 17,41 26,36 35,42 44,44 53,39 62,24 71,20 80,18 89,27 98,31 107,24 116,28",
+    "0,36 8,39 17,28 26,24 35,37 44,45 53,28 62,21 71,30 80,34 89,26 98,42 107,47 116,24",
+    "0,44 8,45 17,42 26,40 35,35 44,38 53,27 62,25 71,19 80,22 89,16 98,15 107,18 116,14",
+    "0,122 24,128 48,116 72,126 96,104 120,96 144,86 168,92 192,72 216,64 240,52 264,58 288,44 312,32 336,28",
+  ];
+  return (
+    <svg className={`sparkline ${tone}`} height={height} viewBox={`0 0 ${variant === 6 ? 336 : 116} ${height}`} width="100%" aria-hidden="true">
+      <polyline points={sets[variant]} />
+    </svg>
   );
 }
 
@@ -1111,26 +1296,49 @@ function MiniChart({ variant = "line" }: { variant?: "line" | "bars" }) {
 
 function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
   return (
-    <div className="overlay-root">
+    <div className="overlay-root ask-overlay-root">
       <button className="overlay-backdrop" onClick={onClose} type="button" aria-label="Close" />
       <div className="ask-sheet">
         <div className="sheet-handle" />
         <TopBar
           border={false}
           left={<IconButton icon={X} label="Close" onClick={onClose} />}
-          right={<IconButton icon={Plus} label="New chat" />}
-          title="Ask Alva"
+          right={
+            <>
+              <IconButton icon={SquarePen} label="New chat" />
+              <IconButton icon={Maximize2} label="Expand" />
+            </>
+          }
+          title={
+            <span className="title-with-caret">
+              Daily FinTwit Digest <ChevronDown size={14} strokeWidth={1.7} />
+            </span>
+          }
         />
         <div className="chat-scroll sheet-chat">
+          <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
           <div className="agent-label">
-            <span className="agent-icon">
-              <Bot size={18} />
-            </span>
+            <AgentIcon />
             <strong>Alva</strong>
+            <time>10:28 PM</time>
           </div>
-          <article className="digest-card compact-card">
-            <p>Ask me about this playbook, adjust rules, or create a trade plan from the current strategy.</p>
-          </article>
+          <div className="assistant-message">
+            <p>
+              On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest —
+              top calls, ticker mentions, and sentiment shifts.
+            </p>
+            <p>Want me to deliver this automatically each morning?</p>
+          </div>
+          <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
+          <div className="agent-label">
+            <AgentIcon />
+            <strong>Alva</strong>
+            <time>10:28 PM</time>
+          </div>
+          <div className="assistant-message">
+            <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
+            <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
+          </div>
         </div>
         <Composer compact />
       </div>
@@ -1144,23 +1352,35 @@ function InfoModal({ onClose }: { onClose: () => void }) {
       <button className="overlay-backdrop" onClick={onClose} type="button" aria-label="Close" />
       <div className="info-modal">
         <header>
-          <h2>Quality Value Stock Screener</h2>
+          <h2>Quality Value Stock Screener Quality Value Stock Screener</h2>
           <IconButton icon={X} label="Close" onClick={onClose} />
         </header>
-        <p>
-          AI infrastructure investment thesis tracking across silicon, networking, hyperscalers, power, and data centers.
-        </p>
+        <div className="modal-chip-row">
+          <span className="modal-chip">
+            <Avatar size={20} src={asset("assets/figma/modal-avatar.png")} /> YGGYLL
+          </span>
+          <span className="modal-chip">
+            <img alt="" className="modal-chip-icon" src={asset("assets/figma/researcher-l1.svg")} /> README
+          </span>
+          <span className="modal-chip">
+            <span className="teal-dot" /> 3 Automations · 2m ago
+          </span>
+          <span className="modal-chip">
+            <span>Built on:</span>
+            <Avatar size={14} src={asset("assets/figma/modal-built-on.png")} />
+            BTC Ultimate AI Trad...
+          </span>
+        </div>
         <div className="modal-stats">
           <Stat value="2.6K" label="Views" />
           <Stat value="24" label="Comments" />
           <Stat value="12" label="Remix" />
           <Stat value="138" label="Subscribed" />
         </div>
-        <div className="detail-tags">
-          <Pill>AI Infra</Pill>
-          <Pill>Automation</Pill>
-          <Pill>US Equities</Pill>
-        </div>
+        <p>
+          Tracks the AI infrastructure investment thesis across silicon, networking, hyperscalers, power, and data
+          centers. 17-stock basket with daily quant analysis and ADK-driven narrative.
+        </p>
       </div>
     </div>
   );
