@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -79,6 +80,17 @@ type ChatItem = {
 };
 
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
+const MIN_MOBILE_STAGE_WIDTH = 360;
+
+const getVisualViewportSize = () => {
+  if (typeof window === "undefined") return { height: 852, width: 393 };
+
+  const visualViewport = window.visualViewport;
+  return {
+    height: visualViewport?.height ?? window.innerHeight,
+    width: visualViewport?.width ?? window.innerWidth,
+  };
+};
 
 const playbooks: Playbook[] = [
   {
@@ -1403,6 +1415,7 @@ export default function App() {
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
   const [motion, setMotion] = useState<Motion>("soft");
+  const [viewport, setViewport] = useState(getVisualViewportSize);
 
   const routeState = (
     nextScreen: Screen,
@@ -1449,6 +1462,24 @@ export default function App() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const updateViewport = () => setViewport(getVisualViewportSize());
+    const visualViewport = window.visualViewport;
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("orientationchange", updateViewport);
+    visualViewport?.addEventListener("resize", updateViewport);
+    visualViewport?.addEventListener("scroll", updateViewport);
+
+    return () => {
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("orientationchange", updateViewport);
+      visualViewport?.removeEventListener("resize", updateViewport);
+      visualViewport?.removeEventListener("scroll", updateViewport);
+    };
   }, []);
 
   const navigate = (
@@ -1557,13 +1588,27 @@ export default function App() {
     }
   }, [screen, settingsTab, detailTab]);
 
+  const stageScale = viewport.width < MIN_MOBILE_STAGE_WIDTH ? viewport.width / MIN_MOBILE_STAGE_WIDTH : 1;
+  const stageHeight = stageScale < 1 ? viewport.height / stageScale : viewport.height;
+  const mobileShellStyle =
+    stageScale < 1
+      ? ({
+          "--shell-dvh": `${stageHeight}px`,
+          height: `${stageHeight}px`,
+          minHeight: `${stageHeight}px`,
+          transform: `scale(${stageScale})`,
+          transformOrigin: "top left",
+          width: `${MIN_MOBILE_STAGE_WIDTH}px`,
+        } as CSSProperties)
+      : undefined;
+
   return (
     <main className="demo-root">
       <section className="desktop-gate" aria-label="Desktop unavailable">
         <p>此 demo 仅在移动端窗口尺寸生效</p>
       </section>
 
-      <section className="mobile-shell" aria-label="m.baby mobile demo">
+      <section className="mobile-shell" aria-label="m.baby mobile demo" style={mobileShellStyle}>
         <div className={`view-transition enter-${motion}`} key={screen}>
           {rendered}
         </div>

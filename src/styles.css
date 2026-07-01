@@ -99,8 +99,9 @@ button {
 
 .mobile-shell {
   position: relative;
+  --shell-dvh: 100dvh;
   width: 100vw;
-  height: 100dvh;
+  height: var(--shell-dvh);
   min-height: 100vh;
   overflow: hidden;
   background: var(--bg);
@@ -2111,7 +2112,7 @@ button:focus-visible {
   bottom: 0;
   left: 0;
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr 0.9fr 1fr;
+  grid-template-columns: 1.05fr 0.88fr 0.78fr 1.05fr;
   gap: 8px;
   height: 64px;
   padding: 16px;
@@ -2122,14 +2123,27 @@ button:focus-visible {
 
 .detail-actions button {
   display: flex;
+  min-width: 0;
   min-height: 32px;
   align-items: center;
   justify-content: center;
   gap: 5px;
+  padding: 0 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-m);
   background: #ffffff;
   font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-actions button svg {
+  flex: 0 0 auto;
+}
+
+.detail-actions .filled {
+  font-size: 12px;
 }
 
 .overlay-root {
@@ -2156,7 +2170,7 @@ button:focus-visible {
   bottom: 0;
   left: 0;
   height: 611px;
-  max-height: calc(100dvh - 47px);
+  max-height: calc(var(--shell-dvh) - 47px);
   border-radius: 0;
   background: #ffffff;
   box-shadow: var(--shadow-soft);
@@ -2196,7 +2210,8 @@ button:focus-visible {
   position: absolute;
   top: 192px;
   left: 50%;
-  width: 361px;
+  width: calc(100% - 32px);
+  max-width: 361px;
   transform: translateX(-50%);
   border: 0.5px solid rgba(0, 0, 0, 0.2);
   border-radius: var(--radius-l);
@@ -2439,6 +2454,35 @@ button:focus-visible {
   .primary-outline:active,
   .new-chat:active {
     transform: scale(0.985);
+  }
+}
+
+@media (max-width: 374px) {
+  .detail-actions {
+    gap: 6px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .detail-actions button {
+    padding: 0 4px;
+    font-size: 12px;
+  }
+
+  .detail-actions .filled {
+    font-size: 11px;
+  }
+
+  .topbar {
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+  }
+
+  .tab-row {
+    gap: 24px;
+  }
+
+  .settings-page .tab-row {
+    gap: 14px;
   }
 }
 
