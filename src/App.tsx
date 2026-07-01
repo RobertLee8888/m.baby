@@ -1,46 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import {
-  Activity,
-  ArrowLeft,
-  ArrowUp,
-  Bot,
-  ChevronDown,
-  ChevronRight,
-  Copy,
-  Edit3,
-  Eye,
-  Hexagon,
-  Info,
-  KeyRound,
-  Lock,
-  Maximize2,
-  Menu,
-  MessageSquare,
-  MoreHorizontal,
-  Plus,
-  Repeat2,
-  Search,
-  Send,
-  Share2,
-  SquarePen,
-  WalletCards,
-  X,
-} from "lucide-react";
+import { ChevronDown, Eye, Info, Lock, MoreHorizontal, Repeat2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 type Screen =
-  | "login"
-  | "chat"
-  | "sidebar"
-  | "sidebarMenu"
-  | "playbooks"
-  | "recentChats"
-  | "explore"
-  | "playbookDetail"
-  | "chatSelected"
-  | "profile"
-  | "settings";
+  "login" | "chat" | "sidebar" | "sidebarMenu" | "playbooks" | "recentChats" | "explore" | "playbookDetail" | "chatSelected" | "profile" | "settings";
 
 type Overlay = "askAlva" | "infoModal" | null;
 type DetailTab = "overview" | "analytics" | "strategy" | "feed";
@@ -141,7 +105,7 @@ const settingsTabs: Array<{ id: SettingsTab; label: string }> = [
   { id: "usage", label: "Usage" },
   { id: "portfolio", label: "Portfolio" },
   { id: "alvaAgent", label: "Alva Agent" },
-  { id: "alerts", label: "Alerts" },
+  { id: "alerts", label: "Automations" },
   { id: "apiKey", label: "API Key" },
 ];
 
@@ -155,43 +119,28 @@ const detailTabs: Array<{ id: DetailTab; label: string }> = [
 function IconButton({
   label,
   icon: Icon,
+  iconSrc,
   onClick,
   className = "",
 }: {
   label: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconSrc?: string;
   onClick?: () => void;
   className?: string;
 }) {
   return (
     <button aria-label={label} className={`icon-button ${className}`} onClick={onClick} type="button">
-      <Icon size={20} strokeWidth={1.6} />
+      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={20} strokeWidth={1.6} /> : null}
     </button>
   );
 }
 
 function AssetIcon({ className = "", size = 20, src }: { className?: string; size?: number; src: string }) {
-  return (
-    <img
-      alt=""
-      className={`asset-icon ${className}`}
-      height={size}
-      src={asset(src)}
-      style={{ height: size, width: size }}
-      width={size}
-    />
-  );
+  return <img alt="" className={`asset-icon ${className}`} height={size} src={asset(src)} style={{ height: size, width: size }} width={size} />;
 }
 
-function Page({
-  children,
-  className = "",
-  scroll = false,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  scroll?: boolean;
-}) {
+function Page({ children, className = "", scroll = false }: { children: React.ReactNode; className?: string; scroll?: boolean }) {
   return <div className={`page ${scroll ? "page-scroll" : ""} ${className}`}>{children}</div>;
 }
 
@@ -213,17 +162,7 @@ function Logo({ size = "large" }: { size?: "large" | "small" }) {
   );
 }
 
-function TopBar({
-  title,
-  left,
-  right,
-  border = true,
-}: {
-  title: React.ReactNode;
-  left?: React.ReactNode;
-  right?: React.ReactNode;
-  border?: boolean;
-}) {
+function TopBar({ title, left, right, border = true }: { title: React.ReactNode; left?: React.ReactNode; right?: React.ReactNode; border?: boolean }) {
   return (
     <div className={`topbar ${border ? "topbar-border" : ""}`}>
       <div className="topbar-side">{left}</div>
@@ -247,12 +186,7 @@ function TabRow<T extends string>({
   return (
     <div className={`tab-row ${compact ? "tab-row-compact" : ""}`}>
       {items.map((item) => (
-        <button
-          className={`tab-item ${active === item.id ? "active" : ""}`}
-          key={item.id}
-          onClick={() => onChange(item.id)}
-          type="button"
-        >
+        <button className={`tab-item ${active === item.id ? "active" : ""}`} key={item.id} onClick={() => onChange(item.id)} type="button">
           {item.label}
         </button>
       ))}
@@ -271,7 +205,7 @@ function Avatar({ src, size = 36 }: { src: string; size?: number }) {
 function AgentIcon() {
   return (
     <span className="agent-icon">
-      <img alt="" src={asset("assets/figma/alva-agent-icon.png")} />
+      <img alt="" src={asset("assets/figma/alva-agent-icon.svg")} />
     </span>
   );
 }
@@ -393,8 +327,8 @@ function ChatPage({ onMenu }: { onMenu: () => void }) {
       <TopAd />
       <TopBar
         title="Alva Agent"
-        left={<IconButton icon={Menu} label="Open sidebar" onClick={onMenu} />}
-        right={<IconButton icon={Hexagon} label="Settings" />}
+        left={<IconButton iconSrc="assets/figma/menu-l1.svg" label="Open sidebar" onClick={onMenu} />}
+        right={<IconButton iconSrc="assets/figma/account-settings-l.svg" label="Settings" />}
       />
       <TabRow
         active="chat"
@@ -425,12 +359,10 @@ function ChatPage({ onMenu }: { onMenu: () => void }) {
             <button type="button">Open full report</button>
           </header>
           <div className="digest-body">
+            <p>Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.</p>
             <p>
-              Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.
-            </p>
-            <p>
-              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention
-              while $AVGO appears as a possible funding short.
+              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+              funding short.
             </p>
           </div>
         </article>
@@ -443,10 +375,10 @@ function ChatPage({ onMenu }: { onMenu: () => void }) {
 function Composer({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`composer ${compact ? "composer-compact" : ""}`}>
-      <Plus size={21} strokeWidth={1.5} />
+      <AssetIcon size={21} src="assets/figma/plus-l1.svg" />
       <span>Ask Alva anything. @ for context, / for skills</span>
       <button type="button">
-        <ArrowUp size={17} strokeWidth={1.7} />
+        <AssetIcon size={17} src="assets/figma/arrow-up-line-l1.svg" />
       </button>
     </div>
   );
@@ -518,15 +450,7 @@ function SidebarPage({
   );
 }
 
-function SectionHeader({
-  title,
-  action,
-  onAction,
-}: {
-  title: string;
-  action?: string;
-  onAction?: () => void;
-}) {
+function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <div className="section-header">
       <h2>{title}</h2>
@@ -542,7 +466,7 @@ function SectionHeader({
 function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void; onProfile: () => void; onSettings: () => void }) {
   return (
     <Page className="account-menu-page">
-      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="" />
+      <TopBar border={false} left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />} title="" />
       <button className="account-user" onClick={onProfile} type="button">
         <Avatar size={48} src={asset("assets/figma/profile-avatar.png")} />
         <span>
@@ -566,13 +490,19 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
             <strong>12,000</strong>
           </span>
           <span className="usage-lines">
-            <small>Daily <b>1,000</b></small>
-            <small>Monthly <b>3,000</b></small>
-            <small>Pack <b>12,000</b></small>
+            <small>
+              Daily <b>1,000</b>
+            </small>
+            <small>
+              Monthly <b>3,000</b>
+            </small>
+            <small>
+              Pack <b>12,000</b>
+            </small>
           </span>
         </div>
         <MenuItem iconSrc="assets/figma/account-gift-l.svg" label="Referral" />
-        <MenuItem icon={WalletCards} label="Creator Earnings" status />
+        <MenuItem iconSrc="assets/figma/account-wallet-l.svg" label="Creator Earnings" status />
         <MenuItem iconSrc="assets/figma/account-language-l.svg" label="Language" />
         <MenuItem iconSrc="assets/figma/account-settings-l.svg" label="Settings" onClick={onSettings} />
         <MenuItem iconSrc="assets/figma/account-logout-l.svg" label="Log Out" />
@@ -621,7 +551,7 @@ function MenuItem({
 function PlaybooksPage({ onBack, onOpen }: { onBack: () => void; onOpen: () => void }) {
   return (
     <Page className="plain-list-page">
-      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Playbooks" />
+      <TopBar border={false} left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />} title="Playbooks" />
       <TabRow
         active="all"
         items={[
@@ -649,9 +579,9 @@ function PlaybooksPage({ onBack, onOpen }: { onBack: () => void; onOpen: () => v
 function RecentChatsPage({ onBack, onChat }: { onBack: () => void; onChat: () => void }) {
   return (
     <Page className="plain-list-page">
-      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Recent Chats" />
+      <TopBar border={false} left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />} title="Recent Chats" />
       <button className="primary-outline" type="button">
-        <SquarePen size={15} /> New Chat
+        <AssetIcon size={15} src="assets/figma/chat-new-l.svg" /> New Chat
       </button>
       <div className="list-stack chat-stack full">
         {chats.map((item) => (
@@ -706,8 +636,8 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
   return (
     <Page className="explore-page" scroll>
       <TopBar
-        left={<IconButton icon={Menu} label="Open sidebar" onClick={onMenu} />}
-        right={<IconButton icon={Search} label="Search" />}
+        left={<IconButton iconSrc="assets/figma/menu-l1.svg" label="Open sidebar" onClick={onMenu} />}
+        right={<IconButton iconSrc="assets/figma/search-l1.svg" label="Search" />}
         title="Explore"
       />
       <button className="explore-sort" type="button">
@@ -718,7 +648,7 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
           <Pill key={item}>{item}</Pill>
         ))}
         <button aria-label="More categories" className="mini-icon-button" type="button">
-          <Menu size={17} strokeWidth={1.6} />
+          <AssetIcon size={17} src="assets/figma/menu-l1.svg" />
         </button>
       </div>
       <div className="explore-stack">
@@ -753,18 +683,10 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
   );
 }
 
-function SettingsPage({
-  active,
-  onBack,
-  onTab,
-}: {
-  active: SettingsTab;
-  onBack: () => void;
-  onTab: (tab: SettingsTab) => void;
-}) {
+function SettingsPage({ active, onBack, onTab }: { active: SettingsTab; onBack: () => void; onTab: (tab: SettingsTab) => void }) {
   return (
     <Page className="settings-page" scroll>
-      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Settings" />
+      <TopBar border={false} left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />} title="Settings" />
       <TabRow active={active} compact items={settingsTabs} onChange={onTab} />
       <div className="settings-content tab-content-motion" key={active}>
         {active === "account" ? <SettingsAccount /> : null}
@@ -781,8 +703,13 @@ function SettingsPage({
 function SettingsAccount() {
   return (
     <>
-      <div className="profile-mini">
-        <Avatar size={48} src={asset("assets/avatars/av-zet.jpeg")} />
+      <div className="profile-mini settings-profile-mini">
+        <span className="settings-avatar-wrap">
+          <Avatar size={64} src={asset("assets/figma/profile-avatar.png")} />
+          <span>
+            <AssetIcon size={12} src="assets/figma/profile-edit-l1.svg" />
+          </span>
+        </span>
         <span>
           <strong>Sheer</strong>
           <small>UID 13458677909324 · Joined 12/31/2025</small>
@@ -790,7 +717,9 @@ function SettingsAccount() {
       </div>
       <div className="two-buttons">
         <button type="button">Profile</button>
-        <button className="danger" type="button">Log out</button>
+        <button className="danger" type="button">
+          Log out
+        </button>
       </div>
       <Field label="Nickname" value="Sheer" />
       <label className="field-block">
@@ -799,7 +728,12 @@ function SettingsAccount() {
         <small>0/500</small>
       </label>
       <h3>Connections</h3>
-      <Connection icon="G" label="Gmail" sub="sheer@alva.xyz" action="Login Account" />
+      <p className="settings-section-note">Manage how you sign in to Alva and where we can reach you.</p>
+      <Connection iconSrc="assets/figma/gmail-l.svg" label="Gmail" sub="sheer@alva.xyz" action="Login Account" />
+      <Connection iconSrc="assets/figma/email-l.svg" label="Email" sub="sheer@alva.xyz" action="Disconnect" />
+      <Connection iconSrc="assets/figma/social-x.svg" label="X (Twitter)" sub="@sheer_lee" action="Disconnect" />
+      <Connection iconSrc="assets/figma/social-telegram.svg" label="Telegram" sub="Get instant alerts when prices break out." action="Connect" />
+      <Connection iconSrc="assets/figma/social-discord.svg" label="Discord" sub="Join the community and chat with other traders." action="Connect" />
     </>
   );
 }
@@ -815,7 +749,9 @@ function SettingsUsage() {
         <button type="button">View all plans</button>
         <small>Start Date 06/06/2026 · Next Billing 06/06/2027</small>
         <div className="two-buttons">
-          <button className="filled" type="button">Add credits</button>
+          <button className="filled" type="button">
+            Add credits
+          </button>
           <button type="button">Manage</button>
         </div>
       </div>
@@ -849,11 +785,11 @@ function SettingsAgent() {
       <div className="connected-app">
         <span>Connected App</span>
         <button type="button">
-          <Send size={14} /> Telegram <ChevronDown size={14} />
+          <AssetIcon size={14} src="assets/figma/social-telegram.svg" /> Telegram <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
         </button>
       </div>
-      <Connection icon="Tg" label="Telegram" sub="Sheername" action="Disconnect" />
-      <Connection icon="D" label="Discord" sub="Join the community and chat with other traders." action="Connect" />
+      <Connection iconSrc="assets/figma/social-telegram.svg" label="Telegram" sub="Sheername" action="Disconnect" />
+      <Connection iconSrc="assets/figma/social-discord.svg" label="Discord" sub="Join the community and chat with other traders." action="Connect" />
       <ToggleRow label="Customize Your Assistant" enabled />
       <textarea className="assistant-text" placeholder="Define your assistant's identity: name, tone, and..." />
       <ToggleRow label="Generate Memory from Chat History" enabled />
@@ -878,8 +814,8 @@ function SettingsAlerts() {
           </header>
           <small>{index === 0 ? "Mega Chin · Last Run 15m" : "Runs daily · Last Run 1h"}</small>
           <div className="alert-actions">
-            <Edit3 size={15} />
-            <Activity size={15} />
+            <AssetIcon size={15} src="assets/figma/profile-edit-l1.svg" />
+            <AssetIcon size={15} src="assets/figma/activity-l1.svg" />
             <span>Unsubscribe</span>
           </div>
         </div>
@@ -898,7 +834,7 @@ function SettingsApi() {
       <SectionHeader action="Upload" title="Secrets Vault" />
       <ApiKeyRow label="Sheer Test" muted />
       <div className="quick-start">
-        <KeyRound size={16} />
+        <AssetIcon size={16} src="assets/figma/key-l1.svg" />
         <span>
           <strong>Quick Start</strong>
           <small>For full setup instructions, configuration details, and examples.</small>
@@ -917,15 +853,17 @@ function Field({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Connection({ icon, label, sub, action }: { icon: string; label: string; sub: string; action: string }) {
+function Connection({ icon, iconSrc, label, sub, action }: { icon?: string; iconSrc?: string; label: string; sub: string; action: string }) {
   return (
     <div className="connection-row">
-      <span className="connection-icon">{icon}</span>
+      <span className={`connection-icon ${iconSrc ? "connection-icon-image" : ""}`}>{iconSrc ? <AssetIcon size={20} src={iconSrc} /> : icon}</span>
       <span>
         <strong>{label}</strong>
         <small>{sub}</small>
       </span>
-      <button type="button">{action}</button>
+      <button className={action === "Login Account" ? "muted-action" : ""} type="button">
+        {action}
+      </button>
     </div>
   );
 }
@@ -973,13 +911,13 @@ function ToggleRow({ label, value, enabled = false }: { label: string; value?: s
 function ApiKeyRow({ label, muted = false }: { label: string; muted?: boolean }) {
   return (
     <div className={`api-row ${muted ? "muted" : ""}`}>
-      <KeyRound size={16} />
+      <AssetIcon size={16} src="assets/figma/key-l1.svg" />
       <span>
         <strong>{label}</strong>
         <small>eyJhbGciOiJ**************</small>
       </span>
-      <Copy size={15} />
-      <Edit3 size={15} />
+      <AssetIcon size={15} src="assets/figma/copy-l1.svg" />
+      <AssetIcon size={15} src="assets/figma/profile-edit-l1.svg" />
     </div>
   );
 }
@@ -994,8 +932,8 @@ function ChatSelectedPage({ onBack }: { onBack: () => void }) {
             Daily FinTwit Digest <ChevronDown size={14} strokeWidth={1.7} />
           </span>
         }
-        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
-        right={<IconButton icon={Hexagon} label="Settings" />}
+        left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />}
+        right={<IconButton iconSrc="assets/figma/account-settings-l.svg" label="Settings" />}
       />
       <div className="chat-scroll">
         <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
@@ -1006,8 +944,8 @@ function ChatSelectedPage({ onBack }: { onBack: () => void }) {
         </div>
         <div className="assistant-message">
           <p>
-            On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest —
-            top calls, ticker mentions, and sentiment shifts.
+            On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and sentiment
+            shifts.
           </p>
           <p>Want me to deliver this automatically each morning?</p>
         </div>
@@ -1031,18 +969,16 @@ function ChatSelectedPage({ onBack }: { onBack: () => void }) {
 function ProfilePage({ onBack }: { onBack: () => void }) {
   return (
     <Page className="profile-page" scroll>
-      <TopBar
-        border={false}
-        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
-        title=""
-      />
+      <TopBar border={false} left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />} title="" />
       <div className="profile-hero">
         <Avatar size={64} src={asset("assets/figma/profile-avatar.png")} />
         <div>
           <h1>
             YGGYLL <span>Pro</span>
           </h1>
-          <p>@yggyll <i /> Joined Dec 23, 2025</p>
+          <p>
+            @yggyll <i /> Joined Dec 23, 2025
+          </p>
         </div>
       </div>
       <p className="profile-bio">
@@ -1140,12 +1076,12 @@ function PlaybookDetailPage({
     <Page className="detail-page" scroll>
       <TopAd />
       <TopBar
-        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
+        left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />}
         right={
           <>
-            <IconButton icon={Info} label="Info" onClick={onInfo} />
-            <IconButton icon={MessageSquare} label="Comments" />
-            <IconButton icon={Share2} label="Share" />
+            <IconButton iconSrc="assets/figma/info-l1.svg" label="Info" onClick={onInfo} />
+            <IconButton iconSrc="assets/figma/comment-l1.svg" label="Comments" />
+            <IconButton iconSrc="assets/figma/profile-share-l.svg" label="Share" />
           </>
         }
         title="Quality Value Stock Screen..."
@@ -1154,11 +1090,13 @@ function PlaybookDetailPage({
       <DetailContent tab={tab} />
       <div className="detail-actions">
         <button onClick={onAsk} type="button">
-          <Bot size={16} /> Ask Alva
+          <AssetIcon size={16} src="assets/figma/chat-ai-l.svg" /> Ask Alva
         </button>
         <button type="button">Remix 1.2K</button>
         <button type="button">Trade</button>
-        <button className="filled" type="button">Subscribe 512</button>
+        <button className="filled" type="button">
+          Subscribe 512
+        </button>
       </div>
     </Page>
   );
@@ -1187,9 +1125,8 @@ function DetailContent({ tab }: { tab: DetailTab }) {
             Objective <ChevronDown size={16} strokeWidth={1.5} />
           </h2>
           <p>
-            The strategy triggers whenever BTC long liquidations exceed $300M within any rolling 24-hour window, then
-            identifies the top 10 non-stablecoin tokens (from the top 100 by market cap) that deliver the highest 7-day
-            excess return versus BTC from the next UTC 00:00 open.
+            The strategy triggers whenever BTC long liquidations exceed $300M within any rolling 24-hour window, then identifies the top 10 non-stablecoin
+            tokens (from the top 100 by market cap) that deliver the highest 7-day excess return versus BTC from the next UTC 00:00 open.
           </p>
         </section>
         <section className="strategy-section">
@@ -1198,7 +1135,9 @@ function DetailContent({ tab }: { tab: DetailTab }) {
           </h2>
           <div className="strategy-switch-row">
             <span className="strategy-mini-tabs">
-              <button className="active" type="button">Idea</button>
+              <button className="active" type="button">
+                Idea
+              </button>
               <button type="button">Code</button>
             </span>
             <label>
@@ -1211,16 +1150,13 @@ function DetailContent({ tab }: { tab: DetailTab }) {
             <ul>
               <li>Wait until the next UTC 00:00 open.</li>
               <li>Compute the 7-day forward return for BTC and all top-100 crypto assets (excluding stablecoins).</li>
-              <li>
-                Select the top 10 tokens with the highest 7-day excess return vs BTC historically (based on your
-                analysis dataset).
-              </li>
+              <li>Select the top 10 tokens with the highest 7-day excess return vs BTC historically (based on your analysis dataset).</li>
             </ul>
             <h3>Entry Rule</h3>
             <ul>
               <li>
-                Buy an equal-weighted basket of the top 3 outperformer tokens (i.e., the three tokens with the highest
-                historical average 7-day excess return after such events).
+                Buy an equal-weighted basket of the top 3 outperformer tokens (i.e., the three tokens with the highest historical average 7-day excess return
+                after such events).
               </li>
               <li>Allocate capital equally</li>
             </ul>
@@ -1239,7 +1175,11 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   if (tab === "feed") {
     return (
       <div className="detail-content tab-content-motion" key={tab}>
-        {["NVDA margin pressure eased after supplier checks.", "Power-grid exposure improved across top holdings.", "Semis rotation remains active versus software."].map((item) => (
+        {[
+          "NVDA margin pressure eased after supplier checks.",
+          "Power-grid exposure improved across top holdings.",
+          "Semis rotation remains active versus software.",
+        ].map((item) => (
           <Panel key={item} title="Market update">
             <p>{item}</p>
             <small>Jun 15 · 9:30 AM</small>
@@ -1279,17 +1219,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   );
 }
 
-function MetricSpark({
-  label,
-  value,
-  tone,
-  variant,
-}: {
-  label: string;
-  value: string;
-  tone: "up" | "down";
-  variant: number;
-}) {
+function MetricSpark({ label, value, tone, variant }: { label: string; value: string; tone: "up" | "down"; variant: number }) {
   return (
     <div className="metric-spark-card">
       <span>
@@ -1355,11 +1285,11 @@ function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
         <div className="sheet-handle" />
         <TopBar
           border={false}
-          left={<IconButton icon={X} label="Close" onClick={onClose} />}
+          left={<IconButton iconSrc="assets/figma/close-l1.svg" label="Close" onClick={onClose} />}
           right={
             <>
-              <IconButton icon={SquarePen} label="New chat" />
-              <IconButton icon={Maximize2} label="Expand" />
+              <IconButton iconSrc="assets/figma/chat-new-l.svg" label="New chat" />
+              <IconButton iconSrc="assets/figma/expand-l1.svg" label="Expand" />
             </>
           }
           title={
@@ -1377,8 +1307,8 @@ function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
           </div>
           <div className="assistant-message">
             <p>
-              On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest —
-              top calls, ticker mentions, and sentiment shifts.
+              On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and sentiment
+              shifts.
             </p>
             <p>Want me to deliver this automatically each morning?</p>
           </div>
@@ -1406,7 +1336,7 @@ function InfoModal({ onClose }: { onClose: () => void }) {
       <div className="info-modal">
         <header>
           <h2>Quality Value Stock Screener Quality Value Stock Screener</h2>
-          <IconButton icon={X} label="Close" onClick={onClose} />
+          <IconButton iconSrc="assets/figma/close-l1.svg" label="Close" onClick={onClose} />
         </header>
         <div className="modal-chip-row">
           <span className="modal-chip">
@@ -1431,8 +1361,8 @@ function InfoModal({ onClose }: { onClose: () => void }) {
           <Stat value="138" label="Subscribed" />
         </div>
         <p>
-          Tracks the AI infrastructure investment thesis across silicon, networking, hyperscalers, power, and data
-          centers. 17-stock basket with daily quant analysis and ADK-driven narrative.
+          Tracks the AI infrastructure investment thesis across silicon, networking, hyperscalers, power, and data centers. 17-stock basket with daily quant
+          analysis and ADK-driven narrative.
         </p>
       </div>
     </div>
@@ -1513,10 +1443,7 @@ export default function App() {
     };
   }, []);
 
-  const navigate = (
-    next: Screen,
-    options: { detailTab?: DetailTab; settingsTab?: SettingsTab } = {},
-  ) => {
+  const navigate = (next: Screen, options: { detailTab?: DetailTab; settingsTab?: SettingsTab } = {}) => {
     const nextHistory = [...history, screen];
     const nextDetailTab = options.detailTab ?? detailTab;
     const nextSettingsTab = options.settingsTab ?? settingsTab;
