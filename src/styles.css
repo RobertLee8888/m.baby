@@ -911,7 +911,8 @@ button:focus-visible {
 .account-user strong,
 .profile-mini strong {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 28px;
 }
 
 .inline-tags {
@@ -930,16 +931,20 @@ button:focus-visible {
 }
 
 .account-user small {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin-top: 2px;
   color: var(--text-5);
   font-size: 12px;
+  line-height: 20px;
 }
 
-.google-dot {
-  margin-right: 5px;
-  color: #4285f4;
-  font-weight: 700;
+.google-logo-small {
+  display: block;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
 }
 
 .account-list {
@@ -954,7 +959,8 @@ button:focus-visible {
   align-items: center;
   gap: 0;
   padding: 0 16px;
-  font-size: 15px;
+  font-size: 14px;
+  line-height: 22px;
 }
 
 .status-dot {
@@ -986,8 +992,9 @@ button:focus-visible {
 .usage-card strong {
   display: block;
   margin-top: 3px;
-  font-size: 27px;
+  font-size: 24px;
   font-weight: 400;
+  line-height: 34px;
 }
 
 .usage-lines {
@@ -1024,14 +1031,6 @@ button:focus-visible {
   display: block;
   width: 15px;
   height: 15px;
-}
-
-.account-socials img {
-  filter: grayscale(1) brightness(0.55);
-}
-
-.account-socials button[aria-label="X"] img {
-  filter: none;
 }
 
 .plain-list-page .topbar {

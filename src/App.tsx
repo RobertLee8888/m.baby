@@ -4,21 +4,16 @@ import {
   Activity,
   ArrowLeft,
   ArrowUp,
-  BookOpen,
   Bot,
   ChevronDown,
   ChevronRight,
   Copy,
-  Database,
   Edit3,
   Eye,
-  Gift,
-  Globe2,
   Hexagon,
   Info,
   KeyRound,
   Lock,
-  LogOut,
   Maximize2,
   Menu,
   MessageSquare,
@@ -27,7 +22,6 @@ import {
   Repeat2,
   Search,
   Send,
-  Settings,
   Share2,
   SquarePen,
   WalletCards,
@@ -553,14 +547,14 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
             <Pill>Annual</Pill>
           </span>
           <small>
-            <span className="google-dot">G</span> sheer@alva.xyz
+            <img alt="" className="google-logo-small" src={asset("assets/figma/social-google.png")} /> sheer@alva.xyz
           </small>
         </span>
-        <ChevronRight size={18} />
+        <AssetIcon size={12} src="assets/figma/arrow-right-l2.svg" />
       </button>
 
       <div className="account-list">
-        <MenuItem icon={Database} label="Usage" />
+        <MenuItem iconSrc="assets/figma/account-credit-l.svg" label="Usage" />
         <div className="usage-card">
           <span>
             <small>Available</small>
@@ -572,24 +566,24 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
             <small>Pack <b>12,000</b></small>
           </span>
         </div>
-        <MenuItem icon={Gift} label="Referral" />
+        <MenuItem iconSrc="assets/figma/account-gift-l.svg" label="Referral" />
         <MenuItem icon={WalletCards} label="Creator Earnings" status />
-        <MenuItem icon={Globe2} label="Language" />
-        <MenuItem icon={Settings} label="Settings" onClick={onSettings} />
-        <MenuItem icon={LogOut} label="Log Out" />
+        <MenuItem iconSrc="assets/figma/account-language-l.svg" label="Language" />
+        <MenuItem iconSrc="assets/figma/account-settings-l.svg" label="Settings" onClick={onSettings} />
+        <MenuItem iconSrc="assets/figma/account-logout-l.svg" label="Log Out" />
       </div>
       <div className="account-socials">
         <button aria-label="Discord" type="button">
-          <img alt="" src={asset("assets/figma/social-discord.svg")} />
+          <img alt="" src={asset("assets/figma/account-discord-l.svg")} />
         </button>
         <button aria-label="Telegram" type="button">
-          <img alt="" src={asset("assets/figma/social-telegram.png")} />
+          <img alt="" src={asset("assets/figma/account-telegram-l.svg")} />
         </button>
         <button aria-label="X" type="button">
-          <img alt="" src={asset("assets/figma/social-x.svg")} />
+          <img alt="" src={asset("assets/figma/account-x-l.svg")} />
         </button>
         <button aria-label="Docs" type="button">
-          <BookOpen size={15} strokeWidth={1.55} />
+          <img alt="" src={asset("assets/figma/account-docs-l.svg")} />
         </button>
       </div>
     </Page>
@@ -598,21 +592,23 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
 
 function MenuItem({
   icon: Icon,
+  iconSrc,
   label,
   onClick,
   status = false,
 }: {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconSrc?: string;
   label: string;
   onClick?: () => void;
   status?: boolean;
 }) {
   return (
     <button className="menu-item" onClick={onClick} type="button">
-      <Icon size={19} strokeWidth={1.55} />
+      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={19} strokeWidth={1.55} /> : null}
       <span>{label}</span>
       {status ? <span className="status-dot" /> : null}
-      <ChevronRight size={17} />
+      <AssetIcon size={12} src="assets/figma/arrow-right-l2.svg" />
     </button>
   );
 }
@@ -1046,7 +1042,9 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
       </div>
       <p className="profile-bio">
         I am YGGYLL — building crypto trading playbooks focused on momentum, breakouts, and asymmetric risk. Mostly
-        <button type="button">Show more <ChevronDown size={12} /></button>
+        <button type="button">
+          Show more <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
+        </button>
       </p>
       <div className="profile-social-row">
         <span>
@@ -1067,10 +1065,10 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
       </div>
       <div className="profile-actions">
         <button type="button">
-          <Edit3 size={14} /> Edit Profile
+          <AssetIcon size={14} src="assets/figma/profile-edit-l1.svg" /> Edit Profile
         </button>
         <button type="button">
-          <Share2 size={14} /> Share Profile
+          <AssetIcon size={14} src="assets/figma/profile-share-l.svg" /> Share Profile
         </button>
       </div>
       <TabRow
