@@ -4,11 +4,10 @@ import {
   Activity,
   ArrowLeft,
   ArrowUp,
+  BookOpen,
   Bot,
-  Briefcase,
   ChevronDown,
   ChevronRight,
-  Compass,
   Copy,
   Database,
   Edit3,
@@ -22,7 +21,6 @@ import {
   LogOut,
   Maximize2,
   Menu,
-  MessageCircle,
   MessageSquare,
   MoreHorizontal,
   Plus,
@@ -32,7 +30,6 @@ import {
   Settings,
   Share2,
   SquarePen,
-  Trophy,
   WalletCards,
   X,
 } from "lucide-react";
@@ -96,7 +93,7 @@ const playbooks: Playbook[] = [
   {
     title: "Investor Roundtable",
     subtitle: "Ten legendary investors debate any stock - live verdict",
-    avatar: asset("assets/avatars/ava-1.png"),
+    avatar: asset("assets/figma/sidebar-playbook-1.png"),
     cover: asset("assets/covers/cover-roundtable.webp"),
     tag: "Debate",
     stat: "2.6K",
@@ -104,7 +101,7 @@ const playbooks: Playbook[] = [
   {
     title: "LAB Short War Room",
     subtitle: "Live short-seller console for LABUSDT - squeeze risk",
-    avatar: asset("assets/avatars/ava-2.png"),
+    avatar: asset("assets/figma/sidebar-playbook-2.png"),
     cover: asset("assets/covers/cover-lab.webp"),
     tag: "Crypto",
     stat: "1.8K",
@@ -112,7 +109,7 @@ const playbooks: Playbook[] = [
   {
     title: "Citrini Operating System",
     subtitle: "Six modules - live macro indicators + megatrend tracker",
-    avatar: asset("assets/avatars/ava-3.png"),
+    avatar: asset("assets/figma/sidebar-playbook-3.png"),
     cover: asset("assets/covers/cover-citrini.webp"),
     tag: "Macro",
     stat: "9.1K",
@@ -120,7 +117,7 @@ const playbooks: Playbook[] = [
   {
     title: "Theme Tracker - Humanoid Robots",
     subtitle: "75 names across 9 supply-chain layers, scored daily",
-    avatar: asset("assets/avatars/av-zet.jpeg"),
+    avatar: asset("assets/figma/sidebar-playbook-4.png"),
     cover: asset("assets/covers/cover-btcprice.webp"),
     tag: "Theme",
     stat: "3.2K",
@@ -128,7 +125,7 @@ const playbooks: Playbook[] = [
   {
     title: "BTC Bet Scanner",
     subtitle: "Polymarket BTC daily-close - 4-way probability blend",
-    avatar: asset("assets/avatars/ava-5.png"),
+    avatar: asset("assets/figma/sidebar-playbook-5.png"),
     cover: asset("assets/covers/cover-btcbet.webp"),
     tag: "Polymarket",
     stat: "5.7K",
@@ -179,6 +176,19 @@ function IconButton({
   );
 }
 
+function AssetIcon({ className = "", size = 20, src }: { className?: string; size?: number; src: string }) {
+  return (
+    <img
+      alt=""
+      className={`asset-icon ${className}`}
+      height={size}
+      src={asset(src)}
+      style={{ height: size, width: size }}
+      width={size}
+    />
+  );
+}
+
 function Page({
   children,
   className = "",
@@ -194,8 +204,8 @@ function Page({
 function TopAd() {
   return (
     <div className="ad-banner">
-      <span>{"Which FinTwit accounts actually make money? We backtested their posts so you know where to find alpha ->"}</span>
-      <X size={16} strokeWidth={1.5} />
+      <span>{"Which FinTwit accounts actually make money? We backtested their posts so you know where to find alpha →"}</span>
+      <AssetIcon size={14} src="assets/figma/close-l1.svg" />
     </div>
   );
 }
@@ -203,8 +213,7 @@ function TopAd() {
 function Logo({ size = "large" }: { size?: "large" | "small" }) {
   return (
     <div className={`logo-mark logo-${size}`} aria-label="Alva">
-      <img src={asset("assets/logos/alva-logo.svg")} alt="" />
-      <span>Alva</span>
+      <img src={asset("assets/figma/alva-wordmark.png")} alt="" />
     </div>
   );
 }
@@ -274,12 +283,14 @@ function AgentIcon() {
 
 function NavRow({
   icon: Icon,
+  iconSrc,
   label,
   active = false,
   onClick,
   badge,
 }: {
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  iconSrc?: string;
   label: string;
   active?: boolean;
   onClick?: () => void;
@@ -287,7 +298,7 @@ function NavRow({
 }) {
   return (
     <button className={`nav-row ${active ? "active" : ""}`} onClick={onClick} type="button">
-      <Icon size={19} strokeWidth={1.55} />
+      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={19} strokeWidth={1.55} /> : null}
       <span>{label}</span>
       {badge ? <span className="mini-badge">{badge}</span> : null}
     </button>
@@ -297,7 +308,7 @@ function NavRow({
 function PlaybookRow({ item, onClick }: { item: Playbook; onClick?: () => void }) {
   return (
     <button className="playbook-row" onClick={onClick} type="button">
-      <Avatar src={item.avatar} />
+      <Avatar size={32} src={item.avatar} />
       <span className="row-copy">
         <strong>{item.title}</strong>
         <span>{item.subtitle}</span>
@@ -309,7 +320,7 @@ function PlaybookRow({ item, onClick }: { item: Playbook; onClick?: () => void }
 function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => void }) {
   return (
     <button className="chat-row" onClick={onClick} type="button">
-      <MessageSquare size={18} strokeWidth={1.5} />
+      <AssetIcon src="assets/figma/sidebar-thread-normal.svg" />
       <span>{item.title}</span>
       <time>{item.time}</time>
     </button>
@@ -327,7 +338,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
       <button className="promo-card" onClick={onLogin} type="button">
         <span className="promo-icon">
-          <span>🎁</span>
+          <img alt="" src={asset("assets/figma/login-gift.png")} />
         </span>
         <span>
           <strong>Sign up to unlock 3-day Pro</strong>
@@ -463,25 +474,26 @@ function SidebarPage({
       <div className="sidebar-head">
         <Logo size="small" />
         <button className="avatar-button" onClick={onAccount} type="button">
-          <Avatar size={34} src={asset("assets/avatars/av-zet.jpeg")} />
+          <Avatar size={32} src={asset("assets/figma/sidebar-top-avatar.png")} />
         </button>
       </div>
       <button className="upgrade-card" type="button">
         <span className="upgrade-icon">
-          <ArrowUp size={24} />
+          <AssetIcon size={24} src="assets/figma/arrow-up-l1.svg" />
         </span>
         <span>
-          <strong>Upgrade to Pro</strong>
+          <strong>
+            Upgrade to Pro <AssetIcon size={12} src="assets/figma/arrow-right-l2.svg" />
+          </strong>
           <small>Unlock unlimited playbooks with 7-day free trial</small>
         </span>
-        <ChevronRight size={17} />
       </button>
 
       <nav className="side-nav">
-        <NavRow icon={Compass} label="Explore" onClick={onExplore} />
-        <NavRow icon={Briefcase} label="Portfolio" />
-        <NavRow icon={SquarePen} label="Alva Skill" />
-        <NavRow active icon={Trophy} label="FinTwit Alpha League" />
+        <NavRow iconSrc="assets/figma/sidebar-icon-explore.svg" label="Explore" onClick={onExplore} />
+        <NavRow iconSrc="assets/figma/sidebar-icon-portfolio.svg" label="Portfolio" />
+        <NavRow iconSrc="assets/figma/sidebar-icon-alva-skill.svg" label="Alva Skill" />
+        <NavRow active iconSrc="assets/figma/sidebar-icon-league.svg" label="FinTwit Alpha League" />
       </nav>
 
       <SectionHeader action="View all" onAction={onPlaybooks} title="Playbooks" />
@@ -493,7 +505,7 @@ function SidebarPage({
 
       <SectionHeader action="View all" onAction={onRecentChats} title="Chats" />
       <button className="new-chat" type="button">
-        <SquarePen size={14} /> New Chat
+        <AssetIcon size={14} src="assets/figma/chat-new-l.svg" /> New Chat
       </button>
       <div className="list-stack chat-stack">
         {chats.slice(0, 5).map((item) => (
@@ -501,7 +513,7 @@ function SidebarPage({
         ))}
       </div>
       <button className="ask-fab" type="button">
-        <MessageCircle size={17} /> Ask Alva
+        <AssetIcon src="assets/figma/chat-ai-l.svg" /> Ask Alva
       </button>
     </Page>
   );
@@ -533,7 +545,7 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
     <Page className="account-menu-page">
       <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="" />
       <button className="account-user" onClick={onProfile} type="button">
-        <Avatar size={48} src={asset("assets/avatars/av-zet.jpeg")} />
+        <Avatar size={48} src={asset("assets/figma/profile-avatar.png")} />
         <span>
           <strong>sheer</strong>
           <span className="inline-tags">
@@ -567,11 +579,18 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
         <MenuItem icon={LogOut} label="Log Out" />
       </div>
       <div className="account-socials">
-        {["Discord", "Telegram", "X", "Docs"].map((item) => (
-          <button key={item} type="button">
-            {item === "X" ? "X" : item.slice(0, 1)}
-          </button>
-        ))}
+        <button aria-label="Discord" type="button">
+          <img alt="" src={asset("assets/figma/social-discord.svg")} />
+        </button>
+        <button aria-label="Telegram" type="button">
+          <img alt="" src={asset("assets/figma/social-telegram.png")} />
+        </button>
+        <button aria-label="X" type="button">
+          <img alt="" src={asset("assets/figma/social-x.svg")} />
+        </button>
+        <button aria-label="Docs" type="button">
+          <BookOpen size={15} strokeWidth={1.55} />
+        </button>
       </div>
     </Page>
   );
@@ -1030,9 +1049,15 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
         <button type="button">Show more <ChevronDown size={12} /></button>
       </p>
       <div className="profile-social-row">
-        <span>X @yggyll</span>
-        <span>◉ @YGGYLLSignals</span>
-        <span>● yggyll.alva</span>
+        <span>
+          <img alt="" src={asset("assets/figma/social-x.svg")} /> @yggyll
+        </span>
+        <span>
+          <img alt="" src={asset("assets/figma/social-telegram.png")} /> @YGGYLLSignals
+        </span>
+        <span>
+          <img alt="" src={asset("assets/figma/social-discord.svg")} /> yggyll.alva
+        </span>
       </div>
       <div className="stats-grid">
         <Stat value="6" label="Playbooks" />
@@ -1264,7 +1289,10 @@ function MetricSpark({
 }) {
   return (
     <div className="metric-spark-card">
-      <span>{label} ⓘ</span>
+      <span>
+        {label}
+        <Info size={12} strokeWidth={1.5} />
+      </span>
       <strong className={tone}>{value}</strong>
       <Sparkline height={48} tone={tone} variant={variant} />
     </div>

@@ -225,37 +225,31 @@ button:focus-visible {
   flex: 1;
 }
 
+.asset-icon {
+  display: block;
+  object-fit: contain;
+}
+
 .logo-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  color: var(--text);
-  font-weight: 700;
   letter-spacing: 0;
 }
 
 .logo-mark img {
   display: block;
-  height: auto;
+  object-fit: contain;
 }
 
 .logo-large img {
-  width: 24px;
+  width: 95px;
+  height: 25px;
 }
 
 .logo-small img {
-  width: 20px;
-}
-
-.logo-large span {
-  font-size: 24px;
-  line-height: 30px;
-}
-
-.logo-small span {
-  font-size: 15px;
-  line-height: 20px;
+  width: 79px;
+  height: 20px;
 }
 
 .avatar {
@@ -339,7 +333,7 @@ button:focus-visible {
 }
 
 .login-page {
-  padding: 88px 28px 0;
+  padding: 74px 28px 0;
   text-align: center;
 }
 
@@ -350,11 +344,11 @@ button:focus-visible {
 }
 
 .login-hero h1 {
-  max-width: 320px;
-  margin: 58px 0 10px;
-  font-size: 18px;
+  max-width: 337px;
+  margin: 24px 0 7px;
+  font-size: 24px;
   font-weight: 400;
-  line-height: 26px;
+  line-height: 34px;
   letter-spacing: 0;
 }
 
@@ -371,9 +365,9 @@ button:focus-visible {
   width: 100%;
   min-height: 60px;
   align-items: center;
-  gap: 15px;
-  margin-top: 18px;
-  padding: 10px 16px;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 8px 16px 8px 8px;
   border: 0;
   border-radius: var(--radius-m);
   background: #eaf6f7;
@@ -401,15 +395,17 @@ button:focus-visible {
   place-items: center;
 }
 
-.promo-icon span {
-  font-size: 32px;
-  line-height: 42px;
+.promo-icon img {
+  display: block;
+  width: 29px;
+  height: 31px;
+  object-fit: contain;
 }
 
 .email-button {
   width: 100%;
-  height: 49px;
-  margin-top: 24px;
+  height: 48px;
+  margin-top: 25px;
   padding: 0 15px;
   border: 1px solid rgba(0, 0, 0, 0.18);
   border-radius: var(--radius-m);
@@ -481,7 +477,7 @@ button:focus-visible {
 
 .cloudflare {
   display: flex;
-  min-width: 90px;
+  min-width: 96px;
   flex-direction: column;
   align-items: center;
   border-left: 1px solid var(--line);
@@ -500,7 +496,7 @@ button:focus-visible {
 }
 
 .terms {
-  margin-top: 20px;
+  margin-top: 21px;
   color: var(--text-5);
   font-size: 12px;
   line-height: 20px;
@@ -673,7 +669,7 @@ button:focus-visible {
 
 .sidebar-head {
   display: flex;
-  height: 54px;
+  height: 56px;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
@@ -688,12 +684,12 @@ button:focus-visible {
 
 .upgrade-card {
   display: grid;
-  grid-template-columns: 34px 1fr 18px;
+  grid-template-columns: 34px 1fr;
   width: calc(100% - 32px);
   min-height: 58px;
   align-items: center;
   gap: 12px;
-  margin: 0 16px 10px;
+  margin: 8px 16px 10px;
   padding: 10px 12px;
   border: 1px solid rgba(73, 163, 166, 0.16);
   border-radius: var(--radius-m);
@@ -711,6 +707,10 @@ button:focus-visible {
   color: #ffffff;
 }
 
+.upgrade-icon .asset-icon {
+  color: #ffffff;
+}
+
 .upgrade-card strong,
 .playbook-row strong,
 .chat-row span,
@@ -718,8 +718,14 @@ button:focus-visible {
 .api-row strong {
   color: var(--text);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 22px;
+}
+
+.upgrade-card strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .upgrade-card small,
@@ -755,15 +761,23 @@ button:focus-visible {
 .nav-row {
   display: grid;
   grid-template-columns: 28px 1fr auto;
-  min-height: 40px;
+  min-height: 45px;
   align-items: center;
   padding: 0 16px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 26px;
 }
 
 .nav-row.active {
   color: #168ad7;
+}
+
+.nav-row.active > span:not(.mini-badge) {
+  background-image: linear-gradient(90deg, #1ca8a1 0%, #4c73e6 42%, #9656de 74%, #d68e21 100%);
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
 }
 
 .mini-badge {
@@ -852,11 +866,12 @@ button:focus-visible {
   font-size: 13px;
 }
 
+.new-chat .asset-icon {
+  flex: 0 0 auto;
+}
+
 .ask-fab {
-  position: sticky;
-  right: 16px;
-  bottom: 16px;
-  left: auto;
+  position: relative;
   display: flex;
   width: 129px;
   height: 52px;
@@ -870,6 +885,10 @@ button:focus-visible {
   color: #ffffff;
   box-shadow: 0 10px 22px rgba(47, 165, 156, 0.28);
   font-size: 18px;
+}
+
+.ask-fab .asset-icon {
+  flex: 0 0 auto;
 }
 
 .account-menu-page {
@@ -992,10 +1011,27 @@ button:focus-visible {
 }
 
 .account-socials button {
+  display: grid;
   height: 32px;
+  place-items: center;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 3px;
   background: #ffffff;
+}
+
+.account-socials img,
+.account-socials svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.account-socials img {
+  filter: grayscale(1) brightness(0.55);
+}
+
+.account-socials button[aria-label="X"] img {
+  filter: none;
 }
 
 .plain-list-page .topbar {
@@ -1627,7 +1663,7 @@ button:focus-visible {
 
 .profile-social-row {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   overflow: hidden;
   padding: 0 16px 12px;
   color: var(--text-5);
@@ -1636,8 +1672,38 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+.profile-social-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-social-row img {
+  display: block;
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
 .profile-page .stats-grid {
+  gap: 0;
   padding: 10px 16px 12px;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+.profile-page .stats-grid > div {
+  position: relative;
+}
+
+.profile-page .stats-grid > div:not(:last-child)::after {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 1px;
+  height: 34px;
+  background: var(--line-soft);
+  content: "";
 }
 
 .profile-actions {
@@ -1980,12 +2046,20 @@ button:focus-visible {
 }
 
 .metric-spark-card span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   overflow: hidden;
   color: var(--text-7);
   font-size: 12px;
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.metric-spark-card span svg {
+  flex: 0 0 auto;
+  color: var(--text-3);
 }
 
 .metric-spark-card strong {
