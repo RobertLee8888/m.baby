@@ -42,6 +42,7 @@
   --radius-s: 4px;
   --radius-m: 6px;
   --radius-l: 8px;
+  --radius-xl: 12px;
   --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
   color: var(--text);
   background: #ffffff;
@@ -1875,8 +1876,7 @@ button:focus-visible {
 }
 
 .two-buttons .filled,
-.plan-card .filled,
-.detail-actions .filled {
+.plan-card .filled {
   border-color: transparent;
   background: var(--teal);
   color: #ffffff;
@@ -2510,7 +2510,7 @@ button:focus-visible {
 }
 
 .detail-page {
-  padding-bottom: 64px;
+  padding-bottom: calc(102px + var(--safe-bottom));
 }
 
 .detail-hero {
@@ -2850,42 +2850,68 @@ button:focus-visible {
 
 .detail-actions {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  display: grid;
-  grid-template-columns: 1.05fr 0.88fr 0.78fr 1.05fr;
-  gap: 8px;
-  height: 64px;
-  padding: 16px;
-  border-top: 1px solid var(--line-soft);
-  background: rgba(255, 255, 255, 0.96);
+  bottom: calc(16px + var(--safe-bottom));
+  left: 50%;
+  z-index: 4;
+  display: flex;
+  width: 330px;
+  max-width: calc(100% - 63px);
+  height: 54px;
+  align-items: flex-start;
+  gap: 0;
+  padding: 8px 0 6px;
+  transform: translateX(-50%);
+  border: 0.5px solid rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius-l);
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
   animation: action-bar-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.detail-actions button {
+.detail-action-item {
   display: flex;
+  flex: 0 0 25%;
+  flex-direction: column;
   min-width: 0;
-  min-height: 32px;
+  height: 40px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0;
+  padding: 0 12px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.9);
+  font-size: 10px;
+  line-height: 16px;
+  letter-spacing: 0.1px;
+  text-align: center;
+}
+
+.detail-action-item span {
+  display: flex;
+  max-width: 100%;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 0 6px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-m);
-  background: #ffffff;
-  font-size: 13px;
+  gap: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.detail-actions button .asset-icon {
-  flex: 0 0 auto;
+.detail-action-item small {
+  color: rgba(0, 0, 0, 0.5);
+  font: inherit;
 }
 
-.detail-actions .filled {
-  font-size: 12px;
+.detail-action-item .asset-icon {
+  flex: 0 0 auto;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.detail-action-item:active {
+  background: transparent;
 }
 
 .overlay-root {
@@ -2913,10 +2939,15 @@ button:focus-visible {
   left: 0;
   height: 611px;
   max-height: calc(var(--shell-dvh) - 47px);
-  border-radius: 0;
+  overflow: hidden;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   background: #ffffff;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.16);
   animation: sheet-in 280ms cubic-bezier(0.18, 0.86, 0.22, 1);
+}
+
+.ask-sheet .topbar {
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.07);
 }
 
 .sheet-handle {
@@ -2931,7 +2962,7 @@ button:focus-visible {
   position: absolute;
   top: 68px;
   right: 0;
-  bottom: calc(120px + var(--safe-bottom));
+  bottom: calc(88px + var(--safe-bottom));
   left: 0;
   padding: 16px 16px calc(16px + var(--safe-bottom));
   scroll-padding-bottom: calc(16px + var(--safe-bottom));
@@ -2943,10 +2974,14 @@ button:focus-visible {
   line-height: 20px;
 }
 
-.ask-sheet .composer {
-  min-height: 96px;
-  align-items: start;
-  padding-top: 13px;
+.ask-sheet .topbar-right .icon-button {
+  width: 40px;
+  height: 56px;
+}
+
+.ask-sheet .topbar-right .icon-button .asset-icon {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .info-modal {
@@ -3246,10 +3281,10 @@ button:focus-visible {
 
 @keyframes action-bar-in {
   from {
-    transform: translateY(18px);
+    transform: translateX(-50%) translateY(18px);
   }
   to {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -3277,7 +3312,6 @@ button:focus-visible {
   .two-buttons button:active,
   .plan-card button:active,
   .section-header button:active,
-  .detail-actions button:active,
   .profile-actions button:active,
   .email-button:active,
   .social-grid button:active,
@@ -3289,18 +3323,12 @@ button:focus-visible {
 
 @media (max-width: 374px) {
   .detail-actions {
-    gap: 6px;
-    padding-right: 12px;
-    padding-left: 12px;
+    max-width: calc(100% - 30px);
   }
 
-  .detail-actions button {
-    padding: 0 4px;
-    font-size: 12px;
-  }
-
-  .detail-actions .filled {
-    font-size: 11px;
+  .detail-action-item {
+    padding-right: 8px;
+    padding-left: 8px;
   }
 
   .topbar {

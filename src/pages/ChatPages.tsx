@@ -352,11 +352,11 @@ export function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
         <div className="sheet-handle" />
         <TopBar
           border={false}
-          left={<IconButton iconSrc="assets/figma/close-l1.svg" label="Close" onClick={onClose} />}
+          left={<IconButton iconSrc="assets/figma/close-l2.svg" label="Close" onClick={onClose} />}
           right={
             <>
-              <IconButton iconSrc="assets/figma/chat-new-l.svg" label="New chat" />
-              <IconButton iconSrc="assets/figma/expand-l1.svg" label="Expand" />
+              <IconButton iconSrc="assets/figma/chat-new-overlay-l.svg" label="New chat" />
+              <IconButton iconSrc="assets/figma/unfoldd-l.svg" label="Expand" />
             </>
           }
           title={

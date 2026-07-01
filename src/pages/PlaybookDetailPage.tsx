@@ -44,13 +44,25 @@ export function PlaybookDetailPage({
       <TabRow active={tab} items={detailTabs} onChange={onTab} />
       <DetailContent tab={tab} />
       <div className="detail-actions">
-        <button onClick={onAsk} type="button">
-          <AssetIcon size={16} src="assets/figma/chat-ai-l.svg" /> Ask Alva
+        <button className="detail-action-item" onClick={onAsk} type="button">
+          <AssetIcon size={20} src="assets/figma/chat-ai-action-l.svg" />
+          <span>Ask Alva</span>
         </button>
-        <button type="button">Remix 1.2K</button>
-        <button type="button">Trade</button>
-        <button className="filled" type="button">
-          Subscribe 512
+        <button className="detail-action-item" type="button">
+          <AssetIcon size={20} src="assets/figma/remix-action-l.svg" />
+          <span>
+            Remix <small>1.2K</small>
+          </span>
+        </button>
+        <button className="detail-action-item" type="button">
+          <AssetIcon size={20} src="assets/figma/swap-l.svg" />
+          <span>Trade</span>
+        </button>
+        <button className="detail-action-item" type="button">
+          <AssetIcon size={20} src="assets/figma/notification-l.svg" />
+          <span>
+            Subscribe <small>512</small>
+          </span>
         </button>
       </div>
     </Page>
