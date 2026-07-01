@@ -48,6 +48,21 @@ export function TopBar({ title, left, right, border = true }: { title: ReactNode
   );
 }
 
+function TabLabel({ label }: { label: string }) {
+  const match = label.match(/^(.*?)(\s*\(\d+\))$/);
+
+  if (!match) {
+    return <>{label}</>;
+  }
+
+  return (
+    <>
+      <span>{match[1]}</span>
+      <span className="tab-count">{match[2].trim()}</span>
+    </>
+  );
+}
+
 export function TabRow<T extends string>({
   items,
   active,
@@ -63,7 +78,7 @@ export function TabRow<T extends string>({
     <div className={`tab-row ${compact ? "tab-row-compact" : ""}`}>
       {items.map((item) => (
         <button className={`tab-item ${active === item.id ? "active" : ""}`} key={item.id} onClick={() => onChange(item.id)} type="button">
-          {item.label}
+          <TabLabel label={item.label} />
         </button>
       ))}
     </div>

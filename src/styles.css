@@ -172,8 +172,9 @@ button:focus-visible {
 .topbar {
   display: grid;
   grid-template-columns: 48px minmax(0, 1fr) auto;
+  height: 56px;
   min-height: 56px;
-  align-items: center;
+  align-items: stretch;
   padding: 0 8px 0 0;
   background: #ffffff;
 }
@@ -183,6 +184,9 @@ button:focus-visible {
 }
 
 .topbar-title {
+  display: flex;
+  height: 56px;
+  align-items: center;
   justify-self: start;
   min-width: 0;
   max-width: 100%;
@@ -191,6 +195,7 @@ button:focus-visible {
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 0;
+  line-height: 26px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -208,6 +213,8 @@ button:focus-visible {
 .topbar-side,
 .topbar-right {
   display: flex;
+  min-width: 48px;
+  height: 56px;
   align-items: center;
 }
 
@@ -306,8 +313,11 @@ button:focus-visible {
 
 .tab-item {
   position: relative;
+  display: inline-flex;
   flex: 0 0 auto;
   height: 28px;
+  align-items: flex-start;
+  gap: 4px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -325,6 +335,16 @@ button:focus-visible {
 .tab-item.active {
   color: var(--text);
   font-weight: 500;
+}
+
+.tab-count {
+  color: rgba(0, 0, 0, 0.3);
+  font-weight: 400;
+}
+
+.tab-item.active .tab-count {
+  color: rgba(0, 0, 0, 0.3);
+  font-weight: 400;
 }
 
 .tab-item.active::after {
@@ -638,11 +658,15 @@ button:focus-visible {
 
 .chat-page .topbar {
   grid-template-columns: 48px minmax(0, 1fr) 48px;
+  height: 56px;
   min-height: 56px;
+  align-items: stretch;
   padding: 0 8px 0 0;
 }
 
 .chat-page .topbar-title {
+  height: 56px;
+  align-items: center;
   color: rgba(0, 0, 0, 0.9);
   font-size: 16px;
   font-weight: 400;
@@ -653,13 +677,24 @@ button:focus-visible {
 .chat-menu-button {
   box-sizing: border-box;
   width: 48px;
+  height: 56px;
   justify-content: flex-start;
-  padding-left: 16px;
+  padding: 0 12px 0 16px;
 }
 
 .chat-menu-button .asset-icon {
   width: 20px !important;
   height: 20px !important;
+}
+
+.chat-page .topbar-right .icon-button {
+  width: 40px;
+  height: 56px;
+}
+
+.chat-page .topbar-right .icon-button .asset-icon {
+  width: 16px !important;
+  height: 16px !important;
 }
 
 .chat-page .tab-row {
