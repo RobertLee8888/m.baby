@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { asset } from "./assets";
 import type { ChatItem, Playbook } from "./types";
@@ -130,12 +131,21 @@ export function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => voi
 }
 
 export function Composer({ compact = false }: { compact?: boolean }) {
+  const [value, setValue] = useState("");
+  const hasValue = value.trim().length > 0;
+
   return (
     <div className={`composer ${compact ? "composer-compact" : ""}`}>
       <AssetIcon className="composer-plus" size={16} src="assets/figma/add-l2.svg" />
-      <span>Ask Alva anything. @ for context, / for skills</span>
-      <button type="button">
-        <AssetIcon size={14} src="assets/figma/arrow-up-l1-chat.svg" />
+      <input
+        aria-label="Ask Alva"
+        onChange={(event) => setValue(event.target.value)}
+        placeholder="Ask Alva anything. @ for context, / for skills"
+        type="text"
+        value={value}
+      />
+      <button className={hasValue ? "composer-send-active" : ""} type="button">
+        <AssetIcon size={14} src={hasValue ? "assets/figma/arrow-up-l1.svg" : "assets/figma/arrow-up-l1-chat.svg"} />
       </button>
     </div>
   );
