@@ -21,18 +21,49 @@ type LiveChatMessage = {
   status?: "thinking" | "complete";
 };
 
+function randomItem<T>(items: T[]) {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
 function createAssistantReply(message: string) {
-  const lowerMessage = message.toLowerCase();
+  const normalizedMessage = message.trim().replace(/\s+/g, " ");
+  const lowerMessage = normalizedMessage.toLowerCase();
+  const shortMessage = normalizedMessage.length > 96 ? `${normalizedMessage.slice(0, 93)}...` : normalizedMessage;
 
   if (lowerMessage.includes("report") || lowerMessage.includes("full")) {
-    return "I can use the full report context here. The strongest thread is still AI infrastructure, with NVDA leading attention and AVGO showing up as the most useful hedge to watch.";
+    return `${randomItem([
+      "The full report is useful here because the strongest signal is the cluster, not any single mention.",
+      "I would read the report from the theme layer first, then drill into ticker-level confirmation.",
+      "The main thing to watch is whether the report keeps repeating the same names across independent FinTwit sources.",
+    ])} ${randomItem([
+      "Right now NVDA still leads the attention stack, while AVGO is showing up more like a hedge or funding short.",
+      "If NVDA volume and author conviction both fade, I would treat the setup as lower quality even if mentions stay high.",
+      "The cleaner follow-up is to compare sentiment shifts against price action before turning this into an alert.",
+    ])}`;
   }
 
   if (lowerMessage.includes("telegram") || lowerMessage.includes("alert")) {
-    return "Got it. I would keep this digest on a morning alert cadence, then only escalate intraday when NVDA or BTC sentiment moves far enough away from the prior day baseline.";
+    return `${randomItem([
+      "For alerts, I would keep the default cadence calm and only interrupt when the signal actually changes.",
+      "A daily Telegram digest makes sense, but intraday pushes should be reserved for conviction breaks.",
+      "I would avoid noisy alerts here and use a tighter rule around sentiment change plus ticker concentration.",
+    ])} ${randomItem([
+      "A good trigger would be NVDA or BTC moving far away from its prior-day FinTwit baseline.",
+      "The alert should mention the ticker, the source cluster, and why this is different from the last digest.",
+      "If the same authors repeat the call and price confirms, then it is worth escalating.",
+    ])}`;
   }
 
-  return `Got it. I will answer using the current digest context: ${message}. The useful next step is to compare ticker momentum, author conviction, and whether the latest posts confirm or weaken the setup.`;
+  return `${randomItem([
+    `I will treat "${shortMessage}" as a follow-up on the current digest context.`,
+    `Good question. I would connect "${shortMessage}" back to the digest instead of answering it in isolation.`,
+    `Using the current FinTwit context, "${shortMessage}" is mostly about signal quality.`,
+  ])} ${randomItem([
+    "The useful next step is to compare ticker momentum, author conviction, and whether later posts confirm the setup.",
+    "I would look for repeated independent mentions first, then check whether the price action is confirming or diverging.",
+    "The answer changes if the attention is broad-based versus coming from one loud cluster of accounts.",
+    "I would separate what is actionable now from what should stay on watch until there is a cleaner confirmation.",
+  ])}`;
 }
 
 function useLiveChat() {
