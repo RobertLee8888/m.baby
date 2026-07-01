@@ -321,6 +321,7 @@ button:focus-visible {
   gap: 4px;
   padding: 0;
   border: 0;
+  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--text-5);
   font-size: 14px;
@@ -334,6 +335,7 @@ button:focus-visible {
 }
 
 .tab-item.active {
+  border-bottom-color: var(--teal);
   color: var(--text);
   font-weight: 500;
 }
@@ -346,16 +348,6 @@ button:focus-visible {
 .tab-item.active .tab-count {
   color: rgba(0, 0, 0, 0.3);
   font-weight: 400;
-}
-
-.tab-item.active::after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  background: var(--teal);
-  content: "";
 }
 
 .login-page {
