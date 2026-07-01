@@ -5,7 +5,6 @@ import {
   IconButton,
   Page,
   Pill,
-  TopAd,
   TopBar,
   TabRow,
 } from "../components";
@@ -94,7 +93,6 @@ export function ChatPage({ onMenu }: { onMenu: () => void }) {
 export function ChatSelectedPage({ onBack }: { onBack: () => void }) {
   return (
     <Page className="chat-page selected-chat">
-      <TopAd />
       <TopBar
         title={
           <span className="title-with-caret">

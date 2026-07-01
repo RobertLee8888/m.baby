@@ -10,7 +10,6 @@ import {
   Pill,
   Stat,
   TabRow,
-  TopAd,
   TopBar,
 } from "../components";
 import { detailTabs } from "../data";
@@ -31,7 +30,6 @@ export function PlaybookDetailPage({
 }) {
   return (
     <Page className="detail-page" scroll>
-      <TopAd />
       <TopBar
         left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />}
         right={

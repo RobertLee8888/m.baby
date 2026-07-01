@@ -28,15 +28,6 @@ export function Page({ children, className = "", scroll = false }: { children: R
   return <div className={`page ${scroll ? "page-scroll" : ""} ${className}`}>{children}</div>;
 }
 
-export function TopAd() {
-  return (
-    <div className="ad-banner">
-      <span>{"Which FinTwit accounts actually make money? We backtested their posts so you know where to find alpha →"}</span>
-      <AssetIcon size={14} src="assets/figma/close-l1.svg" />
-    </div>
-  );
-}
-
 export function Logo({ size = "large" }: { size?: "large" | "small" }) {
   return (
     <div className={`logo-mark logo-${size}`} aria-label="Alva">

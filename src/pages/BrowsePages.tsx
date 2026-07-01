@@ -12,7 +12,6 @@ import {
   PlaybookRow,
   SectionHeader,
   TabRow,
-  TopAd,
   TopBar,
 } from "../components";
 import { chats, exploreItems, playbooks } from "../data";
@@ -34,7 +33,6 @@ export function SidebarPage({
 }) {
   return (
     <Page className="sidebar-page" scroll>
-      <TopAd />
       <div className="sidebar-head">
         <Logo size="small" />
         <button className="avatar-button" onClick={onAccount} type="button">
