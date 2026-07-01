@@ -109,6 +109,7 @@ button {
 .view-transition {
   width: 100%;
   height: 100%;
+  will-change: opacity, transform;
 }
 
 .page {
@@ -122,6 +123,7 @@ button {
 .page-scroll {
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -153,6 +155,9 @@ button {
   padding: 0;
   border: 0;
   background: transparent;
+  transition:
+    background-color 120ms ease,
+    transform 120ms ease;
 }
 
 .icon-button:focus-visible,
@@ -2112,6 +2117,7 @@ button:focus-visible {
   padding: 16px;
   border-top: 1px solid var(--line-soft);
   background: rgba(255, 255, 255, 0.96);
+  animation: action-bar-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .detail-actions button {
@@ -2137,6 +2143,7 @@ button:focus-visible {
   inset: 0;
   border: 0;
   background: #666666;
+  animation: backdrop-in 180ms ease-out;
 }
 
 .ask-overlay-root .overlay-backdrop {
@@ -2153,6 +2160,7 @@ button:focus-visible {
   border-radius: 0;
   background: #ffffff;
   box-shadow: var(--shadow-soft);
+  animation: sheet-in 280ms cubic-bezier(0.18, 0.86, 0.22, 1);
 }
 
 .sheet-handle {
@@ -2195,6 +2203,7 @@ button:focus-visible {
   background: #ffffff;
   padding: 0 20px 20px;
   box-shadow: none;
+  animation: modal-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .info-modal header {
@@ -2273,18 +2282,45 @@ button:focus-visible {
   height: 14px;
 }
 
-.enter-forward {
-  animation: enter-forward 240ms cubic-bezier(0.22, 1, 0.36, 1);
+.enter-auth {
+  animation: enter-auth 320ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.enter-push {
+  animation: enter-push 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .enter-back {
-  animation: enter-back 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: enter-back 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes enter-forward {
+.enter-drawer {
+  animation: enter-drawer 280ms cubic-bezier(0.2, 0.86, 0.18, 1);
+}
+
+.enter-soft {
+  animation: enter-soft 180ms ease-out;
+}
+
+.tab-content-motion {
+  animation: tab-content-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes enter-auth {
   from {
     opacity: 0;
-    transform: translateX(14px);
+    transform: translateY(12px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes enter-push {
+  from {
+    opacity: 0.92;
+    transform: translateX(28px);
   }
   to {
     opacity: 1;
@@ -2294,8 +2330,8 @@ button:focus-visible {
 
 @keyframes enter-back {
   from {
-    opacity: 0;
-    transform: translateX(-14px);
+    opacity: 0.92;
+    transform: translateX(-22px);
   }
   to {
     opacity: 1;
@@ -2303,9 +2339,120 @@ button:focus-visible {
   }
 }
 
+@keyframes enter-drawer {
+  from {
+    opacity: 0.96;
+    transform: translateX(-38px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes enter-soft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tab-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(34px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes action-bar-in {
+  from {
+    transform: translateY(18px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (hover: none) {
+  .icon-button:active,
+  .avatar-button:active,
+  .mini-icon-button:active {
+    background: rgba(0, 0, 0, 0.05);
+    transform: scale(0.96);
+  }
+
+  .nav-row:active,
+  .playbook-row:active,
+  .chat-row:active,
+  .menu-item:active,
+  .explore-card:active,
+  .account-user:active,
+  .profile-feature-card:active,
+  .upgrade-card:active {
+    background: rgba(73, 163, 166, 0.08);
+  }
+
+  .digest-card header button:active,
+  .connection-row button:active,
+  .two-buttons button:active,
+  .plan-card button:active,
+  .section-header button:active,
+  .detail-actions button:active,
+  .profile-actions button:active,
+  .email-button:active,
+  .social-grid button:active,
+  .primary-outline:active,
+  .new-chat:active {
+    transform: scale(0.985);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .enter-forward,
-  .enter-back {
+  .enter-auth,
+  .enter-push,
+  .enter-back,
+  .enter-drawer,
+  .enter-soft,
+  .tab-content-motion,
+  .overlay-backdrop,
+  .ask-sheet,
+  .info-modal,
+  .detail-actions {
     animation: none;
   }
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   ArrowLeft,
@@ -53,6 +53,16 @@ type Screen =
 type Overlay = "askAlva" | "infoModal" | null;
 type DetailTab = "overview" | "analytics" | "strategy" | "feed";
 type SettingsTab = "account" | "usage" | "portfolio" | "alvaAgent" | "alerts" | "apiKey";
+type Motion = "auth" | "push" | "back" | "drawer" | "soft";
+
+type BrowserRouteState = {
+  babyDemo: true;
+  detailTab: DetailTab;
+  history: Screen[];
+  overlay: Overlay;
+  screen: Screen;
+  settingsTab: SettingsTab;
+};
 
 type Playbook = {
   title: string;
@@ -724,7 +734,7 @@ function SettingsPage({
     <Page className="settings-page" scroll>
       <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Settings" />
       <TabRow active={active} compact items={settingsTabs} onChange={onTab} />
-      <div className="settings-content">
+      <div className="settings-content tab-content-motion" key={active}>
         {active === "account" ? <SettingsAccount /> : null}
         {active === "usage" ? <SettingsUsage /> : null}
         {active === "portfolio" ? <SettingsPortfolio /> : null}
@@ -1117,7 +1127,7 @@ function PlaybookDetailPage({
 function DetailContent({ tab }: { tab: DetailTab }) {
   if (tab === "analytics") {
     return (
-      <div className="detail-content">
+      <div className="detail-content tab-content-motion" key={tab}>
         <Panel title="Return Analysis">
           <MiniChart variant="bars" />
         </Panel>
@@ -1131,7 +1141,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   }
   if (tab === "strategy") {
     return (
-      <div className="detail-content strategy-content">
+      <div className="detail-content strategy-content tab-content-motion" key={tab}>
         <section className="strategy-section">
           <h2>
             Objective <ChevronDown size={16} strokeWidth={1.5} />
@@ -1188,7 +1198,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
   }
   if (tab === "feed") {
     return (
-      <div className="detail-content">
+      <div className="detail-content tab-content-motion" key={tab}>
         {["NVDA margin pressure eased after supplier checks.", "Power-grid exposure improved across top holdings.", "Semis rotation remains active versus software."].map((item) => (
           <Panel key={item} title="Market update">
             <p>{item}</p>
@@ -1199,7 +1209,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
     );
   }
   return (
-    <div className="detail-content">
+    <div className="detail-content tab-content-motion" key={tab}>
       <div className="detail-info-row">
         <Pill>Last Updated: 11/20/2025</Pill>
         <Pill>Interval: 1d</Pill>
@@ -1392,41 +1402,113 @@ export default function App() {
   const [overlay, setOverlay] = useState<Overlay>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
-  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [motion, setMotion] = useState<Motion>("soft");
 
-  const navigate = (next: Screen) => {
-    setHistory((items) => [...items, screen]);
-    setDirection("forward");
+  const routeState = (
+    nextScreen: Screen,
+    nextHistory: Screen[],
+    nextOverlay: Overlay,
+    nextDetailTab = detailTab,
+    nextSettingsTab = settingsTab,
+  ): BrowserRouteState => ({
+    babyDemo: true,
+    detailTab: nextDetailTab,
+    history: nextHistory,
+    overlay: nextOverlay,
+    screen: nextScreen,
+    settingsTab: nextSettingsTab,
+  });
+
+  const writeBrowserState = (mode: "push" | "replace", state: BrowserRouteState) => {
+    if (typeof window === "undefined") return;
+    const method = mode === "push" ? "pushState" : "replaceState";
+    window.history[method](state, "", window.location.href);
+  };
+
+  const motionFor = (from: Screen, to: Screen): Motion => {
+    if (from === "login" && to === "chat") return "auth";
+    if (from === "chat" && to === "sidebar") return "drawer";
+    if (from === to) return "soft";
+    return "push";
+  };
+
+  useEffect(() => {
+    writeBrowserState("replace", routeState(screen, history, overlay));
+
+    const onPopState = (event: PopStateEvent) => {
+      const state = event.state as BrowserRouteState | null;
+      if (!state?.babyDemo) return;
+      setMotion("back");
+      setScreen(state.screen);
+      setHistory(state.history);
+      setOverlay(state.overlay);
+      setDetailTab(state.detailTab);
+      setSettingsTab(state.settingsTab);
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const navigate = (
+    next: Screen,
+    options: { detailTab?: DetailTab; settingsTab?: SettingsTab } = {},
+  ) => {
+    const nextHistory = [...history, screen];
+    const nextDetailTab = options.detailTab ?? detailTab;
+    const nextSettingsTab = options.settingsTab ?? settingsTab;
+    setHistory(nextHistory);
+    setMotion(motionFor(screen, next));
     setOverlay(null);
+    setDetailTab(nextDetailTab);
+    setSettingsTab(nextSettingsTab);
     setScreen(next);
+    writeBrowserState("push", routeState(next, nextHistory, null, nextDetailTab, nextSettingsTab));
   };
 
   const replace = (next: Screen) => {
     setHistory([]);
-    setDirection("forward");
+    setMotion(motionFor(screen, next));
     setOverlay(null);
     setScreen(next);
+    writeBrowserState("replace", routeState(next, [], null));
   };
 
   const back = (fallback: Screen = "sidebar") => {
-    setHistory((items) => {
-      const stack = [...items];
-      const previous = stack.pop() ?? fallback;
-      setDirection("back");
-      setOverlay(null);
-      setScreen(previous);
-      return stack;
-    });
+    if (typeof window !== "undefined" && history.length > 0 && window.history.state?.babyDemo) {
+      window.history.back();
+      return;
+    }
+
+    const stack = [...history];
+    const previous = stack.pop() ?? fallback;
+    setMotion("back");
+    setOverlay(null);
+    setScreen(previous);
+    setHistory(stack);
+    writeBrowserState("replace", routeState(previous, stack, null));
+  };
+
+  const openOverlay = (next: Exclude<Overlay, null>) => {
+    setOverlay(next);
+    writeBrowserState("push", routeState(screen, history, next));
+  };
+
+  const closeOverlay = () => {
+    if (typeof window !== "undefined" && window.history.state?.babyDemo && window.history.state.overlay) {
+      window.history.back();
+      return;
+    }
+    setOverlay(null);
   };
 
   const openDetail = () => {
-    setDetailTab("overview");
-    navigate("playbookDetail");
+    navigate("playbookDetail", { detailTab: "overview" });
   };
 
   const openSettings = () => {
-    setSettingsTab("account");
-    navigate("settings");
+    navigate("settings", { settingsTab: "account" });
   };
 
   const rendered = useMemo(() => {
@@ -1463,9 +1545,9 @@ export default function App() {
       case "playbookDetail":
         return (
           <PlaybookDetailPage
-            onAsk={() => setOverlay("askAlva")}
+            onAsk={() => openOverlay("askAlva")}
             onBack={() => back("sidebar")}
-            onInfo={() => setOverlay("infoModal")}
+            onInfo={() => openOverlay("infoModal")}
             onTab={setDetailTab}
             tab={detailTab}
           />
@@ -1482,11 +1564,11 @@ export default function App() {
       </section>
 
       <section className="mobile-shell" aria-label="m.baby mobile demo">
-        <div className={`view-transition enter-${direction}`} key={screen}>
+        <div className={`view-transition enter-${motion}`} key={screen}>
           {rendered}
         </div>
-        {overlay === "askAlva" ? <AskAlvaOverlay onClose={() => setOverlay(null)} /> : null}
-        {overlay === "infoModal" ? <InfoModal onClose={() => setOverlay(null)} /> : null}
+        {overlay === "askAlva" ? <AskAlvaOverlay onClose={closeOverlay} /> : null}
+        {overlay === "infoModal" ? <InfoModal onClose={closeOverlay} /> : null}
       </section>
     </main>
   );
