@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import { ChevronDown, Eye, Info, Lock, MoreHorizontal, Repeat2 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 
 type Screen =
   "login" | "chat" | "sidebar" | "sidebarMenu" | "playbooks" | "recentChats" | "explore" | "playbookDetail" | "chatSelected" | "profile" | "settings";
@@ -118,20 +116,18 @@ const detailTabs: Array<{ id: DetailTab; label: string }> = [
 
 function IconButton({
   label,
-  icon: Icon,
   iconSrc,
   onClick,
   className = "",
 }: {
   label: string;
-  icon?: LucideIcon;
   iconSrc?: string;
   onClick?: () => void;
   className?: string;
 }) {
   return (
     <button aria-label={label} className={`icon-button ${className}`} onClick={onClick} type="button">
-      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={20} strokeWidth={1.6} /> : null}
+      {iconSrc ? <AssetIcon src={iconSrc} /> : null}
     </button>
   );
 }
@@ -211,14 +207,12 @@ function AgentIcon() {
 }
 
 function NavRow({
-  icon: Icon,
   iconSrc,
   label,
   active = false,
   onClick,
   badge,
 }: {
-  icon?: LucideIcon;
   iconSrc?: string;
   label: string;
   active?: boolean;
@@ -227,7 +221,7 @@ function NavRow({
 }) {
   return (
     <button className={`nav-row ${active ? "active" : ""}`} onClick={onClick} type="button">
-      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={19} strokeWidth={1.55} /> : null}
+      {iconSrc ? <AssetIcon src={iconSrc} /> : null}
       <span>{label}</span>
       {badge ? <span className="mini-badge">{badge}</span> : null}
     </button>
@@ -252,6 +246,16 @@ function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => void }) {
       <AssetIcon src="assets/figma/sidebar-thread-normal.svg" />
       <span>{item.title}</span>
       <time>{item.time}</time>
+    </button>
+  );
+}
+
+function SocialLoginButton({ label, src, onClick }: { label: string; src: string; onClick: () => void }) {
+  return (
+    <button aria-label={`Login with ${label}`} className="social-login-button" onClick={onClick} type="button">
+      <span className="social-login-icon">
+        <img alt="" src={asset(src)} />
+      </span>
     </button>
   );
 }
@@ -294,9 +298,7 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
           ["Telegram", "assets/figma/social-telegram.svg"],
           ["Discord", "assets/figma/social-discord.svg"],
         ].map(([label, src]) => (
-          <button aria-label={`Login with ${label}`} key={label} onClick={onLogin} type="button">
-            <img alt="" src={asset(src)} />
-          </button>
+          <SocialLoginButton key={label} label={label} onClick={onLogin} src={src} />
         ))}
       </div>
 
@@ -526,13 +528,11 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
 }
 
 function MenuItem({
-  icon: Icon,
   iconSrc,
   label,
   onClick,
   status = false,
 }: {
-  icon?: LucideIcon;
   iconSrc?: string;
   label: string;
   onClick?: () => void;
@@ -540,7 +540,7 @@ function MenuItem({
 }) {
   return (
     <button className="menu-item" onClick={onClick} type="button">
-      {iconSrc ? <AssetIcon src={iconSrc} /> : Icon ? <Icon size={19} strokeWidth={1.55} /> : null}
+      {iconSrc ? <AssetIcon src={iconSrc} /> : null}
       <span>{label}</span>
       {status ? <span className="status-dot" /> : null}
       <AssetIcon size={12} src="assets/figma/arrow-right-l2.svg" />
@@ -641,7 +641,7 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
         title="Explore"
       />
       <button className="explore-sort" type="button">
-        Popular <ChevronDown size={14} strokeWidth={1.6} />
+        Popular <AssetIcon size={12} src="assets/figma/data-entry-info.svg" />
       </button>
       <div className="explore-tabs">
         {["Smart Screener", "Theme Tracker", "Backtest", "AI Digest"].map((item) => (
@@ -666,14 +666,14 @@ function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => voi
             <span className="explore-metrics">
               {item.price ? (
                 <span className="explore-price">
-                  <Lock size={12} strokeWidth={1.8} /> {item.price}
+                  <AssetIcon size={14} src="assets/figma/locked-f.svg" /> {item.price}
                 </span>
               ) : null}
               <span>
-                <Eye size={13} strokeWidth={1.6} /> 12.8K
+                <AssetIcon size={14} src="assets/figma/show-l.svg" /> 12.8K
               </span>
               <span>
-                <Repeat2 size={12} strokeWidth={1.6} /> 3
+                <AssetIcon size={14} src="assets/figma/remix-l.svg" /> 3
               </span>
             </span>
           </button>
@@ -769,8 +769,8 @@ function SettingsPortfolio() {
     <>
       <SectionHeader action="+ Add" title="Broker Connections" />
       <Connection icon="IB" label="Interactive Brokers" sub="U***7338 · Live" action="Disconnect" />
-      <Connection icon="BN" label="Binance" sub="U***7905 · Spot" action="Disconnect" />
-      <Connection icon="AP" label="Alpaca" sub="U***7130 · Live" action="Disconnect" />
+      <Connection iconSrc="assets/brokers/binance.svg" label="Binance" sub="U***7905 · Spot" action="Disconnect" />
+      <Connection iconSrc="assets/brokers/alpaca.svg" label="Alpaca" sub="U***7130 · Live" action="Disconnect" />
       <h3>Global Risk Rules</h3>
       <ToggleRow label="Max Single Order" value="$5,000" enabled />
       <ToggleRow label="Max Daily Turnover" value="-" />
@@ -929,7 +929,7 @@ function ChatSelectedPage({ onBack }: { onBack: () => void }) {
       <TopBar
         title={
           <span className="title-with-caret">
-            Daily FinTwit Digest <ChevronDown size={14} strokeWidth={1.7} />
+            Daily FinTwit Digest <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
           </span>
         }
         left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />}
@@ -1034,9 +1034,9 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
             <small>Top 20 signals tracked by source, flow, and risk layer</small>
           </span>
           <em>
-            <Lock size={13} strokeWidth={1.7} /> $50
+            <AssetIcon size={14} src="assets/figma/locked-f-dark.svg" /> $50
           </em>
-          <MoreHorizontal size={17} strokeWidth={1.6} />
+          <AssetIcon size={14} src="assets/figma/more-l2.svg" />
         </header>
         <img alt="" src={asset("assets/figma/profile-playbook-preview.png")} />
         <div className="profile-card-tags">
@@ -1122,7 +1122,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
       <div className="detail-content strategy-content tab-content-motion" key={tab}>
         <section className="strategy-section">
           <h2>
-            Objective <ChevronDown size={16} strokeWidth={1.5} />
+            Objective <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
           </h2>
           <p>
             The strategy triggers whenever BTC long liquidations exceed $300M within any rolling 24-hour window, then identifies the top 10 non-stablecoin
@@ -1131,7 +1131,7 @@ function DetailContent({ tab }: { tab: DetailTab }) {
         </section>
         <section className="strategy-section">
           <h2>
-            Strategy <ChevronDown size={16} strokeWidth={1.5} />
+            Strategy <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
           </h2>
           <div className="strategy-switch-row">
             <span className="strategy-mini-tabs">
@@ -1224,7 +1224,7 @@ function MetricSpark({ label, value, tone, variant }: { label: string; value: st
     <div className="metric-spark-card">
       <span>
         {label}
-        <Info size={12} strokeWidth={1.5} />
+        <AssetIcon size={12} src="assets/figma/info-l1.svg" />
       </span>
       <strong className={tone}>{value}</strong>
       <Sparkline height={48} tone={tone} variant={variant} />
@@ -1294,7 +1294,7 @@ function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
           }
           title={
             <span className="title-with-caret">
-              Daily FinTwit Digest <ChevronDown size={14} strokeWidth={1.7} />
+              Daily FinTwit Digest <AssetIcon size={12} src="assets/figma/profile-arrow-down-l2.svg" />
             </span>
           }
         />
