@@ -13,10 +13,10 @@ import {
 export function ChatPage({ onMenu }: { onMenu: () => void }) {
   return (
     <Page className="chat-page">
-      <TopAd />
       <TopBar
+        border={false}
         title="Alva Agent"
-        left={<IconButton iconSrc="assets/figma/menu-l1.svg" label="Open sidebar" onClick={onMenu} />}
+        left={<IconButton className="chat-menu-button" iconSrc="assets/figma/menu-l2.svg" label="Open sidebar" onClick={onMenu} />}
         right={<IconButton iconSrc="assets/figma/account-settings-l.svg" label="Settings" />}
       />
       <TabRow
@@ -53,8 +53,38 @@ export function ChatPage({ onMenu }: { onMenu: () => void }) {
               The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
               funding short.
             </p>
+            <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
+            <p>
+              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+              funding short.
+            </p>
+            <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
+            <p>
+              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+              funding short.
+            </p>
           </div>
         </article>
+        <section className="delivery-card" aria-label="Alert destinations">
+          <div>
+            <h2>Where should Alva send alerts?</h2>
+            <p>Connect one destination first. Once connected, send yourself this sample digest to complete setup.</p>
+          </div>
+          <div className="delivery-actions">
+            <button className="delivery-telegram" type="button">
+              <AssetIcon size={14} src="assets/figma/account-telegram-l.svg" />
+              Telegram
+            </button>
+            <button className="delivery-discord" type="button">
+              <AssetIcon size={14} src="assets/figma/account-discord-l.svg" />
+              Discord
+            </button>
+            <button className="delivery-whatsapp" type="button">
+              <AssetIcon size={14} src="assets/figma/account-whatsapp-l.svg" />
+              WhatsApp
+            </button>
+          </div>
+        </section>
       </div>
       <Composer />
     </Page>

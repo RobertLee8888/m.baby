@@ -141,10 +141,10 @@ export function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => voi
 export function Composer({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`composer ${compact ? "composer-compact" : ""}`}>
-      <AssetIcon size={21} src="assets/figma/plus-l1.svg" />
+      <AssetIcon className="composer-plus" size={16} src="assets/figma/add-l2.svg" />
       <span>Ask Alva anything. @ for context, / for skills</span>
       <button type="button">
-        <AssetIcon size={17} src="assets/figma/arrow-up-line-l1.svg" />
+        <AssetIcon size={14} src="assets/figma/arrow-up-l1-chat.svg" />
       </button>
     </div>
   );
