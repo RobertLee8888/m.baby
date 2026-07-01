@@ -194,14 +194,14 @@ button:focus-visible {
 
 .ad-banner {
   display: flex;
-  min-height: 64px;
+  min-height: 36px;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 6px 12px;
   background: #71bdbc;
   color: rgba(0, 0, 0, 0.78);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 10px;
+  line-height: 14px;
 }
 
 .ad-banner span {
@@ -209,8 +209,13 @@ button:focus-visible {
 }
 
 .logo-mark {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 .logo-mark img {
@@ -219,11 +224,21 @@ button:focus-visible {
 }
 
 .logo-large img {
-  width: 96px;
+  width: 24px;
 }
 
 .logo-small img {
-  width: 50px;
+  width: 20px;
+}
+
+.logo-large span {
+  font-size: 24px;
+  line-height: 30px;
+}
+
+.logo-small span {
+  font-size: 15px;
+  line-height: 20px;
 }
 
 .avatar {
@@ -306,7 +321,7 @@ button:focus-visible {
 }
 
 .login-page {
-  padding: 70px 28px 0;
+  padding: 88px 28px 0;
   text-align: center;
 }
 
@@ -318,10 +333,10 @@ button:focus-visible {
 
 .login-hero h1 {
   max-width: 320px;
-  margin: 26px 0 10px;
-  font-size: 24px;
+  margin: 58px 0 10px;
+  font-size: 18px;
   font-weight: 400;
-  line-height: 34px;
+  line-height: 26px;
   letter-spacing: 0;
 }
 
@@ -607,7 +622,7 @@ button:focus-visible {
 
 .sidebar-head {
   display: flex;
-  height: 64px;
+  height: 54px;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
@@ -688,12 +703,12 @@ button:focus-visible {
 
 .nav-row {
   display: grid;
-  grid-template-columns: 32px 1fr auto;
-  min-height: 50px;
+  grid-template-columns: 28px 1fr auto;
+  min-height: 40px;
   align-items: center;
   padding: 0 16px;
   color: var(--text);
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .nav-row.active {

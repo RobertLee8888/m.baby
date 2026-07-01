@@ -180,6 +180,7 @@ function Logo({ size = "large" }: { size?: "large" | "small" }) {
   return (
     <div className={`logo-mark logo-${size}`} aria-label="Alva">
       <img src={asset("assets/logos/alva-logo.svg")} alt="" />
+      <span>Alva</span>
     </div>
   );
 }
