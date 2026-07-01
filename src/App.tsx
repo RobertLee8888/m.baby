@@ -17,6 +17,7 @@ export default function App() {
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
   const [motion, setMotion] = useState<Motion>("soft");
+  const [drawerTransition, setDrawerTransition] = useState<{ from: Screen; to: Screen } | null>(null);
   const [viewport, setViewport] = useState(getVisualViewportSize);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function App() {
     const onPopState = (event: PopStateEvent) => {
       const state = event.state as BrowserRouteState | null;
       if (!state?.babyDemo) return;
+      setDrawerTransition(null);
       setMotion("back");
       setScreen(state.screen);
       setHistory(state.history);
@@ -64,16 +66,30 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!drawerTransition) return;
+    const timeout = window.setTimeout(() => {
+      setScreen(drawerTransition.to);
+      setMotion("none");
+      setDrawerTransition(null);
+    }, 560);
+    return () => window.clearTimeout(timeout);
+  }, [drawerTransition]);
+
   const navigate = (next: Screen, options: { detailTab?: DetailTab; settingsTab?: SettingsTab } = {}) => {
     const nextHistory = [...history, screen];
     const nextDetailTab = options.detailTab ?? detailTab;
     const nextSettingsTab = options.settingsTab ?? settingsTab;
+    const nextMotion = motionFor(screen, next);
     setHistory(nextHistory);
-    setMotion(motionFor(screen, next));
+    setMotion(nextMotion);
+    setDrawerTransition(nextMotion === "drawer" ? { from: screen, to: next } : null);
     setOverlay(null);
     setDetailTab(nextDetailTab);
     setSettingsTab(nextSettingsTab);
-    setScreen(next);
+    if (nextMotion !== "drawer") {
+      setScreen(next);
+    }
     writeBrowserState(
       "push",
       createRouteState({
@@ -89,6 +105,7 @@ export default function App() {
   const replace = (next: Screen) => {
     setHistory([]);
     setMotion(motionFor(screen, next));
+    setDrawerTransition(null);
     setOverlay(null);
     setScreen(next);
     writeBrowserState(
@@ -112,6 +129,7 @@ export default function App() {
     const stack = [...history];
     const previous = stack.pop() ?? fallback;
     setMotion("back");
+    setDrawerTransition(null);
     setOverlay(null);
     setScreen(previous);
     setHistory(stack);
@@ -157,17 +175,14 @@ export default function App() {
     navigate("settings", { settingsTab: "account" });
   };
 
-  let rendered: ReactNode = null;
-
-  switch (screen) {
+  const renderScreen = (target: Screen): ReactNode => {
+    switch (target) {
     case "login":
-      rendered = <LoginPage onLogin={() => replace("chat")} />;
-      break;
+      return <LoginPage onLogin={() => replace("chat")} />;
     case "chat":
-      rendered = <ChatPage onMenu={() => navigate("sidebar")} />;
-      break;
+      return <ChatPage onMenu={() => navigate("sidebar")} />;
     case "sidebar":
-      rendered = (
+      return (
         <SidebarPage
           onAccount={() => navigate("sidebarMenu")}
           onAskAlva={() => replace("chat")}
@@ -178,30 +193,22 @@ export default function App() {
           onRecentChats={() => navigate("recentChats")}
         />
       );
-      break;
     case "sidebarMenu":
-      rendered = <SidebarMenuPage onBack={() => back("sidebar")} onProfile={() => navigate("profile")} onSettings={openSettings} />;
-      break;
+      return <SidebarMenuPage onBack={() => back("sidebar")} onProfile={() => navigate("profile")} onSettings={openSettings} />;
     case "playbooks":
-      rendered = <PlaybooksPage onBack={() => back("sidebar")} onOpen={openDetail} />;
-      break;
+      return <PlaybooksPage onBack={() => back("sidebar")} onOpen={openDetail} />;
     case "recentChats":
-      rendered = <RecentChatsPage onBack={() => back("sidebar")} onChat={() => navigate("chatSelected")} />;
-      break;
+      return <RecentChatsPage onBack={() => back("sidebar")} onChat={() => navigate("chatSelected")} />;
     case "explore":
-      rendered = <ExplorePage onMenu={() => navigate("sidebar")} onOpen={openDetail} />;
-      break;
+      return <ExplorePage onMenu={() => navigate("sidebar")} onOpen={openDetail} />;
     case "chatSelected":
-      rendered = <ChatSelectedPage onBack={() => back("sidebar")} />;
-      break;
+      return <ChatSelectedPage onBack={() => back("sidebar")} />;
     case "profile":
-      rendered = <ProfilePage onBack={() => back("sidebar")} />;
-      break;
+      return <ProfilePage onBack={() => back("sidebar")} />;
     case "settings":
-      rendered = <SettingsPage active={settingsTab} onBack={() => back("sidebarMenu")} onTab={setSettingsTab} />;
-      break;
+      return <SettingsPage active={settingsTab} onBack={() => back("sidebarMenu")} onTab={setSettingsTab} />;
     case "playbookDetail":
-      rendered = (
+      return (
         <PlaybookDetailPage
           onAsk={() => openOverlay("askAlva")}
           onBack={() => back("sidebar")}
@@ -210,7 +217,7 @@ export default function App() {
           tab={detailTab}
         />
       );
-      break;
+    }
   }
 
   const stageScale = viewport.width < MIN_MOBILE_STAGE_WIDTH ? viewport.width / MIN_MOBILE_STAGE_WIDTH : 1;
@@ -227,6 +234,8 @@ export default function App() {
         }
       : null),
   } as CSSProperties;
+  const isDrawerTransition = Boolean(drawerTransition);
+  const rendered = renderScreen(screen);
 
   return (
     <main className="demo-root">
@@ -234,8 +243,18 @@ export default function App() {
         <p>此 demo 仅在移动端窗口尺寸生效</p>
       </section>
 
-      <section className="mobile-shell" aria-label="m.baby mobile demo" style={mobileShellStyle}>
-        <div className={`view-transition enter-${motion}`} key={screen}>
+      <section className={`mobile-shell ${isDrawerTransition ? "is-drawer-transition" : ""}`} aria-label="m.baby mobile demo" style={mobileShellStyle}>
+        {drawerTransition ? (
+          <div className="view-transition drawer-enter-layer" data-transition-layer="drawer-enter" key={`drawer-${drawerTransition.to}`}>
+            {renderScreen(drawerTransition.to)}
+          </div>
+        ) : null}
+        <div
+          aria-hidden={drawerTransition ? "true" : undefined}
+          className={`view-transition ${drawerTransition ? "drawer-exit-layer" : `enter-${motion}`}`}
+          data-transition-layer={drawerTransition ? "drawer-exit" : "current"}
+          key={screen}
+        >
           {rendered}
         </div>
         {overlay === "askAlva" ? <AskAlvaOverlay onClose={closeOverlay} /> : null}
