@@ -193,7 +193,8 @@ export function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: ()
   return (
     <Page className="explore-page" scroll>
       <TopBar
-        left={<IconButton iconSrc="assets/figma/menu-l1.svg" label="Open sidebar" onClick={onMenu} />}
+        border={false}
+        left={<IconButton className="explore-menu-button" iconSrc="assets/figma/menu-l2.svg" label="Open sidebar" onClick={onMenu} />}
         right={<IconButton iconSrc="assets/figma/search-l1.svg" label="Search" />}
         title="Explore"
       />
@@ -201,36 +202,40 @@ export function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: ()
         Popular <AssetIcon size={12} src="assets/figma/data-entry-info.svg" />
       </button>
       <div className="explore-tabs">
-        {["Smart Screener", "Theme Tracker", "Backtest", "AI Digest"].map((item) => (
+        {["Smart Screener", "Theme Tracker", "Backtest", "AI Digest", "Asset Deepdive", "Crypto", "BTC", "Thesis", "Tech"].map((item) => (
           <Pill key={item}>{item}</Pill>
         ))}
-        <button aria-label="More categories" className="mini-icon-button" type="button">
-          <AssetIcon size={17} src="assets/figma/menu-l1.svg" />
+        <button aria-label="More categories" className="explore-more-button" type="button">
+          <AssetIcon size={20} src="assets/figma/menu-l1.svg" />
         </button>
       </div>
       <div className="explore-stack">
         {exploreItems.map((item) => (
           <button className="explore-card" key={item.title} onClick={onOpen} type="button">
-            <span className="explore-copy">
-              <strong>{item.title}</strong>
-              <small>{item.desc}</small>
-              <span className="explore-author">
-                <Avatar size={18} src={item.avatar} />
-                {item.author}
+            <span className="explore-main">
+              <span className="explore-copy">
+                <strong>{item.title}</strong>
+                <small>{item.desc}</small>
+              </span>
+              <span className="explore-cover">
+                <img alt="" src={item.cover} />
               </span>
             </span>
-            <img alt="" src={item.cover} />
-            <span className="explore-metrics">
+            <span className="explore-info">
+              <span className="explore-author">
+                <Avatar size={18} src={item.avatar} />
+                <span>{item.author}</span>
+              </span>
               {item.price ? (
                 <span className="explore-price">
                   <AssetIcon size={14} src="assets/figma/locked-f.svg" /> {item.price}
                 </span>
               ) : null}
-              <span>
-                <AssetIcon size={14} src="assets/figma/show-l.svg" /> 12.8K
+              <span className="explore-metric">
+                <AssetIcon size={14} src="assets/figma/show-l.svg" /> {item.views}
               </span>
-              <span>
-                <AssetIcon size={14} src="assets/figma/remix-l.svg" /> 3
+              <span className="explore-metric">
+                <AssetIcon size={14} src="assets/figma/remix-l.svg" /> {item.remixes}
               </span>
             </span>
           </button>

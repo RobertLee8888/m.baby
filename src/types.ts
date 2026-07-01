@@ -46,4 +46,6 @@ export type ExploreItem = {
   avatar: string;
   cover: string;
   price?: string;
+  remixes: string;
+  views: string;
 };
