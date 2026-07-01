@@ -1484,7 +1484,6 @@ button:focus-visible {
   font-size: 12px;
 }
 
-.new-chat,
 .primary-outline {
   display: flex;
   width: calc(100% - 32px);
@@ -1500,25 +1499,49 @@ button:focus-visible {
   font-size: 13px;
 }
 
+.new-chat {
+  display: flex;
+  width: calc(100% - 32px);
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 2px 16px 10px;
+  border: 0.5px solid var(--teal);
+  border-radius: var(--radius-s);
+  background: #ffffff;
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.12px;
+}
+
 .new-chat .asset-icon {
   flex: 0 0 auto;
 }
 
 .ask-fab {
-  position: relative;
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 12;
   display: flex;
   width: 129px;
   height: 52px;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin: -70px 16px 16px auto;
+  margin: 0;
   border: 0;
   border-radius: var(--radius-l);
-  background: #2fa59c;
+  background: linear-gradient(112deg, #2a9b7d 0%, #49a3a6 100%);
   color: #ffffff;
-  box-shadow: 0 10px 22px rgba(47, 165, 156, 0.28);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
   font-size: 18px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0.18px;
 }
 
 .ask-fab .asset-icon {

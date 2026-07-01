@@ -170,6 +170,7 @@ export default function App() {
       rendered = (
         <SidebarPage
           onAccount={() => navigate("sidebarMenu")}
+          onAskAlva={() => replace("chat")}
           onChat={() => navigate("chatSelected")}
           onExplore={() => navigate("explore")}
           onPlaybook={openDetail}

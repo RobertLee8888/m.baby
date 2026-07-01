@@ -18,6 +18,7 @@ import { chats, exploreItems, playbooks } from "../data";
 
 export function SidebarPage({
   onAccount,
+  onAskAlva,
   onExplore,
   onPlaybooks,
   onRecentChats,
@@ -25,6 +26,7 @@ export function SidebarPage({
   onChat,
 }: {
   onAccount: () => void;
+  onAskAlva: () => void;
   onExplore: () => void;
   onPlaybooks: () => void;
   onRecentChats: () => void;
@@ -74,7 +76,7 @@ export function SidebarPage({
           <ChatRow item={item} key={item.title} onClick={onChat} />
         ))}
       </div>
-      <button className="ask-fab" type="button">
+      <button className="ask-fab" onClick={onAskAlva} type="button">
         <AssetIcon src="assets/figma/chat-ai-l.svg" /> Ask Alva
       </button>
     </Page>
