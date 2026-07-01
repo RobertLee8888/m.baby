@@ -207,7 +207,8 @@ function TopAd() {
 function Logo({ size = "large" }: { size?: "large" | "small" }) {
   return (
     <div className={`logo-mark logo-${size}`} aria-label="Alva">
-      <img src={asset("assets/figma/alva-wordmark.png")} alt="" />
+      <img className="logo-symbol" src={asset("assets/figma/alva-symbol.svg")} alt="" />
+      <img className="logo-word" src={asset("assets/figma/alva-word.svg")} alt="" />
     </div>
   );
 }
@@ -332,7 +333,9 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
       <button className="promo-card" onClick={onLogin} type="button">
         <span className="promo-icon">
-          <img alt="" src={asset("assets/figma/login-gift.png")} />
+          <span className="gift-emoji" aria-hidden="true">
+            🎁
+          </span>
         </span>
         <span>
           <strong>Sign up to unlock 3-day Pro</strong>
@@ -352,9 +355,9 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
 
       <div className="social-grid">
         {[
-          ["Google", "assets/figma/social-google.png"],
+          ["Google", "assets/figma/social-google.svg"],
           ["X", "assets/figma/social-x.svg"],
-          ["Telegram", "assets/figma/social-telegram.png"],
+          ["Telegram", "assets/figma/social-telegram.svg"],
           ["Discord", "assets/figma/social-discord.svg"],
         ].map(([label, src]) => (
           <button aria-label={`Login with ${label}`} key={label} onClick={onLogin} type="button">
@@ -367,8 +370,10 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
         <span className="checkbox" />
         <span>Verify you are human</span>
         <span className="cloudflare">
-          <img alt="" src={asset("assets/figma/cloudflare.svg")} />
-          Cloudflare
+          <span className="cloudflare-row">
+            <img alt="" src={asset("assets/figma/cloudflare.svg")} />
+            <span>Cloudflare</span>
+          </span>
           <small>Privacy · Terms</small>
         </span>
       </button>
@@ -547,7 +552,7 @@ function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void
             <Pill>Annual</Pill>
           </span>
           <small>
-            <img alt="" className="google-logo-small" src={asset("assets/figma/social-google.png")} /> sheer@alva.xyz
+            <img alt="" className="google-logo-small" src={asset("assets/figma/social-google.svg")} /> sheer@alva.xyz
           </small>
         </span>
         <AssetIcon size={12} src="assets/figma/arrow-right-l2.svg" />
@@ -1051,7 +1056,7 @@ function ProfilePage({ onBack }: { onBack: () => void }) {
           <img alt="" src={asset("assets/figma/social-x.svg")} /> @yggyll
         </span>
         <span>
-          <img alt="" src={asset("assets/figma/social-telegram.png")} /> @YGGYLLSignals
+          <img alt="" src={asset("assets/figma/social-telegram.svg")} /> @YGGYLLSignals
         </span>
         <span>
           <img alt="" src={asset("assets/figma/social-discord.svg")} /> yggyll.alva

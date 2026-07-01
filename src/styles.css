@@ -231,25 +231,40 @@ button:focus-visible {
 }
 
 .logo-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
   letter-spacing: 0;
 }
 
 .logo-mark img {
+  position: absolute;
   display: block;
-  object-fit: contain;
+  max-width: none;
 }
 
-.logo-large img {
+.logo-large {
   width: 95px;
-  height: 25px;
+  height: 24px;
 }
 
-.logo-small img {
+.logo-small {
   width: 79px;
   height: 20px;
+}
+
+.logo-symbol {
+  top: 0;
+  left: 0;
+  width: 24.69%;
+  height: 97.94%;
+}
+
+.logo-word {
+  top: 0;
+  left: 29.62%;
+  width: 70.38%;
+  height: 100%;
 }
 
 .avatar {
@@ -333,7 +348,11 @@ button:focus-visible {
 }
 
 .login-page {
-  padding: 74px 28px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: 16px 28px;
   text-align: center;
 }
 
@@ -345,7 +364,7 @@ button:focus-visible {
 
 .login-hero h1 {
   max-width: 337px;
-  margin: 24px 0 7px;
+  margin: 24px 0 8px;
   font-size: 24px;
   font-weight: 400;
   line-height: 34px;
@@ -366,11 +385,11 @@ button:focus-visible {
   min-height: 60px;
   align-items: center;
   gap: 8px;
-  margin-top: 15px;
+  margin-top: 16px;
   padding: 8px 16px 8px 8px;
   border: 0;
   border-radius: var(--radius-m);
-  background: #eaf6f7;
+  background: rgba(73, 163, 166, 0.1);
   text-align: left;
 }
 
@@ -378,14 +397,17 @@ button:focus-visible {
   display: block;
   color: var(--teal);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
 }
 
 .promo-card small {
   display: block;
-  margin-top: 4px;
   color: var(--teal);
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0;
 }
 
 .promo-icon {
@@ -393,25 +415,29 @@ button:focus-visible {
   width: 44px;
   height: 44px;
   place-items: center;
+  padding: 8px 8px 6px;
 }
 
-.promo-icon img {
+.gift-emoji {
   display: block;
-  width: 29px;
-  height: 31px;
-  object-fit: contain;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 32px;
+  line-height: 42px;
+  letter-spacing: 0;
 }
 
 .email-button {
   width: 100%;
   height: 48px;
-  margin-top: 25px;
-  padding: 0 15px;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  margin-top: 24px;
+  padding: 0 16px;
+  border: 0.5px solid rgba(0, 0, 0, 0.3);
   border-radius: var(--radius-m);
   background: #ffffff;
   color: rgba(0, 0, 0, 0.3);
   font-size: 16px;
+  line-height: 26px;
+  letter-spacing: 0;
   text-align: left;
 }
 
@@ -419,8 +445,8 @@ button:focus-visible {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 18px;
-  margin: 16px 8px 12px;
+  gap: 16px;
+  margin: 12px 8px;
 }
 
 .divider span {
@@ -430,7 +456,10 @@ button:focus-visible {
 
 .divider small {
   color: var(--text-3);
-  font-size: 13px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
 }
 
 .social-grid {
@@ -440,8 +469,8 @@ button:focus-visible {
 }
 
 .social-grid button {
-  height: 49px;
-  border: 1px solid rgba(0, 0, 0, 0.16);
+  height: 48px;
+  border: 0.5px solid rgba(0, 0, 0, 0.3);
   border-radius: var(--radius-m);
   background: #ffffff;
 }
@@ -453,25 +482,29 @@ button:focus-visible {
 
 .human-check {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 26px 1fr auto;
   width: 100%;
   min-height: 68px;
   align-items: center;
   gap: 12px;
   margin-top: 12px;
-  padding: 12px 14px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px 14px;
+  border: 0.5px solid #dedede;
   border-radius: var(--radius-m);
-  background: #ffffff;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  background: #fafafa;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  color: #212121;
+  font-size: 14px;
+  line-height: 22px;
+  letter-spacing: 0;
   text-align: left;
 }
 
 .checkbox {
-  width: 27px;
-  height: 27px;
-  border: 1px solid rgba(0, 0, 0, 0.25);
-  border-radius: 3px;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid #c2c2c2;
+  border-radius: 4px;
   background: #ffffff;
 }
 
@@ -480,26 +513,39 @@ button:focus-visible {
   min-width: 96px;
   flex-direction: column;
   align-items: center;
-  border-left: 1px solid var(--line);
+  padding-left: 12px;
+  border-left: 1px solid #d9d9d9;
   color: var(--text-5);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0;
 }
 
-.cloudflare img {
+.cloudflare-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 18px;
+}
+
+.cloudflare-row img {
   width: 14px;
   height: 14px;
 }
 
 .cloudflare small {
-  margin-top: 2px;
   font-size: 10px;
+  font-weight: 400;
+  line-height: 16px;
 }
 
 .terms {
-  margin-top: 21px;
+  margin-top: 8px;
   color: var(--text-5);
   font-size: 12px;
   line-height: 20px;
+  letter-spacing: 0;
 }
 
 .chat-page {
