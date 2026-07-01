@@ -682,6 +682,184 @@ button:focus-visible {
   padding: 16px 16px 88px;
 }
 
+.chat-content-stage {
+  width: 100%;
+}
+
+.chat-content-stage.is-ready {
+  animation: content-ready-in 180ms ease-out;
+}
+
+.chat-loading {
+  width: 100%;
+  animation: loading-content-in 180ms ease-out;
+}
+
+.skeleton-surface,
+.skeleton-card,
+.skeleton-line,
+.skeleton-pill,
+.loading-chip-row span {
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.skeleton-surface::after,
+.skeleton-card::after,
+.skeleton-line::after,
+.skeleton-pill::after,
+.loading-chip-row span::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.72) 50%, rgba(255, 255, 255, 0) 80%);
+  content: "";
+  transform: translateX(-100%);
+  animation: skeleton-sheen 1150ms ease-in-out infinite;
+}
+
+.loading-user-bubble {
+  width: 100%;
+  height: 68px;
+  border-radius: var(--radius-l);
+  background: rgba(73, 163, 166, 0.1);
+}
+
+.loading-answer-block {
+  margin-top: 28px;
+}
+
+.loading-agent-row {
+  display: flex;
+  height: 22px;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-agent-name {
+  width: 42px;
+  height: 14px;
+  border-radius: 99px;
+}
+
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.typing-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  animation: typing-dot 900ms ease-in-out infinite;
+}
+
+.typing-dots i:nth-child(2) {
+  animation-delay: 120ms;
+}
+
+.typing-dots i:nth-child(3) {
+  animation-delay: 240ms;
+}
+
+.loading-card {
+  height: 320px;
+  margin-top: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-l);
+  background: #ffffff;
+}
+
+.loading-card-header {
+  display: grid;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
+}
+
+.loading-card-body,
+.loading-message-lines {
+  display: grid;
+  gap: 10px;
+  padding: 12px 16px;
+}
+
+.loading-message-lines {
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.loading-message-lines-first {
+  margin-top: 8px;
+}
+
+.skeleton-line {
+  display: block;
+  width: 74%;
+  height: 14px;
+  border-radius: 99px;
+}
+
+.skeleton-title {
+  width: 58%;
+  height: 16px;
+}
+
+.skeleton-wide {
+  width: 92%;
+}
+
+.skeleton-short {
+  width: 48%;
+}
+
+.skeleton-meta {
+  width: 72%;
+  height: 12px;
+}
+
+.skeleton-pill {
+  width: 147px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.loading-delivery-card {
+  display: grid;
+  gap: 8px;
+  height: 127px;
+  margin-top: 8px;
+  padding: 12px 12px 12px 16px;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-l);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.loading-chip-row {
+  display: flex;
+  gap: 8px;
+}
+
+.loading-chip-row span {
+  width: 96px;
+  height: 32px;
+  border-radius: var(--radius-s);
+  background: rgba(73, 163, 166, 0.16);
+}
+
+.loading-thread-tail {
+  margin-top: 28px;
+}
+
+.loading-user-bubble-short {
+  width: 301px;
+  height: 46px;
+  margin-left: auto;
+}
+
 .user-bubble {
   width: 100%;
   min-height: 68px;
@@ -2842,6 +3020,47 @@ button:focus-visible {
   }
 }
 
+@keyframes loading-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes content-ready-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skeleton-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes typing-dot {
+  0%,
+  72%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  36% {
+    opacity: 0.82;
+    transform: translateY(-2px);
+  }
+}
+
 @keyframes backdrop-in {
   from {
     opacity: 0;
@@ -2953,7 +3172,15 @@ button:focus-visible {
   .overlay-backdrop,
   .ask-sheet,
   .info-modal,
-  .detail-actions {
+  .detail-actions,
+  .chat-content-stage.is-ready,
+  .chat-loading,
+  .typing-dots i,
+  .skeleton-surface::after,
+  .skeleton-card::after,
+  .skeleton-line::after,
+  .skeleton-pill::after,
+  .loading-chip-row span::after {
     animation: none;
   }
 }

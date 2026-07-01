@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import {
   AgentIcon,
   AssetIcon,
@@ -8,6 +10,93 @@ import {
   TopBar,
   TabRow,
 } from "../components";
+
+const CHAT_CONTENT_LOADING_MS = 2200;
+
+function useFakeContentLoading() {
+  const [loading, setLoading] = useState(() => typeof window !== "undefined");
+
+  useEffect(() => {
+    setLoading(true);
+    const timeout = window.setTimeout(() => setLoading(false), CHAT_CONTENT_LOADING_MS);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
+  return loading;
+}
+
+function ChatContentLoader({ children, variant }: { children: ReactNode; variant: "agent" | "thread" }) {
+  const loading = useFakeContentLoading();
+
+  return (
+    <div aria-busy={loading} className={`chat-content-stage ${loading ? "is-loading" : "is-ready"}`}>
+      {loading ? <ChatLoadingState variant={variant} /> : children}
+    </div>
+  );
+}
+
+function ChatLoadingState({ variant }: { variant: "agent" | "thread" }) {
+  return (
+    <div aria-hidden="true" className={`chat-loading chat-loading-${variant}`}>
+      <div className="loading-user-bubble skeleton-surface" />
+      <div className="loading-answer-block">
+        <div className="loading-agent-row">
+          <AgentIcon />
+          <span className="loading-agent-name skeleton-surface" />
+          <span className="typing-dots">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
+        {variant === "agent" ? (
+          <div className="loading-card skeleton-card">
+            <div className="loading-card-header">
+              <span className="skeleton-line skeleton-title" />
+              <span className="skeleton-pill" />
+              <span className="skeleton-line skeleton-meta" />
+            </div>
+            <div className="loading-card-body">
+              <span className="skeleton-line" />
+              <span className="skeleton-line skeleton-wide" />
+              <span className="skeleton-line skeleton-short" />
+            </div>
+          </div>
+        ) : (
+          <div className="loading-message-lines loading-message-lines-first">
+            <span className="skeleton-line" />
+            <span className="skeleton-line skeleton-wide" />
+            <span className="skeleton-line skeleton-short" />
+          </div>
+        )}
+      </div>
+      {variant === "thread" ? (
+        <div className="loading-thread-tail">
+          <div className="loading-user-bubble loading-user-bubble-short skeleton-surface" />
+          <div className="loading-agent-row">
+            <AgentIcon />
+            <span className="loading-agent-name skeleton-surface" />
+          </div>
+          <div className="loading-message-lines">
+            <span className="skeleton-line" />
+            <span className="skeleton-line skeleton-wide" />
+            <span className="skeleton-line skeleton-short" />
+          </div>
+        </div>
+      ) : (
+        <div className="loading-delivery-card skeleton-card">
+          <span className="skeleton-line skeleton-title" />
+          <span className="skeleton-line skeleton-wide" />
+          <div className="loading-chip-row">
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ChatPage({ onMenu }: { onMenu: () => void }) {
   return (
@@ -30,60 +119,62 @@ export function ChatPage({ onMenu }: { onMenu: () => void }) {
         onChange={() => undefined}
       />
       <div className="chat-scroll">
-        <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
-        <div className="agent-label">
-          <AgentIcon />
-          <strong>Alva</strong>
-        </div>
-        <article className="digest-card">
-          <header>
-            <div>
-              <h2>Daily Digest · Market Digest</h2>
-              <Pill>
-                <span className="teal-dot" /> nvda-macd-hft-notify
-              </Pill>
-              <p className="muted">English · Jun 15 · Daily Digest · Previous day · Based on 53 FinTwits</p>
+        <ChatContentLoader variant="agent">
+          <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
+          <div className="agent-label">
+            <AgentIcon />
+            <strong>Alva</strong>
+          </div>
+          <article className="digest-card">
+            <header>
+              <div>
+                <h2>Daily Digest · Market Digest</h2>
+                <Pill>
+                  <span className="teal-dot" /> nvda-macd-hft-notify
+                </Pill>
+                <p className="muted">English · Jun 15 · Daily Digest · Previous day · Based on 53 FinTwits</p>
+              </div>
+              <button type="button">Open full report</button>
+            </header>
+            <div className="digest-body">
+              <p>Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.</p>
+              <p>
+                The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+                funding short.
+              </p>
+              <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
+              <p>
+                The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+                funding short.
+              </p>
+              <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
+              <p>
+                The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
+                funding short.
+              </p>
             </div>
-            <button type="button">Open full report</button>
-          </header>
-          <div className="digest-body">
-            <p>Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.</p>
-            <p>
-              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
-              funding short.
-            </p>
-            <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
-            <p>
-              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
-              funding short.
-            </p>
-            <p>Most calls still need confirmation from price action, volume, and follow-up posts before they become high-conviction trade ideas.</p>
-            <p>
-              The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while $AVGO appears as a possible
-              funding short.
-            </p>
-          </div>
-        </article>
-        <section className="delivery-card" aria-label="Alert destinations">
-          <div>
-            <h2>Where should Alva send alerts?</h2>
-            <p>Connect one destination first. Once connected, send yourself this sample digest to complete setup.</p>
-          </div>
-          <div className="delivery-actions">
-            <button className="delivery-telegram" type="button">
-              <AssetIcon size={14} src="assets/figma/account-telegram-l.svg" />
-              Telegram
-            </button>
-            <button className="delivery-discord" type="button">
-              <AssetIcon size={14} src="assets/figma/account-discord-l.svg" />
-              Discord
-            </button>
-            <button className="delivery-whatsapp" type="button">
-              <AssetIcon size={14} src="assets/figma/account-whatsapp-l.svg" />
-              WhatsApp
-            </button>
-          </div>
-        </section>
+          </article>
+          <section className="delivery-card" aria-label="Alert destinations">
+            <div>
+              <h2>Where should Alva send alerts?</h2>
+              <p>Connect one destination first. Once connected, send yourself this sample digest to complete setup.</p>
+            </div>
+            <div className="delivery-actions">
+              <button className="delivery-telegram" type="button">
+                <AssetIcon size={14} src="assets/figma/account-telegram-l.svg" />
+                Telegram
+              </button>
+              <button className="delivery-discord" type="button">
+                <AssetIcon size={14} src="assets/figma/account-discord-l.svg" />
+                Discord
+              </button>
+              <button className="delivery-whatsapp" type="button">
+                <AssetIcon size={14} src="assets/figma/account-whatsapp-l.svg" />
+                WhatsApp
+              </button>
+            </div>
+          </section>
+        </ChatContentLoader>
       </div>
       <Composer />
     </Page>
@@ -103,30 +194,32 @@ export function ChatSelectedPage({ onBack }: { onBack: () => void }) {
         right={<IconButton iconSrc="assets/figma/account-settings-l.svg" label="Settings" />}
       />
       <div className="chat-scroll">
-        <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
-        <div className="agent-label">
-          <AgentIcon />
-          <strong>Alva</strong>
-          <time>10:28 PM</time>
-        </div>
-        <div className="assistant-message">
-          <p>
-            On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and sentiment
-            shifts.
-          </p>
-          <p>Want me to deliver this automatically each morning?</p>
-        </div>
-        <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
-        <div className="agent-label">
-          <AgentIcon />
-          <strong>Alva</strong>
-          <time>10:28 PM</time>
-        </div>
-        <div className="assistant-message">
-          <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
-          <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
-          <p>Highlights: NVDA bulls at 68%, BTC reclaiming $104k, and</p>
-        </div>
+        <ChatContentLoader variant="thread">
+          <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
+          <div className="agent-label">
+            <AgentIcon />
+            <strong>Alva</strong>
+            <time>10:28 PM</time>
+          </div>
+          <div className="assistant-message">
+            <p>
+              On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and
+              sentiment shifts.
+            </p>
+            <p>Want me to deliver this automatically each morning?</p>
+          </div>
+          <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
+          <div className="agent-label">
+            <AgentIcon />
+            <strong>Alva</strong>
+            <time>10:28 PM</time>
+          </div>
+          <div className="assistant-message">
+            <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
+            <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
+            <p>Highlights: NVDA bulls at 68%, BTC reclaiming $104k, and</p>
+          </div>
+        </ChatContentLoader>
       </div>
       <Composer />
     </Page>
@@ -155,29 +248,31 @@ export function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
           }
         />
         <div className="chat-scroll sheet-chat">
-          <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
-          <div className="agent-label">
-            <AgentIcon />
-            <strong>Alva</strong>
-            <time>10:28 PM</time>
-          </div>
-          <div className="assistant-message">
-            <p>
-              On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and sentiment
-              shifts.
-            </p>
-            <p>Want me to deliver this automatically each morning?</p>
-          </div>
-          <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
-          <div className="agent-label">
-            <AgentIcon />
-            <strong>Alva</strong>
-            <time>10:28 PM</time>
-          </div>
-          <div className="assistant-message">
-            <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
-            <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
-          </div>
+          <ChatContentLoader variant="thread">
+            <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
+            <div className="agent-label">
+              <AgentIcon />
+              <strong>Alva</strong>
+              <time>10:28 PM</time>
+            </div>
+            <div className="assistant-message">
+              <p>
+                On it. I'll read today's posts from your 8 selected FinTwit accounts and condense them into one digest — top calls, ticker mentions, and
+                sentiment shifts.
+              </p>
+              <p>Want me to deliver this automatically each morning?</p>
+            </div>
+            <div className="user-bubble selected-confirm">Yes — send it to Telegram daily at 7:30 AM.</div>
+            <div className="agent-label">
+              <AgentIcon />
+              <strong>Alva</strong>
+              <time>10:28 PM</time>
+            </div>
+            <div className="assistant-message">
+              <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
+              <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
+            </div>
+          </ChatContentLoader>
         </div>
         <Composer compact />
       </div>
