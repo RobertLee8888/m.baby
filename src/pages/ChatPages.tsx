@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   AgentIcon,
@@ -12,6 +12,126 @@ import {
 } from "../components";
 
 const CHAT_CONTENT_LOADING_MS = 2200;
+const AI_THINKING_MS = 1400;
+
+type LiveChatMessage = {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  status?: "thinking" | "complete";
+};
+
+function createAssistantReply(message: string) {
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("report") || lowerMessage.includes("full")) {
+    return "I can use the full report context here. The strongest thread is still AI infrastructure, with NVDA leading attention and AVGO showing up as the most useful hedge to watch.";
+  }
+
+  if (lowerMessage.includes("telegram") || lowerMessage.includes("alert")) {
+    return "Got it. I would keep this digest on a morning alert cadence, then only escalate intraday when NVDA or BTC sentiment moves far enough away from the prior day baseline.";
+  }
+
+  return `Got it. I will answer using the current digest context: ${message}. The useful next step is to compare ticker momentum, author conviction, and whether the latest posts confirm or weaken the setup.`;
+}
+
+function useLiveChat() {
+  const [messages, setMessages] = useState<LiveChatMessage[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
+  const nextIdRef = useRef(1);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const sendMessage = (message: string) => {
+    if (isThinking) return;
+
+    const userId = nextIdRef.current;
+    const assistantId = userId + 1;
+    nextIdRef.current += 2;
+    setIsThinking(true);
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      { content: message, id: userId, role: "user" },
+      { content: "", id: assistantId, role: "assistant", status: "thinking" },
+    ]);
+
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = window.setTimeout(() => {
+      setMessages((currentMessages) =>
+        currentMessages.map((item) =>
+          item.id === assistantId ? { ...item, content: createAssistantReply(message), status: "complete" } : item,
+        ),
+      );
+      setIsThinking(false);
+      timeoutRef.current = null;
+    }, AI_THINKING_MS);
+  };
+
+  return { isThinking, messages, sendMessage };
+}
+
+function useChatAutoScroll(messages: LiveChatMessage[]) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const timeout = window.setTimeout(() => {
+      const scrollArea = scrollRef.current;
+      scrollArea?.scrollTo({ behavior: "smooth", top: scrollArea.scrollHeight });
+    }, 40);
+
+    return () => window.clearTimeout(timeout);
+  }, [messages]);
+
+  return scrollRef;
+}
+
+function LiveChatTail({ messages }: { messages: LiveChatMessage[] }) {
+  if (messages.length === 0) return null;
+
+  return (
+    <div aria-live="polite" className="live-chat-tail">
+      {messages.map((message) =>
+        message.role === "user" ? (
+          <div className="live-chat-turn live-chat-turn-user" key={message.id}>
+            <div className="user-bubble live-user-bubble">{message.content}</div>
+          </div>
+        ) : (
+          <div className="live-chat-turn live-chat-turn-assistant" key={message.id}>
+            <div className="agent-label live-agent-label">
+              <AgentIcon />
+              <strong>Alva</strong>
+            </div>
+            {message.status === "thinking" ? (
+              <div className="assistant-thinking">
+                <span>Thinking</span>
+                <span className="typing-dots">
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </div>
+            ) : (
+              <div className="assistant-message assistant-message-live">
+                <p>{message.content}</p>
+              </div>
+            )}
+          </div>
+        ),
+      )}
+    </div>
+  );
+}
 
 function useFakeContentLoading() {
   const [loading, setLoading] = useState(() => typeof window !== "undefined");
@@ -99,6 +219,9 @@ function ChatLoadingState({ variant }: { variant: "agent" | "thread" }) {
 }
 
 export function ChatPage({ onMenu }: { onMenu: () => void }) {
+  const { isThinking, messages, sendMessage } = useLiveChat();
+  const scrollRef = useChatAutoScroll(messages);
+
   return (
     <Page className="chat-page">
       <TopBar
@@ -118,7 +241,7 @@ export function ChatPage({ onMenu }: { onMenu: () => void }) {
         ]}
         onChange={() => undefined}
       />
-      <div className="chat-scroll">
+      <div className="chat-scroll" ref={scrollRef}>
         <ChatContentLoader variant="agent">
           <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
           <div className="agent-label">
@@ -174,14 +297,18 @@ export function ChatPage({ onMenu }: { onMenu: () => void }) {
               </button>
             </div>
           </section>
+          <LiveChatTail messages={messages} />
         </ChatContentLoader>
       </div>
-      <Composer />
+      <Composer disabled={isThinking} onSend={sendMessage} />
     </Page>
   );
 }
 
 export function ChatSelectedPage({ onBack }: { onBack: () => void }) {
+  const { isThinking, messages, sendMessage } = useLiveChat();
+  const scrollRef = useChatAutoScroll(messages);
+
   return (
     <Page className="chat-page selected-chat">
       <TopBar
@@ -193,7 +320,7 @@ export function ChatSelectedPage({ onBack }: { onBack: () => void }) {
         left={<IconButton iconSrc="assets/figma/back-l1.svg" label="Back" onClick={onBack} />}
         right={<IconButton iconSrc="assets/figma/account-settings-l.svg" label="Settings" />}
       />
-      <div className="chat-scroll">
+      <div className="chat-scroll" ref={scrollRef}>
         <ChatContentLoader variant="thread">
           <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
           <div className="agent-label">
@@ -219,14 +346,18 @@ export function ChatSelectedPage({ onBack }: { onBack: () => void }) {
             <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
             <p>Highlights: NVDA bulls at 68%, BTC reclaiming $104k, and</p>
           </div>
+          <LiveChatTail messages={messages} />
         </ChatContentLoader>
       </div>
-      <Composer />
+      <Composer disabled={isThinking} onSend={sendMessage} />
     </Page>
   );
 }
 
 export function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
+  const { isThinking, messages, sendMessage } = useLiveChat();
+  const scrollRef = useChatAutoScroll(messages);
+
   return (
     <div className="overlay-root ask-overlay-root">
       <button className="overlay-backdrop" onClick={onClose} type="button" aria-label="Close" />
@@ -247,7 +378,7 @@ export function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
             </span>
           }
         />
-        <div className="chat-scroll sheet-chat">
+        <div className="chat-scroll sheet-chat" ref={scrollRef}>
           <ChatContentLoader variant="thread">
             <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
             <div className="agent-label">
@@ -272,9 +403,10 @@ export function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
               <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
               <p>Today's edition: 8 accounts covered, 14 tickers flagged — NVDA and BTC drew the most bullish mentions.</p>
             </div>
+            <LiveChatTail messages={messages} />
           </ChatContentLoader>
         </div>
-        <Composer compact />
+        <Composer compact disabled={isThinking} onSend={sendMessage} />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ReactNode } from "react";
+import type { FormEvent, ReactNode } from "react";
 import { asset } from "./assets";
 import type { ChatItem, Playbook } from "./types";
 
@@ -145,12 +145,21 @@ export function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => voi
   );
 }
 
-export function Composer({ compact = false }: { compact?: boolean }) {
+export function Composer({ compact = false, disabled = false, onSend }: { compact?: boolean; disabled?: boolean; onSend?: (message: string) => void }) {
   const [value, setValue] = useState("");
-  const hasValue = value.trim().length > 0;
+  const trimmedValue = value.trim();
+  const hasValue = trimmedValue.length > 0;
+  const canSend = hasValue && !disabled;
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!canSend) return;
+    onSend?.(trimmedValue);
+    setValue("");
+  };
 
   return (
-    <div className={`composer ${compact ? "composer-compact" : ""}`}>
+    <form className={`composer ${compact ? "composer-compact" : ""}`} onSubmit={handleSubmit}>
       <AssetIcon className="composer-plus" size={16} src="assets/figma/add-l2.svg" />
       <input
         aria-label="Ask Alva"
@@ -159,10 +168,10 @@ export function Composer({ compact = false }: { compact?: boolean }) {
         type="text"
         value={value}
       />
-      <button className={hasValue ? "composer-send-active" : ""} type="button">
-        <AssetIcon size={14} src={hasValue ? "assets/figma/arrow-up-l1.svg" : "assets/figma/arrow-up-l1-chat.svg"} />
+      <button aria-label="Send message" className={canSend ? "composer-send-active" : ""} disabled={!canSend} type="submit">
+        <AssetIcon size={14} src={canSend ? "assets/figma/arrow-up-l1.svg" : "assets/figma/arrow-up-l1-chat.svg"} />
       </button>
-    </div>
+    </form>
   );
 }
 

@@ -967,7 +967,7 @@ button:focus-visible {
 
 .digest-card header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin: 0;
@@ -992,6 +992,7 @@ button:focus-visible {
 .plan-card button,
 .section-header button {
   flex: 0 0 auto;
+  align-self: center;
   min-height: 32px;
   padding: 0 12px;
   border: 0.5px solid rgba(0, 0, 0, 0.3);
@@ -1127,6 +1128,59 @@ button:focus-visible {
   background: #25d366;
 }
 
+.live-chat-tail {
+  display: grid;
+  gap: 0;
+  margin-top: 28px;
+}
+
+.live-chat-turn {
+  animation: message-in 180ms ease-out both;
+}
+
+.live-chat-turn + .live-chat-turn {
+  margin-top: 28px;
+}
+
+.live-chat-turn-user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.live-user-bubble {
+  width: fit-content;
+  max-width: min(301px, 100%);
+  margin-left: auto;
+  padding: 8px 16px;
+}
+
+.live-agent-label {
+  margin: 0 0 8px;
+}
+
+.assistant-thinking {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-l);
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0.12px;
+}
+
+.assistant-thinking .typing-dots {
+  margin-left: 0;
+}
+
+.assistant-message-live p:last-child {
+  margin-bottom: 0;
+}
+
 .muted {
   color: var(--text-5);
   font-size: 12px;
@@ -1227,6 +1281,10 @@ button:focus-visible {
 
 .composer button.composer-send-active {
   background: var(--teal);
+}
+
+.composer button:disabled {
+  cursor: default;
 }
 
 .sidebar-head {
@@ -3114,6 +3172,17 @@ button:focus-visible {
   from {
     opacity: 0;
     transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
