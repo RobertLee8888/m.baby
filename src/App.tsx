@@ -1,5 +1,39 @@
-import { useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import { useMemo, useState } from "react";
+import {
+  Activity,
+  ArrowLeft,
+  ArrowUp,
+  Bot,
+  Briefcase,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Compass,
+  Copy,
+  Database,
+  Edit3,
+  Gift,
+  Globe2,
+  Hexagon,
+  Info,
+  KeyRound,
+  LogOut,
+  Menu,
+  MessageCircle,
+  MessageSquare,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Send,
+  Settings,
+  Share2,
+  SquarePen,
+  Trophy,
+  WalletCards,
+  X,
+  Zap,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 type Screen =
   | "login"
@@ -15,500 +49,1116 @@ type Screen =
   | "settings";
 
 type Overlay = "askAlva" | "infoModal" | null;
-type Direction = "forward" | "back" | "overlay";
 type DetailTab = "overview" | "analytics" | "strategy" | "feed";
 type SettingsTab = "account" | "usage" | "portfolio" | "alvaAgent" | "alerts" | "apiKey";
 
-type Narrative = {
+type Playbook = {
   title: string;
-  summary: string;
-  details: string[];
+  subtitle: string;
+  avatar: string;
+  cover: string;
+  tag?: string;
+  stat?: string;
 };
 
-type ScreenMeta = {
-  src: string;
-  height: number;
-  label: string;
-  cropTop?: number;
-  scroll?: boolean;
-  sourceHeight?: number;
+type ChatItem = {
+  title: string;
+  time: string;
 };
 
-type Hotspot = {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  action: () => void;
-};
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
 
-const DESIGN_WIDTH = 393;
-const SYSTEM_STATUS_HEIGHT = 59;
-const SAFARI_BOTTOM_BAR_HEIGHT = 134;
-const STANDARD_SOURCE_HEIGHT = 852;
-const STANDARD_VIEW_HEIGHT = STANDARD_SOURCE_HEIGHT - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT;
-const PROFILE_VIEW_HEIGHT = STANDARD_SOURCE_HEIGHT - SYSTEM_STATUS_HEIGHT;
-const DETAIL_TOP_HEIGHT = 120;
-const DETAIL_VIEW_HEIGHT = STANDARD_VIEW_HEIGHT;
-const DETAIL_FOOTER_VIEWPORT_Y = 573;
-const DETAIL_FOOTER_HEIGHT = 86;
-const assetPath = (path: string) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, "")}`;
-
-const detailTabs: Record<DetailTab, { src: string; height: number; label: string; narrative: Narrative }> = {
-  overview: {
-    src: assetPath("screens/detail-tabs/overview.png"),
-    height: 2218,
-    label: "Overview",
-    narrative: {
-      title: "Quality Value Stock Screener detail: Overview",
-      summary: "Overview tab content from the supplied Figma frame with creator, metrics, equity curve, returns, and drawdown modules.",
-      details: [
-        "The product header and fixed bottom actions remain aligned to the chrome-free mobile detail frame.",
-        "The Overview content area is the 393 by 2218 export from Figma node 9949:133037.",
-      ],
-    },
+const playbooks: Playbook[] = [
+  {
+    title: "Investor Roundtable",
+    subtitle: "Ten legendary investors debate any stock - live verdict",
+    avatar: asset("assets/avatars/ava-1.png"),
+    cover: asset("assets/covers/cover-roundtable.webp"),
+    tag: "Debate",
+    stat: "2.6K",
   },
-  analytics: {
-    src: assetPath("screens/detail-tabs/analytics.png"),
-    height: 1644,
-    label: "Analytics",
-    narrative: {
-      title: "Quality Value Stock Screener detail: Analytics",
-      summary: "Analytics tab content from the supplied Figma frame with return, risk, and distribution analysis.",
-      details: [
-        "The Analytics content area is the 393 by 1644 export from Figma node 9949:133040.",
-        "Tab switching keeps the same playbook shell and resets the scroll position to the top.",
-      ],
-    },
+  {
+    title: "LAB Short War Room",
+    subtitle: "Live short-seller console for LABUSDT - squeeze risk",
+    avatar: asset("assets/avatars/ava-2.png"),
+    cover: asset("assets/covers/cover-lab.webp"),
+    tag: "Crypto",
+    stat: "1.8K",
   },
-  strategy: {
-    src: assetPath("screens/detail-tabs/strategy.png"),
-    height: 1112,
-    label: "Strategy",
-    narrative: {
-      title: "Quality Value Stock Screener detail: Strategy",
-      summary: "Strategy tab content from the supplied Figma frame with objective and strategy copy blocks.",
-      details: [
-        "The Strategy content area is the 393 by 1112 export from Figma node 9949:133039.",
-        "The fixed Ask Alva, Remix, Trade, and Subscribe action area stays available over the tab content.",
-      ],
-    },
+  {
+    title: "Citrini Operating System",
+    subtitle: "Six modules - live macro indicators + megatrend tracker",
+    avatar: asset("assets/avatars/ava-3.png"),
+    cover: asset("assets/covers/cover-citrini.webp"),
+    tag: "Macro",
+    stat: "9.1K",
   },
-  feed: {
-    src: assetPath("screens/detail-tabs/feed.png"),
-    height: 1956,
-    label: "Feed",
-    narrative: {
-      title: "Quality Value Stock Screener detail: Feed",
-      summary: "Feed tab content from the supplied Figma frame with playbook updates and market posts.",
-      details: [
-        "The Feed content area is the 393 by 1956 export from Figma node 9949:133038.",
-        "The tab content scrolls behind the fixed bottom shell to match the mobile composition.",
-      ],
-    },
+  {
+    title: "Theme Tracker - Humanoid Robots",
+    subtitle: "75 names across 9 supply-chain layers, scored daily",
+    avatar: asset("assets/avatars/av-zet.jpeg"),
+    cover: asset("assets/covers/cover-btcprice.webp"),
+    tag: "Theme",
+    stat: "3.2K",
   },
-};
-
-const detailTabHitAreas: Array<{ tab: DetailTab; x: number; width: number }> = [
-  { tab: "overview", x: 0, width: 98 },
-  { tab: "analytics", x: 98, width: 98 },
-  { tab: "strategy", x: 196, width: 98 },
-  { tab: "feed", x: 294, width: 99 },
+  {
+    title: "BTC Bet Scanner",
+    subtitle: "Polymarket BTC daily-close - 4-way probability blend",
+    avatar: asset("assets/avatars/ava-5.png"),
+    cover: asset("assets/covers/cover-btcbet.webp"),
+    tag: "Polymarket",
+    stat: "5.7K",
+  },
 ];
 
-const settingsTabHitAreas: Array<{ tab: SettingsTab; x: number; width: number }> = [
-  { tab: "account", x: 0, width: 75 },
-  { tab: "usage", x: 75, width: 64 },
-  { tab: "portfolio", x: 139, width: 76 },
-  { tab: "alvaAgent", x: 215, width: 90 },
-  { tab: "alerts", x: 305, width: 46 },
-  { tab: "apiKey", x: 351, width: 42 },
+const chats: ChatItem[] = [
+  { title: "Crypto Price + AI Trend Pulse", time: "2 min ago" },
+  { title: "$AVGO earnings recap", time: "26 min ago" },
+  { title: "Macro & rates this week", time: "1 hour ago" },
+  { title: "Semis vs power-grid rotation", time: "4 hours ago" },
+  { title: "NVDA options flow check", time: "Yesterday" },
+  { title: "AI infra shipment watch", time: "Tue" },
+  { title: "FOMC liquidity map", time: "Mon" },
 ];
 
-const settingsTab = (
-  src: string,
-  sourceHeight: number,
-  label: string,
-  narrative: Narrative,
-): { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative } => ({
-  src: assetPath(src),
-  sourceHeight,
-  height: sourceHeight - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
+const settingsTabs: Array<{ id: SettingsTab; label: string }> = [
+  { id: "account", label: "Account" },
+  { id: "usage", label: "Usage" },
+  { id: "portfolio", label: "Portfolio" },
+  { id: "alvaAgent", label: "Alva Agent" },
+  { id: "alerts", label: "Alerts" },
+  { id: "apiKey", label: "API Key" },
+];
+
+const detailTabs: Array<{ id: DetailTab; label: string }> = [
+  { id: "overview", label: "Overview" },
+  { id: "analytics", label: "Analytics" },
+  { id: "strategy", label: "Strategy" },
+  { id: "feed", label: "Feed" },
+];
+
+function IconButton({
   label,
-  narrative,
-});
-
-const settingsTabs: Record<
-  SettingsTab,
-  { src: string; height: number; label: string; sourceHeight: number; narrative: Narrative }
-> = {
-  account: settingsTab("screens/settings-tabs/account.png", 1231, "Account", {
-    title: "Settings: Account",
-    summary: "Account settings tab with profile identity, user information, and connected accounts from the supplied Figma frame.",
-    details: [
-      "The browser status chrome and Safari bar are cropped out for real mobile browser viewing.",
-      "Visible sections include Sheer, Nickname, User Info, and Connections.",
-    ],
-  }),
-  usage: settingsTab("screens/settings-tabs/usage.png", 1849, "Usage", {
-    title: "Settings: Usage",
-    summary: "Usage settings tab with Pro subscription, credits, billing, and detailed usage modules.",
-    details: [
-      "This is the longest settings tab and remains fully scrollable after chrome cropping.",
-      "Tab switching resets the settings scroll position to the top.",
-    ],
-  }),
-  portfolio: settingsTab("screens/settings-tabs/portfolio.png", 1255, "Portfolio", {
-    title: "Settings: Portfolio",
-    summary: "Portfolio settings tab with broker connections and global risk rules.",
-    details: [
-      "Broker connection cards and risk controls match the adjacent Figma settings frame.",
-      "The top settings tab row remains tappable from the rendered screenshot layer.",
-    ],
-  }),
-  alvaAgent: settingsTab("screens/settings-tabs/alva-agent.png", 1169, "Alva Agent", {
-    title: "Settings: Alva Agent",
-    summary: "Alva Agent settings tab with connected apps, assistant customization, and generated memory settings.",
-    details: [
-      "The page preserves Figma typography, variables, icon assets, and spacing by using the direct frame export.",
-      "Back and tab controls are added as invisible interaction hotspots.",
-    ],
-  }),
-  alerts: settingsTab("screens/settings-tabs/alerts.png", 1139, "Alerts", {
-    title: "Settings: Alerts",
-    summary: "Alerts settings tab with market digest and watch alert cards.",
-    details: [
-      "Visible alert items include Market Pulse Digest, AI Earnings Radar, GLP-1 Trial Watch, and space-rs-rotation.",
-      "The active tab state is captured from the adjacent settings design.",
-    ],
-  }),
-  apiKey: settingsTab("screens/settings-tabs/api-key.png", 1237, "API Key", {
-    title: "Settings: API Key",
-    summary: "API Key settings tab with Alva API keys, secrets vault, and quick start content.",
-    details: [
-      "The API Key tab uses the adjacent mobile settings export from the same Figma page.",
-      "Chrome-free cropping keeps only the content that will appear inside the phone browser.",
-    ],
-  }),
-};
-
-const screenNarratives: Record<Screen | Exclude<Overlay, null>, Narrative> = {
-  login: {
-    title: "Login",
-    summary: "Alva login screen with email, Google, X, Telegram, Discord, and Cloudflare verification options.",
-    details: [
-      "Slogan: Turn ideas into live investing playbooks in minutes.",
-      "Offer: sign up to unlock 3-day Pro, 8 dollars credits, and full data access.",
-    ],
-  },
-  chat: {
-    title: "Alva Agent chat",
-    summary: "Chat tab showing a FinTwit Digest setup conversation and delivery destination options.",
-    details: [
-      "User request: create today's FinTwit Digest from a chosen FinTwit list.",
-      "Alva answer includes a Daily Digest market report summary and Telegram, Discord, WhatsApp actions.",
-    ],
-  },
-  sidebar: {
-    title: "Sidebar",
-    summary: "Navigation menu with upgrade banner, Explore, Portfolio, Alva Skill, FinTwit Alpha League, playbooks, chats, and Ask Alva.",
-    details: [
-      "Playbooks include Investor Roundtable, LAB Short War Room, Citrini Operating System, Theme Tracker Humanoid Robots, and BTC Bet Scanner.",
-      "Recent chats include Crypto Price plus AI Trend Pulse, AVGO earnings recap, Macro and rates this week, Semis versus power-grid rotation, and NVDA options flow check.",
-    ],
-  },
-  sidebarMenu: {
-    title: "Sidebar account menu",
-    summary: "Account menu popover opened from the sidebar avatar with user identity, usage, referral, earnings, language, settings, and log out rows.",
-    details: [
-      "The user information area opens the full profile page.",
-      "The Settings row opens the mobile Settings page and its tabbed content.",
-    ],
-  },
-  playbooks: {
-    title: "Playbooks",
-    summary: "Playbooks list with All, Subscribed, and Created tabs plus status filters.",
-    details: [
-      "Visible playbooks include Investor Roundtable, LAB Short War Room, Citrini Operating System, Theme Tracker Humanoid Robots, and BTC Bet Scanner.",
-    ],
-  },
-  recentChats: {
-    title: "Recent Chats",
-    summary: "Recent chat list with a New Chat button and timestamped market conversation threads.",
-    details: [
-      "Visible chats include Crypto Price plus AI Trend Pulse, AVGO earnings recap, Macro and rates this week, Semis versus power-grid rotation, NVDA options flow check, AI infra shipment watch, and FOMC liquidity map.",
-    ],
-  },
-  explore: {
-    title: "Explore",
-    summary: "Explore feed with category chips and market playbook cards.",
-    details: [
-      "Cards include BTC Ultimate AI Trader, MAG7 Equal-Weight Monthly Rebalance, PEPE Long versus BTC Short Monitoring, Attribution Analysis Strategy, and BTC MACD 1h Simple Crossover.",
-    ],
-  },
-  playbookDetail: {
-    title: "Quality Value Stock Screener detail",
-    summary: "Playbook detail with Overview, Analytics, Strategy, and Feed tab content from the supplied Figma frame.",
-    details: [
-      "The tab content area uses the four direct exports from Figma node 9949:133034.",
-      "Floating actions include Ask Alva, Remix, Trade, and Subscribe.",
-    ],
-  },
-  chatSelected: {
-    title: "Daily FinTwit Digest chat",
-    summary: "Selected chat thread for Daily FinTwit Digest scheduling.",
-    details: [
-      "Alva asks whether to deliver the digest automatically each morning.",
-      "User confirms Telegram delivery daily at 7:30 AM, then Alva confirms the schedule.",
-    ],
-  },
-  profile: {
-    title: "Profile",
-    summary: "Owner profile page for YGGYLL with creator identity, social handles, stats, edit and share actions, and playbook tabs.",
-    details: [
-      "Stats include 6 playbooks, 890 stars, 12 remix, and 1,203.45 dollars earned.",
-      "Visible tabs include My Playbooks, My starred, and My purchased, with All, Public, Private, and Paid filters.",
-    ],
-  },
-  settings: {
-    title: "Settings",
-    summary: "Mobile Settings page with Account, Usage, Portfolio, Alva Agent, Alerts, and API Key tabs from the supplied Figma frames.",
-    details: [
-      "Entered from the Settings item in the sidebar menu.",
-      "Each tab uses a direct Figma export with system status and Safari browser bars cropped out of the demo.",
-    ],
-  },
-  askAlva: {
-    title: "Ask Alva overlay",
-    summary: "Bottom chat overlay opened from the playbook detail page.",
-    details: [
-      "Overlay shows Daily FinTwit Digest chat with controls for close, new chat, expand, attachment chip, and message input.",
-    ],
-  },
-  infoModal: {
-    title: "Playbook information modal",
-    summary: "Centered modal describing Quality Value Stock Screener with owner, tags, automations, metrics, and description.",
-    details: [
-      "Metrics include 2.6K views, 24 comments, 12 remix, and 138 subscribed.",
-      "Description explains AI infrastructure investment thesis tracking across silicon, networking, hyperscalers, power, and data centers.",
-    ],
-  },
-};
-
-const chromeFreeScreen = (src: string, label: string): ScreenMeta => ({
-  src: assetPath(src),
-  height: STANDARD_VIEW_HEIGHT,
-  label,
-  cropTop: SYSTEM_STATUS_HEIGHT,
-  sourceHeight: STANDARD_SOURCE_HEIGHT,
-});
-
-const screens: Record<Screen | Exclude<Overlay, null>, ScreenMeta> = {
-  login: chromeFreeScreen("screens/login.png", "Login"),
-  chat: chromeFreeScreen("screens/chat.png", "Alva Agent chat"),
-  sidebar: {
-    src: assetPath("screens/sidebar.png"),
-    height: 1313 - SYSTEM_STATUS_HEIGHT - SAFARI_BOTTOM_BAR_HEIGHT,
-    label: "Sidebar",
-    cropTop: SYSTEM_STATUS_HEIGHT,
-    scroll: true,
-    sourceHeight: 1313,
-  },
-  sidebarMenu: chromeFreeScreen("screens/sidebar-menu.png", "Sidebar account menu"),
-  playbooks: chromeFreeScreen("screens/playbooks.png", "Playbooks"),
-  recentChats: chromeFreeScreen("screens/recent-chats.png", "Recent Chats"),
-  explore: chromeFreeScreen("screens/explore.png", "Explore"),
-  playbookDetail: chromeFreeScreen("screens/playbook-detail.png", "Playbook detail"),
-  chatSelected: chromeFreeScreen("screens/chat-selected.png", "Selected chat"),
-  profile: {
-    src: assetPath("screens/profile.png"),
-    height: PROFILE_VIEW_HEIGHT,
-    label: "Profile",
-    cropTop: SYSTEM_STATUS_HEIGHT,
-    sourceHeight: STANDARD_SOURCE_HEIGHT,
-  },
-  settings: {
-    src: settingsTabs.account.src,
-    height: settingsTabs.account.height,
-    label: "Settings",
-    cropTop: SYSTEM_STATUS_HEIGHT,
-    sourceHeight: settingsTabs.account.sourceHeight,
-  },
-  askAlva: chromeFreeScreen("screens/ask-alva-overlay.png", "Ask Alva overlay"),
-  infoModal: chromeFreeScreen("screens/info-modal.png", "Info modal"),
-};
-
-function HotspotButton({ cropTop = 0, frameHeight, hotspot }: { cropTop?: number; hotspot: Hotspot; frameHeight: number }) {
-  const style = {
-    left: `${(hotspot.x / DESIGN_WIDTH) * 100}%`,
-    top: `${((hotspot.y - cropTop) / frameHeight) * 100}%`,
-    width: `${(hotspot.width / DESIGN_WIDTH) * 100}%`,
-    height: `${(hotspot.height / frameHeight) * 100}%`,
-  };
-
+  icon: Icon,
+  onClick,
+  className = "",
+}: {
+  label: string;
+  icon: LucideIcon;
+  onClick?: () => void;
+  className?: string;
+}) {
   return (
-    <button
-      aria-label={hotspot.label}
-      className="hotspot"
-      data-hotspot={hotspot.id}
-      onClick={(event) => {
-        event.stopPropagation();
-        hotspot.action();
-      }}
-      style={style}
-      type="button"
-    />
+    <button aria-label={label} className={`icon-button ${className}`} onClick={onClick} type="button">
+      <Icon size={20} strokeWidth={1.6} />
+    </button>
   );
 }
 
-function DetailScreen({
-  animationTick,
-  direction,
-  onAskAlva,
-  onBack,
-  onInfo,
-  onSelectTab,
-  tab,
+function Page({
+  children,
+  className = "",
+  scroll = false,
 }: {
-  animationTick: number;
-  direction: Direction;
-  onAskAlva: () => void;
-  onBack: () => void;
-  onInfo: () => void;
-  onSelectTab: (tab: DetailTab) => void;
-  tab: DetailTab;
+  children: React.ReactNode;
+  className?: string;
+  scroll?: boolean;
 }) {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const activeTab = detailTabs[tab];
-  const detailHeight = DETAIL_TOP_HEIGHT + activeTab.height + DETAIL_FOOTER_HEIGHT;
-  const narrative = activeTab.narrative;
-  const style = {
-    "--detail-total-height": `${detailHeight}px`,
-    "--detail-content-height": `${activeTab.height}px`,
-  } as CSSProperties;
+  return <div className={`page ${scroll ? "page-scroll" : ""} ${className}`}>{children}</div>;
+}
 
-  const contentHotspots: Hotspot[] = [
-    { id: "detail-back", label: "Back", x: 0, y: 65, width: 48, height: 48, action: onBack },
-    { id: "detail-info", label: "Open playbook info", x: 260, y: 65, width: 42, height: 48, action: onInfo },
-    ...detailTabHitAreas.map(({ tab: nextTab, x, width }) => ({
-      id: `detail-tab-${nextTab}`,
-      label: `Show ${detailTabs[nextTab].label}`,
-      x,
-      y: DETAIL_TOP_HEIGHT,
-      width,
-      height: 46,
-      action: () => {
-        scrollRef.current?.scrollTo(0, 0);
-        onSelectTab(nextTab);
-      },
-    })),
-  ];
-
-  const fixedHotspots: Hotspot[] = [
-    { id: "detail-ask-alva", label: "Ask Alva", x: 34, y: DETAIL_FOOTER_VIEWPORT_Y + 18, width: 84, height: 58, action: onAskAlva },
-  ];
-
+function TopAd() {
   return (
-    <div className="detail-frame" data-current-detail-tab={tab}>
-      <div className="sr-only" aria-live="polite">
-        <h1>{narrative.title}</h1>
-        <p>{narrative.summary}</p>
-        <ul>
-          {narrative.details.map((detail) => (
-            <li key={detail}>{detail}</li>
-          ))}
-        </ul>
-        <p>
-          Available actions: Back, Open playbook info, Show Overview, Show Analytics, Show Strategy, Show Feed, Ask Alva.
-        </p>
+    <div className="ad-banner">
+      <span>{"Which FinTwit accounts actually make money? We backtested their posts so you know where to find alpha ->"}</span>
+      <X size={16} strokeWidth={1.5} />
+    </div>
+  );
+}
+
+function Logo({ size = "large" }: { size?: "large" | "small" }) {
+  return (
+    <div className={`logo-mark logo-${size}`} aria-label="Alva">
+      <img src={asset("assets/logos/alva-logo.svg")} alt="" />
+    </div>
+  );
+}
+
+function TopBar({
+  title,
+  left,
+  right,
+  border = true,
+}: {
+  title: string;
+  left?: React.ReactNode;
+  right?: React.ReactNode;
+  border?: boolean;
+}) {
+  return (
+    <div className={`topbar ${border ? "topbar-border" : ""}`}>
+      <div className="topbar-side">{left}</div>
+      <div className="topbar-title">{title}</div>
+      <div className="topbar-side topbar-right">{right}</div>
+    </div>
+  );
+}
+
+function TabRow<T extends string>({
+  items,
+  active,
+  onChange,
+  compact = false,
+}: {
+  items: Array<{ id: T; label: string }>;
+  active: T;
+  onChange: (next: T) => void;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`tab-row ${compact ? "tab-row-compact" : ""}`}>
+      {items.map((item) => (
+        <button
+          className={`tab-item ${active === item.id ? "active" : ""}`}
+          key={item.id}
+          onClick={() => onChange(item.id)}
+          type="button"
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Pill({ children, active = false }: { children: React.ReactNode; active?: boolean }) {
+  return <span className={`pill ${active ? "pill-active" : ""}`}>{children}</span>;
+}
+
+function Avatar({ src, size = 36 }: { src: string; size?: number }) {
+  return <img alt="" className="avatar" height={size} src={src} width={size} />;
+}
+
+function NavRow({
+  icon: Icon,
+  label,
+  active = false,
+  onClick,
+  badge,
+}: {
+  icon: LucideIcon;
+  label: string;
+  active?: boolean;
+  onClick?: () => void;
+  badge?: string;
+}) {
+  return (
+    <button className={`nav-row ${active ? "active" : ""}`} onClick={onClick} type="button">
+      <Icon size={19} strokeWidth={1.55} />
+      <span>{label}</span>
+      {badge ? <span className="mini-badge">{badge}</span> : null}
+    </button>
+  );
+}
+
+function PlaybookRow({ item, onClick }: { item: Playbook; onClick?: () => void }) {
+  return (
+    <button className="playbook-row" onClick={onClick} type="button">
+      <Avatar src={item.avatar} />
+      <span className="row-copy">
+        <strong>{item.title}</strong>
+        <span>{item.subtitle}</span>
+      </span>
+    </button>
+  );
+}
+
+function ChatRow({ item, onClick }: { item: ChatItem; onClick?: () => void }) {
+  return (
+    <button className="chat-row" onClick={onClick} type="button">
+      <MessageSquare size={18} strokeWidth={1.5} />
+      <span>{item.title}</span>
+      <time>{item.time}</time>
+    </button>
+  );
+}
+
+function LoginPage({ onLogin }: { onLogin: () => void }) {
+  return (
+    <Page className="login-page">
+      <div className="login-hero">
+        <Logo />
+        <h1>Turn ideas into live investing playbooks in minutes</h1>
+        <p>Log in to build, remix, and trade.</p>
       </div>
 
-      <div className="detail-scroll" ref={scrollRef}>
-        <div className={`detail-scroll-content enter-${direction}`} key={`${tab}-${animationTick}`} style={style}>
-          <img alt="" aria-hidden="true" className="detail-shell-top" draggable={false} src={assetPath("screens/detail-shell-top.png")} />
-          <img alt="" aria-hidden="true" className="detail-tab-content" draggable={false} src={activeTab.src} />
-          <div className="hotspot-layer detail-content-hotspots">
-            {contentHotspots.map((hotspot) => (
-              <HotspotButton frameHeight={detailHeight} hotspot={hotspot} key={hotspot.id} />
-            ))}
-          </div>
+      <button className="promo-card" onClick={onLogin} type="button">
+        <span className="promo-icon">
+          <Gift size={25} strokeWidth={1.7} />
+        </span>
+        <span>
+          <strong>Sign up to unlock 3-day Pro</strong>
+          <small>$8 credits · Full data access</small>
+        </span>
+      </button>
+
+      <button className="email-button" onClick={onLogin} type="button">
+        Login with Email
+      </button>
+
+      <div className="divider">
+        <span />
+        <small>or</small>
+        <span />
+      </div>
+
+      <div className="social-grid">
+        {["G", "X", "Tg", "D"].map((item) => (
+          <button key={item} onClick={onLogin} type="button">
+            {item}
+          </button>
+        ))}
+      </div>
+
+      <button className="human-check" onClick={onLogin} type="button">
+        <span className="checkbox" />
+        <span>Verify you are human</span>
+        <span className="cloudflare">
+          <Zap size={14} fill="#f59d2a" strokeWidth={0} />
+          Cloudflare
+          <small>Privacy · Terms</small>
+        </span>
+      </button>
+
+      <p className="terms">
+        By signing in, you agree to the Terms of Service and Privacy
+        <br />
+        Policy
+      </p>
+    </Page>
+  );
+}
+
+function ChatPage({ onMenu }: { onMenu: () => void }) {
+  return (
+    <Page className="chat-page">
+      <TopAd />
+      <TopBar
+        title="Alva Agent"
+        left={<IconButton icon={Menu} label="Open sidebar" onClick={onMenu} />}
+        right={<IconButton icon={Hexagon} label="Settings" />}
+      />
+      <TabRow
+        active="chat"
+        items={[
+          { id: "chat", label: "Chat" },
+          { id: "tasks", label: "Tasks (5)" },
+          { id: "memory", label: "Memory" },
+          { id: "alerts", label: "Alerts (8)" },
+          { id: "files", label: "Files (8)" },
+        ]}
+        onChange={() => undefined}
+      />
+      <div className="chat-scroll">
+        <div className="user-bubble">Create today's FinTwit Digest from my chosen FinTwit list.</div>
+        <div className="agent-label">
+          <span className="agent-icon">
+            <Bot size={18} />
+          </span>
+          <strong>Alva</strong>
+        </div>
+        <article className="digest-card">
+          <header>
+            <h2>Daily Digest · Market Digest</h2>
+            <button type="button">Open full report</button>
+          </header>
+          <Pill>
+            <span className="teal-dot" /> nvda-macd-hft-notify
+          </Pill>
+          <p className="muted">English · Jun 15 · Daily Digest · Previous day · Based on 53 FinTwits</p>
+          <div className="card-divider" />
+          <p>
+            Top-ranked traders clustered around $NVDA, $000660.KS, $AKAM, $AMPG, and $AVGO in this window.
+          </p>
+          <p>
+            The strongest current theme is AI infrastructure and cloud names, with $NVDA receiving repeated attention while
+            $AVGO appears as a possible funding short.
+          </p>
+        </article>
+      </div>
+      <Composer />
+    </Page>
+  );
+}
+
+function Composer({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`composer ${compact ? "composer-compact" : ""}`}>
+      <Plus size={21} strokeWidth={1.5} />
+      <span>Ask Alva anything. @ for context, / for skills</span>
+      <button type="button">
+        <ArrowUp size={17} strokeWidth={1.7} />
+      </button>
+    </div>
+  );
+}
+
+function SidebarPage({
+  onAccount,
+  onExplore,
+  onPlaybooks,
+  onRecentChats,
+  onPlaybook,
+  onChat,
+}: {
+  onAccount: () => void;
+  onExplore: () => void;
+  onPlaybooks: () => void;
+  onRecentChats: () => void;
+  onPlaybook: () => void;
+  onChat: () => void;
+}) {
+  return (
+    <Page className="sidebar-page" scroll>
+      <TopAd />
+      <div className="sidebar-head">
+        <Logo size="small" />
+        <button className="avatar-button" onClick={onAccount} type="button">
+          <Avatar size={34} src={asset("assets/avatars/av-zet.jpeg")} />
+        </button>
+      </div>
+      <button className="upgrade-card" type="button">
+        <span className="upgrade-icon">
+          <ArrowUp size={24} />
+        </span>
+        <span>
+          <strong>Upgrade to Pro</strong>
+          <small>Unlock unlimited playbooks with 7-day free trial</small>
+        </span>
+        <ChevronRight size={17} />
+      </button>
+
+      <nav className="side-nav">
+        <NavRow icon={Compass} label="Explore" onClick={onExplore} />
+        <NavRow icon={Briefcase} label="Portfolio" />
+        <NavRow icon={SquarePen} label="Alva Skill" />
+        <NavRow active icon={Trophy} label="FinTwit Alpha League" />
+      </nav>
+
+      <SectionHeader action="View all" onAction={onPlaybooks} title="Playbooks" />
+      <div className="list-stack">
+        {playbooks.map((item) => (
+          <PlaybookRow item={item} key={item.title} onClick={onPlaybook} />
+        ))}
+      </div>
+
+      <SectionHeader action="View all" onAction={onRecentChats} title="Chats" />
+      <button className="new-chat" type="button">
+        <SquarePen size={14} /> New Chat
+      </button>
+      <div className="list-stack chat-stack">
+        {chats.slice(0, 5).map((item) => (
+          <ChatRow item={item} key={item.title} onClick={onChat} />
+        ))}
+      </div>
+      <button className="ask-fab" type="button">
+        <MessageCircle size={17} /> Ask Alva
+      </button>
+    </Page>
+  );
+}
+
+function SectionHeader({
+  title,
+  action,
+  onAction,
+}: {
+  title: string;
+  action?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="section-header">
+      <h2>{title}</h2>
+      {action ? (
+        <button onClick={onAction} type="button">
+          {action}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function SidebarMenuPage({ onBack, onProfile, onSettings }: { onBack: () => void; onProfile: () => void; onSettings: () => void }) {
+  return (
+    <Page className="account-menu-page">
+      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="" />
+      <button className="account-user" onClick={onProfile} type="button">
+        <Avatar size={48} src={asset("assets/avatars/av-zet.jpeg")} />
+        <span>
+          <strong>sheer</strong>
+          <span className="inline-tags">
+            <Pill>Pro</Pill>
+            <Pill>Annual</Pill>
+          </span>
+          <small>
+            <span className="google-dot">G</span> sheer@alva.xyz
+          </small>
+        </span>
+        <ChevronRight size={18} />
+      </button>
+
+      <div className="account-list">
+        <MenuItem icon={Database} label="Usage" />
+        <div className="usage-card">
+          <span>
+            <small>Available</small>
+            <strong>12,000</strong>
+          </span>
+          <span className="usage-lines">
+            <small>Daily <b>1,000</b></small>
+            <small>Monthly <b>3,000</b></small>
+            <small>Pack <b>12,000</b></small>
+          </span>
+        </div>
+        <MenuItem icon={Gift} label="Referral" />
+        <MenuItem icon={WalletCards} label="Creator Earnings" status />
+        <MenuItem icon={Globe2} label="Language" />
+        <MenuItem icon={Settings} label="Settings" onClick={onSettings} />
+        <MenuItem icon={LogOut} label="Log Out" />
+      </div>
+      <div className="account-socials">
+        {["Discord", "Telegram", "X", "Docs"].map((item) => (
+          <button key={item} type="button">
+            {item === "X" ? "X" : item.slice(0, 1)}
+          </button>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function MenuItem({
+  icon: Icon,
+  label,
+  onClick,
+  status = false,
+}: {
+  icon: LucideIcon;
+  label: string;
+  onClick?: () => void;
+  status?: boolean;
+}) {
+  return (
+    <button className="menu-item" onClick={onClick} type="button">
+      <Icon size={19} strokeWidth={1.55} />
+      <span>{label}</span>
+      {status ? <span className="status-dot" /> : null}
+      <ChevronRight size={17} />
+    </button>
+  );
+}
+
+function PlaybooksPage({ onBack, onOpen }: { onBack: () => void; onOpen: () => void }) {
+  return (
+    <Page className="plain-list-page">
+      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Playbooks" />
+      <TabRow
+        active="all"
+        items={[
+          { id: "all", label: "All" },
+          { id: "subscribed", label: "Subscribed" },
+          { id: "created", label: "Created" },
+        ]}
+        onChange={() => undefined}
+      />
+      <div className="filter-row">
+        <Pill>All</Pill>
+        <Pill active>Running</Pill>
+        <Pill>Paused</Pill>
+        <Pill>Draft</Pill>
+      </div>
+      <div className="list-stack large-list">
+        {playbooks.map((item) => (
+          <PlaybookRow item={item} key={item.title} onClick={onOpen} />
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function RecentChatsPage({ onBack, onChat }: { onBack: () => void; onChat: () => void }) {
+  return (
+    <Page className="plain-list-page">
+      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Recent Chats" />
+      <button className="primary-outline" type="button">
+        <SquarePen size={15} /> New Chat
+      </button>
+      <div className="list-stack chat-stack full">
+        {chats.map((item) => (
+          <ChatRow item={item} key={item.title} onClick={onChat} />
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function ExplorePage({ onMenu, onOpen }: { onMenu: () => void; onOpen: () => void }) {
+  return (
+    <Page className="explore-page" scroll>
+      <TopBar
+        left={<IconButton icon={Menu} label="Open sidebar" onClick={onMenu} />}
+        right={<IconButton icon={Search} label="Search" />}
+        title="Explore"
+      />
+      <div className="explore-tabs">
+        {["All", "Trading", "Macro", "Crypto", "AI"].map((item, index) => (
+          <Pill active={index === 0} key={item}>
+            {item}
+          </Pill>
+        ))}
+      </div>
+      <div className="explore-stack">
+        {[
+          "BTC Ultimate AI Trader",
+          "MAG7 Equal-Weight Monthly Rebalance",
+          "PEPE Long vs BTC Short Monitoring",
+          "Attribution Analysis Strategy",
+          "BTC MACD 1h Simple Crossover",
+        ].map((title, index) => (
+          <button className="explore-card" key={title} onClick={onOpen} type="button">
+            <img alt="" src={playbooks[index % playbooks.length].cover} />
+            <span>
+              <strong>{title}</strong>
+              <small>{index % 2 === 0 ? "Running · Public" : "Backtest · Paid"}</small>
+              <em>{index + 12} signals · {index + 3}.2K views</em>
+            </span>
+            <ChevronRight size={17} />
+          </button>
+        ))}
+      </div>
+    </Page>
+  );
+}
+
+function SettingsPage({
+  active,
+  onBack,
+  onTab,
+}: {
+  active: SettingsTab;
+  onBack: () => void;
+  onTab: (tab: SettingsTab) => void;
+}) {
+  return (
+    <Page className="settings-page" scroll>
+      <TopBar border={false} left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />} title="Settings" />
+      <TabRow active={active} compact items={settingsTabs} onChange={onTab} />
+      <div className="settings-content">
+        {active === "account" ? <SettingsAccount /> : null}
+        {active === "usage" ? <SettingsUsage /> : null}
+        {active === "portfolio" ? <SettingsPortfolio /> : null}
+        {active === "alvaAgent" ? <SettingsAgent /> : null}
+        {active === "alerts" ? <SettingsAlerts /> : null}
+        {active === "apiKey" ? <SettingsApi /> : null}
+      </div>
+    </Page>
+  );
+}
+
+function SettingsAccount() {
+  return (
+    <>
+      <div className="profile-mini">
+        <Avatar size={48} src={asset("assets/avatars/av-zet.jpeg")} />
+        <span>
+          <strong>Sheer</strong>
+          <small>UID 13458677909324 · Joined 12/31/2025</small>
+        </span>
+      </div>
+      <div className="two-buttons">
+        <button type="button">Profile</button>
+        <button className="danger" type="button">Log out</button>
+      </div>
+      <Field label="Nickname" value="Sheer" />
+      <label className="field-block">
+        <span>User info</span>
+        <textarea placeholder="Introduce about yourself..." maxLength={500} />
+        <small>0/500</small>
+      </label>
+      <h3>Connections</h3>
+      <Connection icon="G" label="Gmail" sub="sheer@alva.xyz" action="Login Account" />
+    </>
+  );
+}
+
+function SettingsUsage() {
+  return (
+    <>
+      <div className="plan-card">
+        <div>
+          <strong>Pro</strong>
+          <Pill>Annually</Pill>
+        </div>
+        <button type="button">View all plans</button>
+        <small>Start Date 06/06/2026 · Next Billing 06/06/2027</small>
+        <div className="two-buttons">
+          <button className="filled" type="button">Add credits</button>
+          <button type="button">Manage</button>
         </div>
       </div>
+      <MetricCard label="Available" value="10,000" sub="Credits" />
+      <Notice>Your subscription will expire on Jan 8, 2027 and you will be downgraded to Free afterwards</Notice>
+      <UsageBar label="Daily" value="800 / 1,000" percent={80} />
+      <UsageBar label="Monthly" value="8,640 / 21,360" percent={40} />
+      <UsageBar label="Pack" value="2,920" percent={18} />
+    </>
+  );
+}
 
-      <img alt="" aria-hidden="true" className="detail-shell-footer" draggable={false} src={assetPath("screens/detail-shell-footer.png")} />
-      <div className="hotspot-layer detail-fixed-hotspots">
-        {fixedHotspots.map((hotspot) => (
-          <HotspotButton frameHeight={DETAIL_VIEW_HEIGHT} hotspot={hotspot} key={hotspot.id} />
-        ))}
+function SettingsPortfolio() {
+  return (
+    <>
+      <SectionHeader action="+ Add" title="Broker Connections" />
+      <Connection icon="IB" label="Interactive Brokers" sub="U***7338 · Live" action="Disconnect" />
+      <Connection icon="BN" label="Binance" sub="U***7905 · Spot" action="Disconnect" />
+      <Connection icon="AP" label="Alpaca" sub="U***7130 · Live" action="Disconnect" />
+      <h3>Global Risk Rules</h3>
+      <ToggleRow label="Max Single Order" value="$5,000" enabled />
+      <ToggleRow label="Max Daily Turnover" value="-" />
+      <ToggleRow label="Hard Stop Loss" value="8%" />
+    </>
+  );
+}
+
+function SettingsAgent() {
+  return (
+    <>
+      <div className="connected-app">
+        <span>Connected App</span>
+        <button type="button">
+          <Send size={14} /> Telegram <ChevronDown size={14} />
+        </button>
+      </div>
+      <Connection icon="Tg" label="Telegram" sub="Sheername" action="Disconnect" />
+      <Connection icon="D" label="Discord" sub="Join the community and chat with other traders." action="Connect" />
+      <ToggleRow label="Customize Your Assistant" enabled />
+      <textarea className="assistant-text" placeholder="Define your assistant's identity: name, tone, and..." />
+      <ToggleRow label="Generate Memory from Chat History" enabled />
+      <div className="quote-box">"How to apply..." when looking up design tokens, component specs, and market context.</div>
+    </>
+  );
+}
+
+function SettingsAlerts() {
+  return (
+    <>
+      <div className="filter-row tight">
+        <Pill active>All</Pill>
+        <Pill>Active</Pill>
+        <Pill>Paused</Pill>
+      </div>
+      {["Market Pulse Digest", "AI Earnings Radar", "GLP-1 Trial Watch", "space-rs-rotation"].map((item, index) => (
+        <div className="alert-card" key={item}>
+          <header>
+            <strong>{item}</strong>
+            <button type="button">Push-notify</button>
+          </header>
+          <small>{index === 0 ? "Mega Chin · Last Run 15m" : "Runs daily · Last Run 1h"}</small>
+          <div className="alert-actions">
+            <Edit3 size={15} />
+            <Activity size={15} />
+            <span>Unsubscribe</span>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function SettingsApi() {
+  return (
+    <>
+      <SectionHeader action="+ Create" title="Alva API Keys" />
+      {["Open Claw Key", "Claude Key", "Gemini Private Key"].map((item) => (
+        <ApiKeyRow key={item} label={item} />
+      ))}
+      <SectionHeader action="Upload" title="Secrets Vault" />
+      <ApiKeyRow label="Sheer Test" muted />
+      <div className="quick-start">
+        <KeyRound size={16} />
+        <span>
+          <strong>Quick Start</strong>
+          <small>For full setup instructions, configuration details, and examples.</small>
+        </span>
+      </div>
+    </>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <label className="field-block">
+      <span>{label}</span>
+      <input value={value} readOnly />
+    </label>
+  );
+}
+
+function Connection({ icon, label, sub, action }: { icon: string; label: string; sub: string; action: string }) {
+  return (
+    <div className="connection-row">
+      <span className="connection-icon">{icon}</span>
+      <span>
+        <strong>{label}</strong>
+        <small>{sub}</small>
+      </span>
+      <button type="button">{action}</button>
+    </div>
+  );
+}
+
+function Notice({ children }: { children: React.ReactNode }) {
+  return <div className="notice">{children}</div>;
+}
+
+function MetricCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="metric-card">
+      <small>{label}</small>
+      <strong>{value}</strong>
+      <span>{sub}</span>
+    </div>
+  );
+}
+
+function UsageBar({ label, value, percent }: { label: string; value: string; percent: number }) {
+  return (
+    <div className="usage-bar">
+      <span>
+        <b>{label}</b>
+        <small>{value}</small>
+      </span>
+      <div>
+        <i style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
 }
 
-function SettingsScreen({
-  animationTick,
-  direction,
-  onBack,
-  onSelectTab,
-  tab,
-}: {
-  animationTick: number;
-  direction: Direction;
-  onBack: () => void;
-  onSelectTab: (tab: SettingsTab) => void;
-  tab: SettingsTab;
-}) {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const activeTab = settingsTabs[tab];
-  const narrative = activeTab.narrative;
-  const style = {
-    "--crop-top": `${SYSTEM_STATUS_HEIGHT}px`,
-    "--screen-height": `${activeTab.height}px`,
-    "--source-height": `${activeTab.sourceHeight}px`,
-  } as CSSProperties;
-
-  const settingsHotspots: Hotspot[] = [
-    { id: "settings-back", label: "Back to sidebar", x: 0, y: 59, width: 56, height: 56, action: onBack },
-    ...settingsTabHitAreas.map(({ tab: nextTab, x, width }) => ({
-      id: `settings-tab-${nextTab}`,
-      label: `Show ${settingsTabs[nextTab].label} settings`,
-      x,
-      y: 115,
-      width,
-      height: 48,
-      action: () => {
-        scrollRef.current?.scrollTo(0, 0);
-        onSelectTab(nextTab);
-      },
-    })),
-  ];
-
+function ToggleRow({ label, value, enabled = false }: { label: string; value?: string; enabled?: boolean }) {
   return (
-    <div className="settings-frame" data-current-settings-tab={tab}>
-      <div className="sr-only" aria-live="polite">
-        <h1>{narrative.title}</h1>
-        <p>{narrative.summary}</p>
-        <ul>
-          {narrative.details.map((detail) => (
-            <li key={detail}>{detail}</li>
-          ))}
-        </ul>
-        <p>
-          Available actions: Back to sidebar, Show Account settings, Show Usage settings, Show Portfolio settings, Show Alva Agent
-          settings, Show Alerts settings, Show API Key settings.
-        </p>
-      </div>
+    <div className="toggle-row">
+      <span>{label}</span>
+      {value ? <strong>{value}</strong> : null}
+      <button className={enabled ? "enabled" : ""} type="button" aria-label={label}>
+        <span />
+      </button>
+    </div>
+  );
+}
 
-      <div className="settings-scroll" ref={scrollRef}>
-        <div className={`screen-visual enter-${direction}`} key={`${tab}-${animationTick}`} style={style}>
-          <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={activeTab.src} />
-          <div className="hotspot-layer">
-            {settingsHotspots.map((hotspot) => (
-              <HotspotButton cropTop={SYSTEM_STATUS_HEIGHT} frameHeight={activeTab.height} hotspot={hotspot} key={hotspot.id} />
-            ))}
+function ApiKeyRow({ label, muted = false }: { label: string; muted?: boolean }) {
+  return (
+    <div className={`api-row ${muted ? "muted" : ""}`}>
+      <KeyRound size={16} />
+      <span>
+        <strong>{label}</strong>
+        <small>eyJhbGciOiJ**************</small>
+      </span>
+      <Copy size={15} />
+      <Edit3 size={15} />
+    </div>
+  );
+}
+
+function ChatSelectedPage({ onBack }: { onBack: () => void }) {
+  return (
+    <Page className="chat-page selected-chat">
+      <TopBar
+        title="Daily FinTwit Digest"
+        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
+        right={<IconButton icon={MoreHorizontal} label="More" />}
+      />
+      <div className="chat-scroll">
+        <div className="agent-label">
+          <span className="agent-icon">
+            <Bot size={18} />
+          </span>
+          <strong>Alva</strong>
+        </div>
+        <article className="digest-card">
+          <p>Do you want this digest delivered automatically each morning?</p>
+          <div className="option-grid">
+            <button type="button">Telegram</button>
+            <button type="button">Discord</button>
+            <button type="button">WhatsApp</button>
           </div>
+        </article>
+        <div className="user-bubble small">Telegram delivery daily at 7:30 AM.</div>
+        <article className="digest-card compact-card">
+          <Check size={17} />
+          <p>Done. I will send the Daily FinTwit Digest to Telegram every day at 7:30 AM.</p>
+        </article>
+      </div>
+      <Composer />
+    </Page>
+  );
+}
+
+function ProfilePage({ onBack }: { onBack: () => void }) {
+  return (
+    <Page className="profile-page" scroll>
+      <TopBar
+        border={false}
+        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
+        right={<IconButton icon={Share2} label="Share" />}
+        title=""
+      />
+      <div className="profile-hero">
+        <Avatar size={72} src={asset("assets/avatars/av-zet.jpeg")} />
+        <h1>YGGYLL</h1>
+        <p>@sheer · alva.ai/yggyll</p>
+        <div className="profile-actions">
+          <button type="button">Edit Profile</button>
+          <button type="button">Share</button>
+        </div>
+      </div>
+      <div className="stats-grid">
+        <Stat value="6" label="Playbooks" />
+        <Stat value="890" label="Stars" />
+        <Stat value="12" label="Remix" />
+        <Stat value="$1,203.45" label="Earned" />
+      </div>
+      <TabRow
+        active="playbooks"
+        items={[
+          { id: "playbooks", label: "My Playbooks" },
+          { id: "starred", label: "My starred" },
+          { id: "purchased", label: "My purchased" },
+        ]}
+        onChange={() => undefined}
+      />
+      <div className="filter-row">
+        <Pill active>All</Pill>
+        <Pill>Public</Pill>
+        <Pill>Private</Pill>
+        <Pill>Paid</Pill>
+      </div>
+      {playbooks.slice(0, 4).map((item) => (
+        <PlaybookRow item={item} key={item.title} />
+      ))}
+    </Page>
+  );
+}
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function PlaybookDetailPage({
+  tab,
+  onBack,
+  onInfo,
+  onAsk,
+  onTab,
+}: {
+  tab: DetailTab;
+  onBack: () => void;
+  onInfo: () => void;
+  onAsk: () => void;
+  onTab: (tab: DetailTab) => void;
+}) {
+  return (
+    <Page className="detail-page" scroll>
+      <TopBar
+        left={<IconButton icon={ArrowLeft} label="Back" onClick={onBack} />}
+        right={
+          <>
+            <IconButton icon={Info} label="Info" onClick={onInfo} />
+            <IconButton icon={MoreHorizontal} label="More" />
+          </>
+        }
+        title=""
+      />
+      <div className="detail-hero">
+        <img alt="" src={asset("assets/covers/cover-roundtable.webp")} />
+        <div>
+          <h1>Quality Value Stock Screener</h1>
+          <p>AI infrastructure investment thesis tracker across silicon, networking, hyperscalers, power, and data centers.</p>
+          <div className="detail-tags">
+            <Pill>Value</Pill>
+            <Pill>Quality</Pill>
+            <Pill>US Equities</Pill>
+          </div>
+        </div>
+      </div>
+      <div className="detail-stats">
+        <Stat value="2.6K" label="Views" />
+        <Stat value="24" label="Comments" />
+        <Stat value="12" label="Remix" />
+        <Stat value="138" label="Subscribed" />
+      </div>
+      <TabRow active={tab} items={detailTabs} onChange={onTab} />
+      <DetailContent tab={tab} />
+      <div className="detail-actions">
+        <button onClick={onAsk} type="button">
+          <Bot size={16} /> Ask Alva
+        </button>
+        <button type="button">Remix</button>
+        <button type="button">Trade</button>
+        <button className="filled" type="button">Subscribe</button>
+      </div>
+    </Page>
+  );
+}
+
+function DetailContent({ tab }: { tab: DetailTab }) {
+  if (tab === "analytics") {
+    return (
+      <div className="detail-content">
+        <Panel title="Return Analysis">
+          <MiniChart variant="bars" />
+        </Panel>
+        <Panel title="Risk Metrics">
+          <MetricLine label="Sharpe" value="1.84" />
+          <MetricLine label="Max Drawdown" value="-8.6%" />
+          <MetricLine label="Volatility" value="12.3%" />
+        </Panel>
+      </div>
+    );
+  }
+  if (tab === "strategy") {
+    return (
+      <div className="detail-content">
+        <Panel title="Objective">
+          <p>Screen for durable quality companies that remain statistically cheap relative to historical margins, cash flow, and peer multiples.</p>
+        </Panel>
+        <Panel title="Rules">
+          <p>Rank candidates by quality score, value score, earnings revision, and risk-adjusted trend confirmation.</p>
+        </Panel>
+      </div>
+    );
+  }
+  if (tab === "feed") {
+    return (
+      <div className="detail-content">
+        {["NVDA margin pressure eased after supplier checks.", "Power-grid exposure improved across top holdings.", "Semis rotation remains active versus software."].map((item) => (
+          <Panel key={item} title="Market update">
+            <p>{item}</p>
+            <small>Jun 15 · 9:30 AM</small>
+          </Panel>
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div className="detail-content">
+      <Panel title="Creator">
+        <div className="creator-row">
+          <Avatar src={asset("assets/avatars/av-zet.jpeg")} />
+          <span>
+            <strong>YGGYLL</strong>
+            <small>Value systems · 6 public playbooks</small>
+          </span>
+        </div>
+      </Panel>
+      <Panel title="Equity Curve">
+        <MiniChart />
+      </Panel>
+      <Panel title="Return Snapshot">
+        <MetricLine label="1M" value="+4.8%" />
+        <MetricLine label="3M" value="+12.6%" />
+        <MetricLine label="YTD" value="+18.9%" />
+      </Panel>
+    </div>
+  );
+}
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="panel">
+      <h3>{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+function MetricLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="metric-line">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function MiniChart({ variant = "line" }: { variant?: "line" | "bars" }) {
+  return (
+    <div className={`mini-chart ${variant}`}>
+      {Array.from({ length: 18 }).map((_, index) => (
+        <span key={index} style={{ height: `${22 + ((index * 17) % 58)}px` }} />
+      ))}
+    </div>
+  );
+}
+
+function AskAlvaOverlay({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="overlay-root">
+      <button className="overlay-backdrop" onClick={onClose} type="button" aria-label="Close" />
+      <div className="ask-sheet">
+        <div className="sheet-handle" />
+        <TopBar
+          border={false}
+          left={<IconButton icon={X} label="Close" onClick={onClose} />}
+          right={<IconButton icon={Plus} label="New chat" />}
+          title="Ask Alva"
+        />
+        <div className="chat-scroll sheet-chat">
+          <div className="agent-label">
+            <span className="agent-icon">
+              <Bot size={18} />
+            </span>
+            <strong>Alva</strong>
+          </div>
+          <article className="digest-card compact-card">
+            <p>Ask me about this playbook, adjust rules, or create a trade plan from the current strategy.</p>
+          </article>
+        </div>
+        <Composer compact />
+      </div>
+    </div>
+  );
+}
+
+function InfoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="overlay-root modal-root">
+      <button className="overlay-backdrop" onClick={onClose} type="button" aria-label="Close" />
+      <div className="info-modal">
+        <header>
+          <h2>Quality Value Stock Screener</h2>
+          <IconButton icon={X} label="Close" onClick={onClose} />
+        </header>
+        <p>
+          AI infrastructure investment thesis tracking across silicon, networking, hyperscalers, power, and data centers.
+        </p>
+        <div className="modal-stats">
+          <Stat value="2.6K" label="Views" />
+          <Stat value="24" label="Comments" />
+          <Stat value="12" label="Remix" />
+          <Stat value="138" label="Subscribed" />
+        </div>
+        <div className="detail-tags">
+          <Pill>AI Infra</Pill>
+          <Pill>Automation</Pill>
+          <Pill>US Equities</Pill>
         </div>
       </div>
     </div>
@@ -519,48 +1169,33 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [history, setHistory] = useState<Screen[]>([]);
   const [overlay, setOverlay] = useState<Overlay>(null);
-  const [direction, setDirection] = useState<Direction>("forward");
-  const [animationTick, setAnimationTick] = useState(0);
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
-  const [settingsTabName, setSettingsTabName] = useState<SettingsTab>("account");
+  const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
 
-  const navigate = (next: Screen, nextDirection: Direction = "forward") => {
-    setOverlay(null);
+  const navigate = (next: Screen) => {
     setHistory((items) => [...items, screen]);
-    setDirection(nextDirection);
-    setAnimationTick((value) => value + 1);
+    setDirection("forward");
+    setOverlay(null);
     setScreen(next);
   };
 
-  const replace = (next: Screen, nextDirection: Direction = "forward") => {
+  const replace = (next: Screen) => {
+    setHistory([]);
+    setDirection("forward");
     setOverlay(null);
-    setDirection(nextDirection);
-    setAnimationTick((value) => value + 1);
     setScreen(next);
   };
 
-  const backTo = (fallback: Screen = "sidebar") => {
-    setOverlay(null);
+  const back = (fallback: Screen = "sidebar") => {
     setHistory((items) => {
-      const nextHistory = [...items];
-      const previous = nextHistory.pop() ?? fallback;
+      const stack = [...items];
+      const previous = stack.pop() ?? fallback;
       setDirection("back");
-      setAnimationTick((value) => value + 1);
+      setOverlay(null);
       setScreen(previous);
-      return nextHistory;
+      return stack;
     });
-  };
-
-  const openOverlay = (nextOverlay: Exclude<Overlay, null>) => {
-    setDirection("overlay");
-    setOverlay(nextOverlay);
-    setAnimationTick((value) => value + 1);
-  };
-
-  const closeOverlay = () => {
-    setDirection("back");
-    setOverlay(null);
-    setAnimationTick((value) => value + 1);
   };
 
   const openDetail = () => {
@@ -569,126 +1204,55 @@ export default function App() {
   };
 
   const openSettings = () => {
-    setSettingsTabName("account");
+    setSettingsTab("account");
     navigate("settings");
   };
 
-  const selectDetailTab = (nextTab: DetailTab) => {
-    if (nextTab === detailTab) {
-      return;
-    }
-
-    setDirection("forward");
-    setDetailTab(nextTab);
-    setAnimationTick((value) => value + 1);
-  };
-
-  const selectSettingsTab = (nextTab: SettingsTab) => {
-    if (nextTab === settingsTabName) {
-      return;
-    }
-
-    setDirection("forward");
-    setSettingsTabName(nextTab);
-    setAnimationTick((value) => value + 1);
-  };
-
-  const viewKey = overlay ?? screen;
-  const meta = screens[viewKey];
-
-  const hotspots = useMemo<Hotspot[]>(() => {
-    if (overlay === "askAlva") {
-      return [
-        { id: "ask-close", label: "Close Ask Alva", x: 0, y: 110, width: 55, height: 70, action: closeOverlay },
-      ];
-    }
-
-    if (overlay === "infoModal") {
-      return [
-        { id: "info-close", label: "Close information modal", x: 324, y: 258, width: 54, height: 62, action: closeOverlay },
-        { id: "info-backdrop", label: "Close information modal backdrop", x: 0, y: 0, width: 393, height: 852, action: closeOverlay },
-      ];
-    }
-
+  const rendered = useMemo(() => {
     switch (screen) {
       case "login":
-        return [
-          { id: "login-anywhere", label: "Complete login", x: 0, y: 0, width: 393, height: 852, action: () => replace("chat") },
-        ];
+        return <LoginPage onLogin={() => replace("chat")} />;
       case "chat":
-        return [
-          { id: "chat-menu", label: "Open sidebar", x: 0, y: 123, width: 56, height: 56, action: () => navigate("sidebar") },
-        ];
+        return <ChatPage onMenu={() => navigate("sidebar")} />;
       case "sidebar":
-        return [
-          { id: "sidebar-avatar", label: "Open account menu", x: 337, y: 123, width: 56, height: 56, action: () => navigate("sidebarMenu") },
-          { id: "sidebar-explore", label: "Open Explore", x: 0, y: 258, width: 190, height: 58, action: () => navigate("explore") },
-          { id: "sidebar-playbooks-all", label: "View all playbooks", x: 313, y: 466, width: 78, height: 45, action: () => navigate("playbooks") },
-          { id: "sidebar-recent-all", label: "View all recent chats", x: 313, y: 815, width: 78, height: 45, action: () => navigate("recentChats") },
-          { id: "sidebar-playbook-1", label: "Open Investor Roundtable", x: 0, y: 502, width: 393, height: 61, action: openDetail },
-          { id: "sidebar-playbook-2", label: "Open LAB Short War Room", x: 0, y: 563, width: 393, height: 61, action: openDetail },
-          { id: "sidebar-playbook-3", label: "Open Citrini Operating System", x: 0, y: 624, width: 393, height: 61, action: openDetail },
-          { id: "sidebar-playbook-4", label: "Open Theme Tracker", x: 0, y: 685, width: 393, height: 61, action: openDetail },
-          { id: "sidebar-playbook-5", label: "Open BTC Bet Scanner", x: 0, y: 746, width: 393, height: 61, action: openDetail },
-          { id: "sidebar-chat-1", label: "Open Crypto Price chat", x: 0, y: 894, width: 393, height: 49, action: () => navigate("chatSelected") },
-          { id: "sidebar-chat-2", label: "Open AVGO chat", x: 0, y: 944, width: 393, height: 49, action: () => navigate("chatSelected") },
-          { id: "sidebar-chat-3", label: "Open Macro rates chat", x: 0, y: 995, width: 393, height: 49, action: () => navigate("chatSelected") },
-          { id: "sidebar-chat-4", label: "Open Semis chat", x: 0, y: 1046, width: 393, height: 49, action: () => navigate("chatSelected") },
-          { id: "sidebar-chat-5", label: "Open NVDA chat", x: 0, y: 1097, width: 393, height: 49, action: () => navigate("chatSelected") },
-        ];
+        return (
+          <SidebarPage
+            onAccount={() => navigate("sidebarMenu")}
+            onChat={() => navigate("chatSelected")}
+            onExplore={() => navigate("explore")}
+            onPlaybook={openDetail}
+            onPlaybooks={() => navigate("playbooks")}
+            onRecentChats={() => navigate("recentChats")}
+          />
+        );
       case "sidebarMenu":
-        return [
-          { id: "sidebar-menu-back", label: "Back to sidebar", x: 0, y: 59, width: 56, height: 56, action: () => backTo("sidebar") },
-          { id: "sidebar-menu-user", label: "Open profile", x: 0, y: 115, width: 393, height: 84, action: () => navigate("profile") },
-          { id: "sidebar-menu-settings", label: "Open Settings", x: 0, y: 455, width: 393, height: 46, action: openSettings },
-        ];
+        return <SidebarMenuPage onBack={() => back("sidebar")} onProfile={() => navigate("profile")} onSettings={openSettings} />;
       case "playbooks":
-        return [
-          { id: "playbooks-back", label: "Back to sidebar", x: 0, y: 62, width: 56, height: 56, action: () => backTo("sidebar") },
-          { id: "playbooks-item-1", label: "Open Investor Roundtable", x: 0, y: 193, width: 393, height: 62, action: openDetail },
-          { id: "playbooks-item-2", label: "Open LAB Short War Room", x: 0, y: 254, width: 393, height: 62, action: openDetail },
-          { id: "playbooks-item-3", label: "Open Citrini Operating System", x: 0, y: 315, width: 393, height: 62, action: openDetail },
-          { id: "playbooks-item-4", label: "Open Theme Tracker", x: 0, y: 376, width: 393, height: 62, action: openDetail },
-          { id: "playbooks-item-5", label: "Open BTC Bet Scanner", x: 0, y: 437, width: 393, height: 62, action: openDetail },
-        ];
+        return <PlaybooksPage onBack={() => back("sidebar")} onOpen={openDetail} />;
       case "recentChats":
-        return [
-          { id: "recent-back", label: "Back to sidebar", x: 0, y: 62, width: 56, height: 56, action: () => backTo("sidebar") },
-          { id: "recent-chat-1", label: "Open Crypto Price chat", x: 0, y: 167, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-2", label: "Open AVGO chat", x: 0, y: 217, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-3", label: "Open Macro rates chat", x: 0, y: 267, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-4", label: "Open Semis chat", x: 0, y: 317, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-5", label: "Open NVDA chat", x: 0, y: 367, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-6", label: "Open AI infra chat", x: 0, y: 417, width: 393, height: 50, action: () => navigate("chatSelected") },
-          { id: "recent-chat-7", label: "Open FOMC chat", x: 0, y: 467, width: 393, height: 50, action: () => navigate("chatSelected") },
-        ];
+        return <RecentChatsPage onBack={() => back("sidebar")} onChat={() => navigate("chatSelected")} />;
       case "explore":
-        return [
-          { id: "explore-menu", label: "Open sidebar", x: 0, y: 59, width: 56, height: 56, action: () => navigate("sidebar", "back") },
-          { id: "explore-card-1", label: "Open BTC Ultimate AI Trader", x: 0, y: 196, width: 393, height: 115, action: openDetail },
-          { id: "explore-card-2", label: "Open MAG7 Equal-Weight", x: 0, y: 311, width: 393, height: 115, action: openDetail },
-          { id: "explore-card-3", label: "Open PEPE Long vs BTC Short", x: 0, y: 426, width: 393, height: 115, action: openDetail },
-          { id: "explore-card-4", label: "Open Attribution Analysis", x: 0, y: 541, width: 393, height: 115, action: openDetail },
-          { id: "explore-card-5", label: "Open BTC MACD crossover", x: 0, y: 656, width: 393, height: 70, action: openDetail },
-        ];
-      case "playbookDetail":
-        return [];
+        return <ExplorePage onMenu={() => navigate("sidebar")} onOpen={openDetail} />;
       case "chatSelected":
-        return [
-          { id: "selected-back", label: "Back", x: 0, y: 124, width: 48, height: 48, action: () => backTo("sidebar") },
-        ];
+        return <ChatSelectedPage onBack={() => back("sidebar")} />;
       case "profile":
-        return [
-          { id: "profile-back", label: "Back to sidebar", x: 0, y: 65, width: 56, height: 56, action: () => backTo("sidebar") },
-        ];
+        return <ProfilePage onBack={() => back("sidebar")} />;
       case "settings":
-        return [];
+        return <SettingsPage active={settingsTab} onBack={() => back("sidebarMenu")} onTab={setSettingsTab} />;
+      case "playbookDetail":
+        return (
+          <PlaybookDetailPage
+            onAsk={() => setOverlay("askAlva")}
+            onBack={() => back("sidebar")}
+            onInfo={() => setOverlay("infoModal")}
+            onTab={setDetailTab}
+            tab={detailTab}
+          />
+        );
       default:
-        return [];
+        return null;
     }
-  }, [screen, overlay, detailTab]);
-
-  const narrative = screenNarratives[viewKey];
+  }, [screen, settingsTab, detailTab]);
 
   return (
     <main className="demo-root">
@@ -697,56 +1261,11 @@ export default function App() {
       </section>
 
       <section className="mobile-shell" aria-label="m.baby mobile demo">
-        <div className={`screen-frame ${meta.scroll ? "screen-frame-scroll" : ""}`} data-current-view={viewKey} data-screen-height={meta.height}>
-          {screen === "playbookDetail" && overlay === null ? (
-            <DetailScreen
-              animationTick={animationTick}
-              direction={direction}
-              onAskAlva={() => openOverlay("askAlva")}
-              onBack={() => backTo("sidebar")}
-              onInfo={() => openOverlay("infoModal")}
-              onSelectTab={selectDetailTab}
-              tab={detailTab}
-            />
-          ) : screen === "settings" && overlay === null ? (
-            <SettingsScreen
-              animationTick={animationTick}
-              direction={direction}
-              onBack={() => backTo("sidebar")}
-              onSelectTab={selectSettingsTab}
-              tab={settingsTabName}
-            />
-          ) : (
-            <div
-              className={`screen-visual enter-${direction}`}
-              key={`${viewKey}-${animationTick}`}
-              style={
-                {
-                  "--crop-top": `${meta.cropTop ?? 0}px`,
-                  "--screen-height": `${meta.height}px`,
-                  "--source-height": `${meta.sourceHeight ?? meta.height}px`,
-                } as CSSProperties
-              }
-            >
-              <div className="sr-only" aria-live="polite">
-                <h1>{narrative.title}</h1>
-                <p>{narrative.summary}</p>
-                <ul>
-                  {narrative.details.map((detail) => (
-                    <li key={detail}>{detail}</li>
-                  ))}
-                </ul>
-                <p>Available actions: {hotspots.map((hotspot) => hotspot.label).join(", ")}.</p>
-              </div>
-              <img alt="" aria-hidden="true" className="screen-image" draggable={false} src={meta.src} />
-              <div className="hotspot-layer">
-                {hotspots.map((hotspot) => (
-                  <HotspotButton cropTop={meta.cropTop} frameHeight={meta.height} hotspot={hotspot} key={hotspot.id} />
-                ))}
-              </div>
-            </div>
-          )}
+        <div className={`view-transition enter-${direction}`} key={screen}>
+          {rendered}
         </div>
+        {overlay === "askAlva" ? <AskAlvaOverlay onClose={() => setOverlay(null)} /> : null}
+        {overlay === "infoModal" ? <InfoModal onClose={() => setOverlay(null)} /> : null}
       </section>
     </main>
   );
