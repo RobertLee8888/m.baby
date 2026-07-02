@@ -15,55 +15,89 @@ const CHAT_CONTENT_LOADING_MS = 2200;
 const AI_THINKING_MS = 1400;
 
 type LiveChatMessage = {
+  blocks?: AssistantReplyBlock[];
   id: number;
   role: "user" | "assistant";
   content: string;
   status?: "thinking" | "complete";
 };
 
+type AssistantReplyBlock =
+  | { text: string; type: "paragraph" }
+  | { items: string[]; type: "bullets" }
+  | { label: string; text: string; type: "callout" }
+  | { items: string[]; type: "actions" };
+
 function randomItem<T>(items: T[]) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
-function createAssistantReply(message: string) {
+function normalizeUserSnippet(message: string) {
   const normalizedMessage = message.trim().replace(/\s+/g, " ");
-  const lowerMessage = normalizedMessage.toLowerCase();
-  const shortMessage = normalizedMessage.length > 96 ? `${normalizedMessage.slice(0, 93)}...` : normalizedMessage;
+  return normalizedMessage.length > 52 ? `${normalizedMessage.slice(0, 49)}...` : normalizedMessage;
+}
+
+function createAssistantReplyBlocks(message: string, turnIndex: number): AssistantReplyBlock[] {
+  const shortMessage = normalizeUserSnippet(message);
+  const lowerMessage = message.toLowerCase();
 
   if (lowerMessage.includes("report") || lowerMessage.includes("full")) {
-    return `${randomItem([
-      "The full report is useful here because the strongest signal is the cluster, not any single mention.",
-      "I would read the report from the theme layer first, then drill into ticker-level confirmation.",
-      "The main thing to watch is whether the report keeps repeating the same names across independent FinTwit sources.",
-    ])} ${randomItem([
-      "Right now NVDA still leads the attention stack, while AVGO is showing up more like a hedge or funding short.",
-      "If NVDA volume and author conviction both fade, I would treat the setup as lower quality even if mentions stay high.",
-      "The cleaner follow-up is to compare sentiment shifts against price action before turning this into an alert.",
-    ])}`;
+    return randomItem<AssistantReplyBlock[]>([
+      [
+        { text: "I would open the full report when you need source confidence, not just a quick ticker answer.", type: "paragraph" },
+        {
+          items: ["theme strength", "which authors repeated the call", "whether price confirmed after the posts"],
+          type: "bullets",
+        },
+        { label: "Read first", text: "Start from the theme layer, then drill into the ticker table only if the author cluster is broad enough.", type: "callout" },
+      ],
+      [
+        { label: "Short answer", text: "Yes. The report is the better surface here because it preserves the sequence of signals.", type: "callout" },
+        { text: "The quick chat answer can summarize NVDA or AVGO, but the report lets you see whether the idea kept earning confirmation over time.", type: "paragraph" },
+      ],
+    ]);
   }
 
   if (lowerMessage.includes("telegram") || lowerMessage.includes("alert")) {
-    return `${randomItem([
-      "For alerts, I would keep the default cadence calm and only interrupt when the signal actually changes.",
-      "A daily Telegram digest makes sense, but intraday pushes should be reserved for conviction breaks.",
-      "I would avoid noisy alerts here and use a tighter rule around sentiment change plus ticker concentration.",
-    ])} ${randomItem([
-      "A good trigger would be NVDA or BTC moving far away from its prior-day FinTwit baseline.",
-      "The alert should mention the ticker, the source cluster, and why this is different from the last digest.",
-      "If the same authors repeat the call and price confirms, then it is worth escalating.",
-    ])}`;
+    return randomItem<AssistantReplyBlock[]>([
+      [
+        { text: "I would keep Telegram quiet by default and only send a push when the signal changes meaningfully.", type: "paragraph" },
+        {
+          items: ["ticker breaks above yesterday's attention baseline", "sentiment flips fast", "two or more independent author clusters agree"],
+          type: "bullets",
+        },
+      ],
+      [
+        { label: "Alert rule", text: "Send a digest daily; escalate intraday only on conviction breaks.", type: "callout" },
+        { items: ["mention the ticker", "name the source cluster", "state what changed from the last digest"], type: "actions" },
+      ],
+    ]);
   }
 
-  return `${randomItem([
-    `I will treat "${shortMessage}" as a follow-up on the current digest context.`,
-    `Good question. I would connect "${shortMessage}" back to the digest instead of answering it in isolation.`,
-    `Using the current FinTwit context, "${shortMessage}" is mostly about signal quality.`,
-  ])} ${randomItem([
-    "The useful next step is to compare ticker momentum, author conviction, and whether later posts confirm the setup.",
-    "I would look for repeated independent mentions first, then check whether the price action is confirming or diverging.",
-    "The answer changes if the attention is broad-based versus coming from one loud cluster of accounts.",
-    "I would separate what is actionable now from what should stay on watch until there is a cleaner confirmation.",
-  ])}`;
+  const variants: AssistantReplyBlock[][] = [
+    [
+      { text: `I am reading "${shortMessage}" as a follow-up to the current FinTwit digest.`, type: "paragraph" },
+      { text: "The next useful check is whether attention is broad-based or coming from one loud cluster.", type: "paragraph" },
+      { items: ["ticker momentum", "author conviction", "later-post confirmation"], type: "actions" },
+    ],
+    [
+      { label: "Signal quality", text: "I would not answer this in isolation yet.", type: "callout" },
+      {
+        items: ["first, look for repeated independent mentions", "then compare price confirmation", "finally separate action-now from watchlist"],
+        type: "bullets",
+      },
+    ],
+    [
+      { text: `For "${shortMessage}", I would treat the current digest as context rather than a final answer.`, type: "paragraph" },
+      { text: "If the same authors repeat the call and price confirms, it becomes more actionable. If attention fades, keep it on watch.", type: "paragraph" },
+    ],
+    [
+      { text: "Quick take: this is mostly about signal quality.", type: "paragraph" },
+      { label: "What I would check", text: "Breadth of mentions first, price reaction second, author track record third.", type: "callout" },
+    ],
+  ];
+
+  return variants[turnIndex % variants.length];
 }
 
 function useLiveChat() {
@@ -100,7 +134,7 @@ function useLiveChat() {
     timeoutRef.current = window.setTimeout(() => {
       setMessages((currentMessages) =>
         currentMessages.map((item) =>
-          item.id === assistantId ? { ...item, content: createAssistantReply(message), status: "complete" } : item,
+          item.id === assistantId ? { ...item, blocks: createAssistantReplyBlocks(message, Math.floor(userId / 2)), content: "", status: "complete" } : item,
         ),
       );
       setIsThinking(false);
@@ -125,6 +159,39 @@ function useChatAutoScroll(messages: LiveChatMessage[]) {
   }, [messages]);
 
   return scrollRef;
+}
+
+function AssistantReply({ blocks, content }: { blocks?: AssistantReplyBlock[]; content: string }) {
+  if (!blocks || blocks.length === 0) {
+    return <p>{content}</p>;
+  }
+
+  return (
+    <>
+      {blocks.map((block, index) => {
+        if (block.type === "paragraph") {
+          return <p key={index}>{block.text}</p>;
+        }
+
+        if (block.type === "callout") {
+          return (
+            <div className="assistant-callout" key={index}>
+              <strong>{block.label}</strong>
+              <span>{block.text}</span>
+            </div>
+          );
+        }
+
+        return (
+          <ul className={`assistant-list assistant-list-${block.type}`} key={index}>
+            {block.items.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        );
+      })}
+    </>
+  );
 }
 
 function LiveChatTail({ messages }: { messages: LiveChatMessage[] }) {
@@ -154,7 +221,7 @@ function LiveChatTail({ messages }: { messages: LiveChatMessage[] }) {
               </div>
             ) : (
               <div className="assistant-message assistant-message-live">
-                <p>{message.content}</p>
+                <AssistantReply blocks={message.blocks} content={message.content} />
               </div>
             )}
           </div>

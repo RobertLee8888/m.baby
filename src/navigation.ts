@@ -32,6 +32,7 @@ export function getBrowserRouteState(): BrowserRouteState | null {
 export function motionFor(from: Screen, to: Screen): Motion {
   if (from === "login" && to === "chat") return "auth";
   if (from !== "sidebar" && to === "sidebar") return "drawer";
+  if (from === "sidebar" && to === "chat") return "drawerBack";
   if (from === to) return "soft";
   return "push";
 }

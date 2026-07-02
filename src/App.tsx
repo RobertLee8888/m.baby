@@ -10,6 +10,15 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { createRouteState, getBrowserRouteState, motionFor, writeBrowserState } from "./navigation";
 import type { BrowserRouteState, DetailTab, Motion, Overlay, Screen, SettingsTab } from "./types";
 
+const DRAWER_TRANSITION_MS = 320;
+type DrawerTransition = { direction: "open" | "close"; from: Screen; to: Screen };
+
+function createDrawerTransition(from: Screen, to: Screen, motion: Motion): DrawerTransition | null {
+  if (motion === "drawer") return { direction: "open", from, to };
+  if (motion === "drawerBack") return { direction: "close", from, to };
+  return null;
+}
+
 export default function App() {
   const [screen, setScreen] = useState<Screen>("login");
   const [history, setHistory] = useState<Screen[]>([]);
@@ -17,7 +26,7 @@ export default function App() {
   const [detailTab, setDetailTab] = useState<DetailTab>("overview");
   const [settingsTab, setSettingsTab] = useState<SettingsTab>("account");
   const [motion, setMotion] = useState<Motion>("soft");
-  const [drawerTransition, setDrawerTransition] = useState<{ from: Screen; to: Screen } | null>(null);
+  const [drawerTransition, setDrawerTransition] = useState<DrawerTransition | null>(null);
   const [viewport, setViewport] = useState(getVisualViewportSize);
 
   useEffect(() => {
@@ -72,7 +81,7 @@ export default function App() {
       setScreen(drawerTransition.to);
       setMotion("none");
       setDrawerTransition(null);
-    }, 560);
+    }, DRAWER_TRANSITION_MS);
     return () => window.clearTimeout(timeout);
   }, [drawerTransition]);
 
@@ -81,13 +90,14 @@ export default function App() {
     const nextDetailTab = options.detailTab ?? detailTab;
     const nextSettingsTab = options.settingsTab ?? settingsTab;
     const nextMotion = motionFor(screen, next);
+    const nextDrawerTransition = createDrawerTransition(screen, next, nextMotion);
     setHistory(nextHistory);
     setMotion(nextMotion);
-    setDrawerTransition(nextMotion === "drawer" ? { from: screen, to: next } : null);
+    setDrawerTransition(nextDrawerTransition);
     setOverlay(null);
     setDetailTab(nextDetailTab);
     setSettingsTab(nextSettingsTab);
-    if (nextMotion !== "drawer") {
+    if (!nextDrawerTransition) {
       setScreen(next);
     }
     writeBrowserState(
@@ -103,11 +113,15 @@ export default function App() {
   };
 
   const replace = (next: Screen) => {
+    const nextMotion = motionFor(screen, next);
+    const nextDrawerTransition = createDrawerTransition(screen, next, nextMotion);
     setHistory([]);
-    setMotion(motionFor(screen, next));
-    setDrawerTransition(null);
+    setMotion(nextMotion);
+    setDrawerTransition(nextDrawerTransition);
     setOverlay(null);
-    setScreen(next);
+    if (!nextDrawerTransition) {
+      setScreen(next);
+    }
     writeBrowserState(
       "replace",
       createRouteState({
@@ -235,6 +249,7 @@ export default function App() {
       : null),
   } as CSSProperties;
   const isDrawerTransition = Boolean(drawerTransition);
+  const drawerDirectionClass = drawerTransition ? `is-drawer-${drawerTransition.direction}` : "";
   const rendered = renderScreen(screen);
 
   return (
@@ -243,15 +258,19 @@ export default function App() {
         <p>此 demo 仅在移动端窗口尺寸生效</p>
       </section>
 
-      <section className={`mobile-shell ${isDrawerTransition ? "is-drawer-transition" : ""}`} aria-label="m.baby mobile demo" style={mobileShellStyle}>
+      <section className={`mobile-shell ${isDrawerTransition ? "is-drawer-transition" : ""} ${drawerDirectionClass}`} aria-label="m.baby mobile demo" style={mobileShellStyle}>
         {drawerTransition ? (
-          <div className="view-transition drawer-enter-layer" data-transition-layer="drawer-enter" key={`drawer-${drawerTransition.to}`}>
+          <div
+            className={`view-transition drawer-enter-layer drawer-enter-${drawerTransition.direction}`}
+            data-transition-layer="drawer-enter"
+            key={`drawer-${drawerTransition.to}`}
+          >
             {renderScreen(drawerTransition.to)}
           </div>
         ) : null}
         <div
           aria-hidden={drawerTransition ? "true" : undefined}
-          className={`view-transition ${drawerTransition ? "drawer-exit-layer" : `enter-${motion}`}`}
+          className={`view-transition ${drawerTransition ? `drawer-exit-layer drawer-exit-${drawerTransition.direction}` : `enter-${motion}`}`}
           data-transition-layer={drawerTransition ? "drawer-exit" : "current"}
           key={screen}
         >

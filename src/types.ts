@@ -14,7 +14,7 @@ export type Screen =
 export type Overlay = "askAlva" | "infoModal" | null;
 export type DetailTab = "overview" | "analytics" | "strategy" | "feed";
 export type SettingsTab = "account" | "usage" | "portfolio" | "alvaAgent" | "alerts" | "apiKey";
-export type Motion = "auth" | "push" | "back" | "drawer" | "soft" | "none";
+export type Motion = "auth" | "push" | "back" | "drawer" | "drawerBack" | "soft" | "none";
 
 export type BrowserRouteState = {
   babyDemo: true;
