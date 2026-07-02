@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { getVisualViewportSize, MIN_MOBILE_STAGE_WIDTH } from "./assets";
 import { AskAlvaOverlay, ChatPage, ChatSelectedPage } from "./pages/ChatPages";
@@ -28,6 +28,11 @@ export default function App() {
   const [motion, setMotion] = useState<Motion>("soft");
   const [drawerTransition, setDrawerTransition] = useState<DrawerTransition | null>(null);
   const [viewport, setViewport] = useState(getVisualViewportSize);
+  const screenRef = useRef(screen);
+
+  useEffect(() => {
+    screenRef.current = screen;
+  }, [screen]);
 
   useEffect(() => {
     writeBrowserState(
@@ -44,9 +49,14 @@ export default function App() {
     const onPopState = (event: PopStateEvent) => {
       const state = event.state as BrowserRouteState | null;
       if (!state?.babyDemo) return;
-      setDrawerTransition(null);
-      setMotion("back");
-      setScreen(state.screen);
+      const currentScreen = screenRef.current;
+      const nextMotion = motionFor(currentScreen, state.screen);
+      const nextDrawerTransition = createDrawerTransition(currentScreen, state.screen, nextMotion);
+      setDrawerTransition(nextDrawerTransition);
+      setMotion(nextDrawerTransition ? nextMotion : "back");
+      if (!nextDrawerTransition) {
+        setScreen(state.screen);
+      }
       setHistory(state.history);
       setOverlay(state.overlay);
       setDetailTab(state.detailTab);
@@ -142,10 +152,14 @@ export default function App() {
 
     const stack = [...history];
     const previous = stack.pop() ?? fallback;
-    setMotion("back");
-    setDrawerTransition(null);
+    const nextMotion = motionFor(screen, previous);
+    const nextDrawerTransition = createDrawerTransition(screen, previous, nextMotion);
+    setMotion(nextDrawerTransition ? nextMotion : "back");
+    setDrawerTransition(nextDrawerTransition);
     setOverlay(null);
-    setScreen(previous);
+    if (!nextDrawerTransition) {
+      setScreen(previous);
+    }
     setHistory(stack);
     writeBrowserState(
       "replace",
