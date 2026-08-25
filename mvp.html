@@ -13,9 +13,11 @@
      stage chrome, so the page renders as a bare full-screen app. Set before
      the stylesheet loads so no mockup is ever painted. -->
 <script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
-<!-- The mode is stamped before the stylesheet loads too, so a dark session
-     never flashes the light palette on the way in. -->
-<script>(function(){try{var t=localStorage.getItem('alva-mvp-theme');if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();</script>
+<!-- The mode is stamped before the stylesheet loads, so a dark session never
+     flashes the light palette on the way in. The default is Light because that
+     is the mode the Figma frames are drawn in — dark is a choice the person
+     makes in Me, and once made it is remembered. -->
+<script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
 <link rel="stylesheet" href="mvp.css?v=4">
 </head>
 <body>
