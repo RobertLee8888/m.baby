@@ -12,10 +12,112 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 | | | Source |
 | --- | --- | --- |
 | `index.html` · `shell.css` · `shell.js` | **The shell** — the list, the stage, the phone mockup, and hash routing | — |
+| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the For You feed: ticker headers, markdown/quote/media blocks, source footers, and the new-cards pill. Chat and Me are named placeholders until they are built | [Feed Mobile MVP · For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) |
 | `alpha-radar.html` · `alpha-radar.css` · `alpha-radar.js` | **Alpha Radar mobile onboarding** — source selection, radar setup, login, and building states across 8 screens. On the three source-selection screens a collection card opens a member bottom sheet | [Alpha Radar onboarding](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=13241-205457) · [Collection member sheet](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=14144-48781) |
 | `onboarding.html` · `styles.css` · `app.js` | **Immersive onboarding** — FinTwit Digest path, 6 screens | [Onboarding · Production v4 · FinTwit path](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243) |
 
 Zero dependencies — plain HTML / CSS / JS, no build step. Alva design tokens (`main/m1 #49a3a6`, `text/n9…n3`, `line/l05…l3`), the Delight typeface, and assets exported from Figma.
+
+## MVP — the For You feed
+
+The first screen of the MVP build (`#/mvp`). Everything below is measured off
+[For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177),
+not eyeballed from a screenshot.
+
+### The card is one object
+
+8 of padding top and bottom, 8 between its three parts, and a single 0.5px
+`line/l12` hairline along the bottom edge — no top hairline, no card radius,
+no shadow. Three parts, each with its own gutter rule:
+
+| | Padding | Contents |
+| --- | --- | --- |
+| Header | `8 16` | one to three tickers, 16 apart, divided by a 24-tall hairline |
+| Content | `0 16` | markdown blocks, 12 apart |
+| Footer | `0 8 0 16`, 36 tall | source stack + count, the automation that found the card, Ask Alva |
+
+### The feed is data
+
+A card is a header, a list of blocks, and a footer, so the block type is the
+only thing a new card teaches this page:
+
+| Block | Figma | Type |
+| --- | --- | --- |
+| `text` | Markdown/M | Regular 14/22 |
+| `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
+| `title` | Markdown/M | Medium 16/26 — a named thesis |
+| `quote` | Markdown - Quote | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
+| `media` | Media = 1 | gutter to gutter, 203 tall |
+| `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
+
+### The scroller is the only thing allowed past the gutter
+
+A row of media tiles keeps its 16 on the left and runs off the **right** edge
+of the card (`margin-right: -16px` and the padding back). That overflow is
+the affordance: a tile clipped by the screen edge is what says there is more
+to the side. Nothing else on the screen crosses the gutter.
+
+### Tracking: the font already has it
+
+The library's text styles carry 1% letter spacing, and the tempting move is
+to write `letter-spacing: .01em` and call it a match. It is not: the exported
+static Delight TTF already measures that way in a browser, so adding 1% on
+top pushes two paragraphs onto an extra line and the cards grow 22px each.
+At `letter-spacing: 0` every text block in the frame breaks on the same words
+and lands on the same height as the design — 154 / 44 / 132 / 28 / 132, with
+the quote at 128 and the cards at 423 / 525 / 581.
+
+### Refreshing: one gesture, two ways in
+
+Pull to refresh is the standing gesture on this screen, not a one-shot
+animation. From the top of the list a drag moves the **track** the cards sit
+on (the refresh gutter lives at `bottom: 100%` of that track, so it comes
+into view with the pull and leaves no gap behind when the list springs
+back), the spinner fades in and turns with the finger, and past 48 the
+release commits: the list holds open at 64, the green spinner runs for a few
+turns, the new cards land while it is still held, and only then does the
+list close over them. A list that changed under the eye would be worse than
+one that waited.
+
+`Pill · New cards` is that same refresh with a number on it. It sits 8 below
+the topbar, centred, on `main/m1` with the library's `Shadow L (10 20 8)` —
+the one element on this screen with a shadow, because it is the one element
+that is floating. Tapping it runs the identical sequence rather than a second
+one.
+
+It also **stays put while you read**. The pill is not a scroll affordance; it
+is the count of what is waiting, and that count is still true at the bottom
+of the list. It leaves for exactly two reasons: you tapped it, or you pulled
+the list yourself. Either way the waiting cards are now in the feed, so the
+number has nothing left to say.
+
+### Every stroke is 0.5
+
+One token, `--hair: .5px`, carries every stroke on the screen: the topbar
+rule, the card's bottom edge, the ticker dividers, the media borders, the
+pill's edge, the tab bar's top, and the white ring around the stacked source
+avatars — that ring was the last 1px holdout and is now a hairline like the
+rest. The only 2px arc left is the refresh spinner, and it is an indicator,
+not an edge: at 20px a 0.5px ring does not read as a spinner.
+
+### Media rows scroll sideways on every input
+
+A row keeps its native touch scrolling and `pan-x`, so a swipe never gets
+handed to the pull gesture, and it gains a mouse drag for the desktop, where
+there is no finger and the wheel belongs to the feed. A drag past 4px is not
+a tap, so the click it would have fired at the card is swallowed — the same
+rule the pull gesture uses.
+
+### Sharpness
+
+The chart tiles are exported at 3× and drawn at 240 × 135 and 361 × 203, so
+they stay crisp on a retina screen instead of resampling a 1× crop.
+
+### What is not built yet
+
+Ticker Detail, Chat and Me are the next three screens in the MVP page. Chat
+and Me are in the tab bar as named placeholder screens rather than dead taps,
+and a tap on a card says where the detail screen will be.
 
 ## Alpha Radar — the 2026-08-18 design round
 

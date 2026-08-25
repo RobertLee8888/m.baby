@@ -56,6 +56,17 @@
         url: 'https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243',
       },
     },
+    {
+      title: 'MVP',
+      subtitle: 'The MVP, screen by screen. First one built: the For You feed — ticker headers, markdown cards, media scrollers, source footers, and the new-cards pill.',
+      edited: '2026-08-25',
+      href: 'mvp.html',
+      meta: 'Mobile · 1 of 3 screens',
+      figma: {
+        label: 'Feed Mobile MVP · For You',
+        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177',
+      },
+    },
   ];
 
   /* ──────────────────────────────

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>MVP · For You feed · Alva prototypes</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="assets/fonts/Delight-Medium.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="assets/fonts/Delight-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
+<!-- Embedded in the prototypes shell? The shell draws the bezel and owns the
+     stage chrome, so the page renders as a bare full-screen app. Set before
+     the stylesheet loads so no mockup is ever painted. -->
+<script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
+<link rel="stylesheet" href="mvp.css?v=2">
+</head>
+<body>
+
+<div class="desk">
+  <div class="phone" id="phone">
+    <div class="phone-buttons" aria-hidden="true">
+      <span class="pb pb-action"></span>
+      <span class="pb pb-volup"></span>
+      <span class="pb pb-voldown"></span>
+      <span class="pb pb-power"></span>
+    </div>
+    <div class="phone-screen">
+      <main class="mvp-app" id="mvpApp">
+
+        <!-- ── The screens ──
+             One MVP screen is built: For You. Chat and Me are the next two,
+             and they are here as named placeholders rather than dead taps. -->
+        <div class="screens" id="screens">
+
+          <section class="screen current" id="screenFeed" data-tab="feed" aria-label="For You">
+            <header class="topbar"><h1>For You</h1></header>
+
+            <!-- The feed scrolls; the track inside it is what the pull moves,
+                 so the refresh gutter can sit just above the first card and
+                 come into view with it. -->
+            <div class="feed" id="feed">
+              <div class="feed-track" id="feedTrack">
+                <div class="refresh" aria-hidden="true"><span class="spinner" id="spinner"></span></div>
+                <div class="cards" id="cards"></div>
+              </div>
+            </div>
+
+            <button class="pill" id="newPill" type="button">
+              <img src="assets/feed-arrow-up.svg" alt="">
+              <span id="newPillText">3 new feeds</span>
+            </button>
+          </section>
+
+          <section class="screen" id="screenChat" data-tab="chat" aria-label="Chat">
+            <header class="topbar"><h1>Chat</h1></header>
+            <div class="placeholder">
+              <img src="assets/feed-tab-chat.svg" alt="">
+              <p class="ph-title">Chat is next in the MVP</p>
+              <p class="ph-sub">Ask Alva about anything in the feed — the thread opens here.</p>
+            </div>
+          </section>
+
+          <section class="screen" id="screenMe" data-tab="me" aria-label="Me">
+            <header class="topbar"><h1>Me</h1></header>
+            <div class="placeholder">
+              <img src="assets/feed-tab-me.svg" alt="">
+              <p class="ph-title">Me is next in the MVP</p>
+              <p class="ph-sub">Your tickers, your automations, your sources.</p>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="system-bar" aria-hidden="true">
+          <div class="system-side system-left"><span>9:41</span></div>
+          <div class="dynamic-island"></div>
+          <div class="system-side system-right">
+            <img src="assets/status-signal.svg" alt="">
+            <img src="assets/status-wifi.svg" alt="">
+            <span class="battery">
+              <img class="battery-outline" src="assets/battery-outline.svg" alt="">
+              <img class="battery-fill" src="assets/battery-fill.svg" alt="">
+              <img class="battery-end" src="assets/battery-end.svg" alt="">
+            </span>
+          </div>
+        </div>
+
+        <nav class="tab-bar" id="tabBar" aria-label="Main">
+          <div class="tabs" role="tablist">
+            <button class="tab" type="button" role="tab" data-tab="feed" aria-selected="true">
+              <img src="assets/feed-tab-track.svg" alt="">
+              <span>For You</span>
+            </button>
+            <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
+              <img src="assets/feed-tab-chat.svg" alt="">
+              <span>Chat</span>
+            </button>
+            <button class="tab" type="button" role="tab" data-tab="me" aria-selected="false">
+              <img src="assets/feed-tab-me.svg" alt="">
+              <span>Me</span>
+            </button>
+          </div>
+          <div class="home-indicator" aria-hidden="true"><span></span></div>
+        </nav>
+
+        <div class="toast" id="toast" role="status"></div>
+
+      </main>
+    </div>
+  </div>
+
+  <nav class="stage-controls stage-controls-left" aria-label="Prototype navigation">
+    <a class="stage-pill" href="index.html#/mvp">← All prototypes</a>
+  </nav>
+  <div class="stage-controls">
+    <button class="stage-pill" id="restartButton">Restart</button>
+  </div>
+</div>
+
+<script src="mvp.js?v=2"></script>
+</body>
+</html>

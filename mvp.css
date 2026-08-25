@@ -1,0 +1,570 @@
+@font-face {
+  font-family: 'Delight';
+  src: url('assets/fonts/Delight-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Delight';
+  src: url('assets/fonts/Delight-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Delight';
+  src: url('assets/fonts/Delight-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MVP · For You feed
+   Figma: Feed Mobile MVP · ⭐️ MVP · For You (1496:32177)
+
+   Every length here is a token from Alva-Library, not a guess:
+   spacing 4 / 8 / 12 / 16, hairlines at 0.5px on line/l12 (0.2 for
+   media), radius 8 for content and 960 for the pill, and the type
+   ramp is Delight 24/34 · 16/26 · 14/22 · 12/20 · 10/16 with the
+   library's 1% tracking on every size.
+
+   The card is one object: 8px of padding top and bottom, an 8px gap
+   between its three parts (header / content / footer), and a single
+   hairline along the bottom edge. Nothing inside it is a slice of the
+   screen — the media scroller is the only thing allowed past the
+   16px gutter, and only on the right, because that overflow is what
+   says "there is more to the side".
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --m1: #49a3a6;
+  --m3: #2a9b7d;
+  --n9: rgba(0, 0, 0, .9);
+  --n7: rgba(0, 0, 0, .7);
+  --n5: rgba(0, 0, 0, .5);
+  --l07: rgba(0, 0, 0, .07);
+  --l12: rgba(0, 0, 0, .12);
+  --l2: rgba(0, 0, 0, .2);
+  --br03: rgba(0, 0, 0, .03);
+
+  --hair: .5px;        /* every stroke in this design is 0.5 — no exceptions */
+  --status-h: 59px;    /* the shell writes the chosen device's inset here */
+  --topbar-h: 58px;    /* 16 + 34 + 8 */
+  --tab-h: 48px;       /* 8 + 22 + 2 + 16 */
+  --home-h: 34px;
+  --gutter: 16px;
+  --refresh-h: 64px;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; }
+
+body {
+  overflow: hidden;
+  background: #e8eaed;
+  color: var(--n9);
+  font-family: 'Delight', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  /* The library's text styles carry 1% tracking, and every label on this
+     screen measures right with it — see .blk-text for the one place it has
+     to come back off. */
+  letter-spacing: .01em;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+button { border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; }
+img { display: block; pointer-events: none; -webkit-user-drag: none; }
+[hidden] { display: none !important; }
+
+/* ─────────────────────────────────────────────
+   Standalone chrome — the shell hides all of this
+   ───────────────────────────────────────────── */
+
+.desk {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(900px 650px at 80% 0%, rgba(73, 163, 166, .15), transparent 60%),
+    radial-gradient(800px 600px at 8% 110%, rgba(73, 163, 166, .1), transparent 58%),
+    linear-gradient(180deg, #eef1f2 0%, #e3e7e9 100%);
+}
+.phone {
+  position: relative;
+  width: 425px;
+  height: 884px;
+  padding: 16px;
+  border-radius: 68px;
+  background: linear-gradient(145deg, #3f4147 0%, #17181c 55%, #3a3c42 100%);
+  box-shadow:
+    inset 0 0 3px 1px rgba(255, 255, 255, .28),
+    inset 0 0 2px 5px rgba(255, 255, 255, .09),
+    0 0 0 1px rgba(0, 0, 0, .55),
+    0 30px 60px -12px rgba(23, 32, 34, .45),
+    0 80px 120px -30px rgba(23, 32, 34, .35);
+  transform-origin: center;
+}
+.phone-screen {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  overflow: hidden;
+  border-radius: 54px;
+  background: #fff;
+  box-shadow: 0 0 0 6px #000;
+}
+.phone-buttons .pb {
+  position: absolute;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #26272b, #4c4e55 45%, #26272b);
+}
+.pb-action { top: 178px; left: -2.5px; width: 3px; height: 34px; }
+.pb-volup { top: 244px; left: -2.5px; width: 3px; height: 62px; }
+.pb-voldown { top: 320px; left: -2.5px; width: 3px; height: 62px; }
+.pb-power { top: 274px; right: -2.5px; width: 3px; height: 100px; }
+
+.stage-controls { position: fixed; right: 20px; bottom: 18px; display: flex; }
+.stage-controls-left { right: auto; left: 20px; }
+.stage-pill {
+  padding: 6px 14px;
+  border: .5px solid rgba(23, 32, 34, .12);
+  border-radius: 960px;
+  background: rgba(255, 255, 255, .62);
+  color: rgba(23, 32, 34, .55);
+  font-size: 12px;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+}
+.stage-pill:hover { border-color: var(--m1); color: var(--m1); }
+
+/* ─────────────────────────────────────────────
+   The app
+   ───────────────────────────────────────────── */
+
+.mvp-app {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #fff;
+}
+.screens { position: absolute; inset: 0; }
+.screen {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  visibility: hidden;
+}
+.screen.current { visibility: visible; }
+
+/* ── iOS status bar ── */
+
+.system-bar {
+  position: absolute;
+  z-index: 30;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  height: var(--status-h);
+  pointer-events: none;
+}
+.system-side { display: flex; flex: 1; align-items: center; justify-content: center; height: 100%; }
+.system-left { padding: 3px 0 0 10px; font-size: 16px; font-weight: 600; line-height: 21px; letter-spacing: 0; }
+.dynamic-island { flex: 0 0 125px; width: 125px; height: 37px; border-radius: 100px; background: #000; }
+.system-right { gap: 8px; padding: 3px 11px 0 0; }
+.system-right > img:first-child { width: 18px; height: 12px; }
+.system-right > img:nth-child(2) { width: 17px; height: 12px; }
+.battery { position: relative; width: 27.4px; height: 13px; }
+.battery-outline { position: absolute; inset: 0 auto auto 0; width: 25px; height: 13px; }
+.battery-fill { position: absolute; top: 2px; left: 2px; width: 21px; height: 9px; }
+.battery-end { position: absolute; top: 4.4px; right: 0; width: 1.4px; height: 4.2px; }
+
+/* ── Topbar/Mweb ──
+   16 above the title, 8 below it, and the hairline is the whole width
+   (1496:32179). ── */
+
+.topbar {
+  position: absolute;
+  z-index: 12;
+  top: var(--status-h);
+  right: 0;
+  left: 0;
+  height: var(--topbar-h);
+  padding: 16px 0 8px var(--gutter);
+  border-bottom: var(--hair) solid var(--l12);
+  background: #fff;
+}
+.topbar h1 {
+  overflow: hidden;
+  color: var(--n9);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 34px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── The feed ──
+   The scroller starts under the topbar and stops at the tab bar, so the
+   last card's hairline is never hidden behind it. ── */
+
+.feed {
+  position: absolute;
+  inset: calc(var(--status-h) + var(--topbar-h)) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+/* Pull to refresh. The track is what the finger moves, so the refresh
+   gutter can live directly above the first card (`bottom: 100%`) and come
+   into view with it — no gap left behind when the list springs back. */
+
+.feed-track { position: relative; will-change: transform; }
+.feed-track.springing { transition: transform .42s var(--ease); }
+
+.refresh {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  left: 0;
+  display: grid;
+  height: var(--refresh-h);
+  place-items: center;
+}
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(73, 163, 166, .16);
+  border-top-color: var(--m1);
+  border-radius: 50%;
+  opacity: 0;
+}
+/* The one stroke that is not a hairline: at 20px a 0.5px ring would not
+   read as a spinner, so the indicator keeps a 2px arc. */
+.spinner.spinning { animation: spin .72s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Feed card ── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: var(--hair) solid var(--l12);
+  background: #fff;
+}
+.card.enter { animation: card-in .44s var(--ease) both; }
+@keyframes card-in {
+  from { opacity: 0; transform: translate3d(0, -10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Header: one ticker, or up to three divided by a hairline (1496:32409) */
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--gutter);
+  padding: 8px var(--gutter);
+}
+.ticker { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.ticker-logo { width: 36px; height: 36px; border-radius: 100px; }
+.ticker-text { display: flex; flex-direction: column; justify-content: center; }
+.ticker-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.ticker-tone { color: var(--m3); font-size: 10px; font-weight: 400; line-height: 16px; white-space: nowrap; }
+.head-rule { flex: 0 0 auto; align-self: center; width: 0; height: 24px; border-left: var(--hair) solid var(--l12); }
+
+/* Content: markdown blocks, 12 apart */
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 var(--gutter);
+}
+/* The markdown blocks are the exception to the 1% tracking above. The
+   exported static Delight already measures as if the tracking were in the
+   font: at 0 every paragraph in the Figma frame breaks on the same words
+   and lands on the same height (154 / 44 / 132 / 28 / 132, quote 128, cards
+   423 / 525 / 581). Adding 1% on top pushes two of them onto an extra line
+   and each card grows 22px — so the honest way to match the design here is
+   to let the font's own metrics do it. */
+.blk-text {
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+}
+.blk-lead { font-weight: 500; }
+.blk-title { padding-top: 2px; font-size: 16px; font-weight: 500; line-height: 26px; }
+
+/* Quote: br03 tile, 12 in from three sides and 8 at the foot, with the
+   mark riding the top-right corner (1129:60241) */
+
+.quote {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  padding: 12px 12px 8px;
+  border-radius: 8px;
+  background: var(--br03);
+}
+.quote-head { display: flex; align-items: center; gap: 8px; }
+.quote-avatar {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border: var(--hair) solid var(--l12);
+  border-radius: 960px;
+}
+.quote-name { color: var(--n9); font-size: 12px; font-weight: 500; line-height: 20px; }
+.quote-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; }
+.quote-mark {
+  position: absolute;
+  top: -4px;
+  right: 12px;
+  color: var(--m3);
+  font-size: 64px;
+  font-weight: 600;
+  line-height: 1;
+  opacity: .6;
+  pointer-events: none;
+}
+
+/* Media. One tile fills the gutter-to-gutter width; two or more become a
+   scroller of 240 × 135 tiles that runs off the right edge of the card. */
+
+.media {
+  height: 203px;
+  overflow: hidden;
+  border: var(--hair) solid var(--l2);
+  border-radius: 8px;
+  background: var(--br03);
+}
+.media img { width: 100%; height: 100%; object-fit: cover; }
+
+.media-row {
+  display: flex;
+  gap: 8px;
+  margin-right: calc(var(--gutter) * -1);
+  padding-right: var(--gutter);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* pan-x keeps a sideways drag inside the row instead of handing it to the
+     feed's pull gesture; the cursor says the row is draggable on a desktop */
+  touch-action: pan-x;
+  cursor: grab;
+}
+.media-row.dragging { cursor: grabbing; scroll-snap-type: none; }
+.media-row::-webkit-scrollbar { display: none; }
+.media-tile {
+  flex: 0 0 240px;
+  height: 135px;
+  overflow: hidden;
+  border: var(--hair) solid var(--l2);
+  border-radius: 8px;
+  background: var(--br03);
+  scroll-snap-align: start;
+}
+.media-tile img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Footer: sources on the left, the automation that found the card in the
+   middle, Ask Alva on the right (1437:31419) */
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 8px 0 var(--gutter);
+}
+.foot-lead { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; overflow: hidden; }
+.sources { display: flex; flex: 0 0 auto; align-items: center; }
+.sources img {
+  width: 18px;
+  height: 18px;
+  margin-right: -6px;
+  border-radius: 100px;
+  box-shadow: 0 0 0 var(--hair) #fff;
+}
+.sources img:last-child { margin-right: 0; }
+.foot-meta { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+.automation { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
+.automation img { width: 12px; height: 12px; }
+.automation span { color: var(--m1); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+.ask {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  transition: background .18s ease, transform .18s var(--ease);
+}
+.ask img { width: 18px; height: 18px; opacity: .9; }
+.ask:active { background: var(--br03); transform: scale(.94); }
+
+/* ── Pill · New cards (1484:46783) ──
+   It sits 8 below the topbar, centred, and it is the only thing on this
+   screen with a shadow: it is the only thing floating. ── */
+
+.pill {
+  position: absolute;
+  z-index: 14;
+  top: calc(var(--status-h) + var(--topbar-h) + 8px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: var(--hair) solid var(--l07);
+  border-radius: 960px;
+  background: var(--m1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  transition: opacity .24s ease, transform .32s var(--ease);
+}
+.pill img { width: 14px; height: 14px; }
+.pill:active { transform: translateX(-50%) scale(.96); }
+.pill.gone {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-8px) scale(.96);
+}
+
+/* ── Tab bar (1024:38385) ── */
+
+.tab-bar {
+  position: absolute;
+  z-index: 25;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-top: var(--hair) solid var(--l12);
+  background: #fff;
+}
+.tabs { display: flex; }
+.tab {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 2px;
+  height: var(--tab-h);
+  padding-top: 8px;
+}
+.tab img { width: 22px; height: 22px; opacity: .7; transition: opacity .18s ease; }
+.tab span { color: var(--n7); font-size: 10px; font-weight: 400; line-height: 16px; }
+.tab[aria-selected="true"] img { opacity: .9; }
+.tab[aria-selected="true"] span { color: var(--n9); font-weight: 500; }
+
+.home-indicator { position: relative; height: var(--home-h); pointer-events: none; }
+.home-indicator span {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 144px;
+  height: 5px;
+  border-radius: 100px;
+  background: #000;
+  transform: translateX(-50%);
+}
+
+/* ── The two screens that are next ── */
+
+.placeholder {
+  position: absolute;
+  inset: calc(var(--status-h) + var(--topbar-h)) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 40px;
+  text-align: center;
+}
+.placeholder img { width: 28px; height: 28px; margin-bottom: 4px; opacity: .35; }
+.ph-title { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.ph-sub { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+
+/* ── Toast ── */
+
+.toast {
+  position: absolute;
+  z-index: 50;
+  top: calc(var(--status-h) + var(--topbar-h) + 12px);
+  left: 50%;
+  max-width: 300px;
+  padding: 9px 14px;
+  border-radius: 20px;
+  background: rgba(24, 24, 24, .88);
+  color: #fff;
+  font-size: 12px;
+  line-height: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -12px);
+  transition: opacity .2s ease, transform .3s var(--ease);
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ─────────────────────────────────────────────
+   Embedded in the prototypes shell (index.html)
+   ───────────────────────────────────────────── */
+
+html.embedded .desk { display: block; background: #fff; }
+html.embedded .phone {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none !important;
+}
+html.embedded .phone-buttons,
+html.embedded .stage-controls { display: none; }
+html.embedded .phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 520px), (max-height: 700px) and (pointer: coarse) {
+  .desk { display: block; background: #fff; }
+  .phone { width: 100%; height: 100%; padding: 0; border-radius: 0; background: none; box-shadow: none; }
+  .phone-buttons, .stage-controls { display: none; }
+  .phone-screen { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
