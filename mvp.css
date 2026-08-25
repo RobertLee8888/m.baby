@@ -278,7 +278,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
      title has scrolled away. The scroll handler writes it; everything that
      has to move with the bar reads --bar-h. */
   --bar-p: 0;
-  --bar-h: calc(var(--topbar-h) - 34px * var(--bar-p));
+  --bar-h: calc(var(--topbar-h) * (1 - var(--bar-p)));
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -286,13 +286,19 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background: var(--b10);
 }
 .screens { position: absolute; inset: 0; }
+/* Tabs slide rather than cut. Each screen holds its place on a horizontal
+   track — one screen-width per step from the current one — so switching is a
+   move, not a repaint, and a screen keeps its scroll position while it is
+   off to the side. */
 .screen {
   position: absolute;
   inset: 0;
   background: var(--b10);
-  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(calc(var(--sx, 0) * 100%), 0, 0);
+  transition: transform .34s var(--ease);
 }
-.screen.current { visibility: visible; }
+.screen.current { pointer-events: auto; }
 
 /* ── iOS status bar ── */
 
@@ -311,9 +317,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* A sheet dims the app behind it, and the status bar is in front of the
    scrim rather than under it — so it has to go light, the way iOS does. */
 .mvp-app.dim .system-bar { color: #fff; }
-/* Fullscreen, the design keeps only the island: the chart owns the rest of
-   that row and the close button lands where the battery used to be. */
-.mvp-app.full .system-side { opacity: 0; }
 .system-side { display: flex; flex: 1; align-items: center; justify-content: center; height: 100%; }
 .system-left { padding: 3px 0 0 10px; font-size: 16px; font-weight: 600; line-height: 21px; letter-spacing: 0; }
 .dynamic-island { flex: 0 0 125px; width: 125px; height: 37px; border-radius: 100px; background: #000; }
@@ -330,16 +333,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    16 above the title, 8 below it, and the hairline is the whole width
    (1496:32179).
 
-   It collapses on scroll, the way a large title does in Twitter and in every
-   iOS list built on one: the title fades and lifts, and the bar loses exactly
-   the height of the line the title was sitting on — 58 (16 + 34 + 8) down to
-   24 (16 + 8). Nothing is invented: what is left when the title goes is the
-   padding that was always around it.
+   It leaves with the list, which is what Twitter's home header does: the
+   title fades and lifts and the bar closes to nothing, so the timeline runs
+   right up under the status bar. Not a shorter bar — no bar. Scroll back up
+   and it comes back, because the whole thing is driven off scrollTop rather
+   than off scroll direction.
 
-   The travel is 34px of scroll, the title's own line height, so the bar has
-   finished collapsing at the moment the title would have scrolled out of
-   view. The title fades faster than the bar closes (×1.7) because a title at
-   20% opacity under a half-closed bar reads as a rendering bug. ── */
+   The travel is the bar's own height, so it has finished closing at the
+   moment it would have scrolled out of view anyway. The title fades at 2.2×
+   that rate: a title at 20% opacity under a half-closed bar reads as a
+   rendering bug rather than a transition. ── */
 
 .topbar {
   position: absolute;
@@ -349,7 +352,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   left: 0;
   height: var(--bar-h);
   overflow: hidden;
-  padding: 16px 0 8px var(--gutter);
+  /* The 16 and 8 are the title's margins, not the bar's padding: with
+     border-box a padded box cannot be shorter than its own padding, and the
+     bar would have bottomed out at 24 instead of closing. */
+  padding: 0 0 0 var(--gutter);
   background: var(--b10);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
@@ -361,7 +367,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   line-height: 34px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  opacity: calc(1 - var(--bar-p) * 1.7);
+  margin: 16px 0 8px;
+  opacity: calc(1 - var(--bar-p) * 2.2);
   transform: translate3d(0, calc(-10px * var(--bar-p)), 0);
 }
 
@@ -405,6 +412,22 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: var(--refresh-h);
   place-items: center;
 }
+/* When the pull comes back with nothing, the gutter says so in the place the
+   spinner was standing and then closes a second later. A toast for this is
+   the wrong object: the answer belongs where the question was asked. */
+.refresh-note {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  color: var(--n5);
+  font-size: 12px;
+  line-height: 20px;
+  opacity: 0;
+  place-items: center;
+  transition: opacity .2s ease;
+}
+.refresh-note.show { opacity: 1; }
+
 .spinner {
   width: 20px;
   height: 20px;
@@ -540,15 +563,28 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* A full-width tile is the same shape as a small one — 240 × 135 — so the
    ratio is the token and the height follows the device's width. A fixed
    203 was only ever right at 393. */
+/* The 0.5 frame is a pseudo-element, not an inset shadow on the tile: an
+   inset shadow paints under the element's own content, and the image fills
+   the tile edge to edge, so the frame was there in the stylesheet and
+   invisible on screen. Later in tree order means above the image. */
 .media,
 .media-tile {
+  position: relative;
   display: block;
   overflow: hidden;
   aspect-ratio: 240 / 135;
   border-radius: 8px;
   background: var(--br03);
-  box-shadow: inset 0 0 0 var(--hair) var(--l2);
   transition: transform .2s var(--ease);
+}
+.media::after,
+.media-tile::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 var(--hair) var(--l2);
+  content: '';
+  pointer-events: none;
 }
 .media { width: 100%; }
 .media-tile { flex: 0 0 240px; }
@@ -646,17 +682,37 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    and what you had already read is marked once, in place, and then left
    alone. A hairline with a label sitting on it, not a banner. */
 
+/* The shape every messaging app converged on — Slack's "New", Telegram's
+   "Unread messages", Discord's red rule — is a hairline across the column
+   with the label sitting on it, the line broken by the text. Not a filled
+   band: a band is a card, and this is not content, it is a mark on the list.
+   It costs 36px, reads at a glance, and disappears the moment you are past
+   it. */
 .seen-line {
+  position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   height: 36px;
-  padding: 0 var(--gutter);
-  background: var(--br03);
-  box-shadow: inset 0 var(--hair) 0 var(--l12);
+  background: var(--b10);
+}
+.seen-line::before {
+  position: absolute;
+  top: 50%;
+  right: var(--gutter);
+  left: var(--gutter);
+  height: var(--hair);
+  background: var(--l12);
+  content: '';
+}
+.seen-line span {
+  position: relative;
+  padding: 0 10px;
+  background: var(--b10);
   color: var(--n5);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 18px;
 }
 
 /* ── Pill · New cards (1484:46783) ──
@@ -694,15 +750,30 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 /* ── Tab bar (1024:38385) ── */
 
+/* A 0.5 inset shadow on an 82-tall bar lands on a different subpixel at
+   every device height, and vanished at some of them. A 1px pseudo-element
+   scaled to half from its top edge is the deterministic half pixel. */
 .tab-bar {
   position: absolute;
   z-index: 25;
   right: 0;
-  bottom: 0;
+  bottom: var(--home-h);
   left: 0;
   background: var(--b10);
-  box-shadow: inset 0 var(--hair) 0 var(--l12);
 }
+.tab-bar::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--l12);
+  content: '';
+  transform: scaleY(.5);
+  transform-origin: top;
+}
+/* Chat has none: the composer already draws the edge. */
+.tab-bar.flat::before { display: none; }
 .tabs { display: flex; }
 .tab {
   display: flex;
@@ -723,7 +794,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .tab[aria-selected="true"] .ic-off { display: none; }
 .tab[aria-selected="true"] span { color: var(--n9); font-weight: 500; }
 
-.home-indicator { position: relative; height: var(--home-h); pointer-events: none; }
+.home-indicator {
+  position: absolute;
+  z-index: 62;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--home-h);
+  pointer-events: none;
+}
 .home-indicator span {
   position: absolute;
   bottom: 8px;
@@ -798,7 +877,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 /* The same Tab component appears inside the ticker sheet, where it is part
    of the flow rather than pinned under a topbar. */
-.strip-inline { position: static; flex: 0 0 auto; margin-bottom: 12px; }
+.strip-inline { position: static; flex: 0 0 auto; }
 .strip::-webkit-scrollbar { display: none; }
 .strip-item {
   position: relative;
@@ -824,7 +903,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .thread {
   position: absolute;
-  inset: calc(var(--status-h) + var(--sheet-top-h) + 28px) 0 calc(var(--tab-h) + var(--home-h) + 76px) 0;
+  /* 64 = the 52 box plus the 12 under it, so the last line is cut by the top
+     edge of the composer rather than by an invisible line above it. */
+  inset: calc(var(--status-h) + var(--sheet-top-h) + 28px) 0 calc(var(--tab-h) + var(--home-h) + 64px) 0;
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -871,8 +952,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   right: 0;
   bottom: calc(var(--tab-h) + var(--home-h));
   left: 0;
-  padding: 12px;
-  background: linear-gradient(180deg, transparent 0%, var(--b10) 40%);
+  padding: 0 12px 12px;
+  background: var(--b10);
 }
 .cbox {
   display: flex;
@@ -1068,14 +1149,18 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .scrim.show { opacity: 1; pointer-events: auto; }
 
+/* A sheet is as tall as its content and no taller than 40 below the status
+   bar. The sources sheet with two rows is two rows tall; with eleven it hits
+   the ceiling and scrolls. The ticker sheet always takes the ceiling, because
+   its chart is supposed to fill whatever is left. */
 .sheet {
   position: absolute;
   z-index: 61;
-  top: var(--sheet-y, 144px);
   right: 0;
   bottom: 0;
   left: 0;
   display: flex;
+  max-height: calc(100% - var(--status-h) - 40px);
   flex-direction: column;
   overflow: hidden;
   border-radius: 16px 16px 0 0;
@@ -1083,6 +1168,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: translateY(100%);
   transition: transform .4s var(--ease);
 }
+.sheet.full { height: calc(100% - var(--status-h) - 40px); }
 .sheet.show { transform: none; }
 .grabber { display: grid; flex: 0 0 auto; height: 12px; place-items: center; }
 .grabber span { width: 36px; height: 4px; border-radius: 960px; background: var(--l12); }
@@ -1093,6 +1179,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   height: var(--sheet-top-h);
 }
+.sheet-top.ruled { box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12); }
 .sheet-top h2 {
   flex: 1 1 auto;
   overflow: hidden;
@@ -1111,21 +1198,35 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: var(--sheet-top-h);
   color: var(--n9);
 }
-.sheet-btn.right { width: 40px; }
+.sheet-btn.right { width: 40px; margin-right: 8px; }
 .sheet-btn.right .ic { width: 16px; height: 16px; }
 .sheet-btn .ic { width: 20px; height: 20px; }
 .sheet-btn .ic-star-f { color: var(--amber); }
 .sheet-btn .ic { transition: transform .22s var(--ease); }
 .sheet-btn:active .ic { transform: scale(.86); }
 
+/* `0 1 auto` is what lets the sheet hug: the scroller takes its content's
+   height and only shrinks when the sheet has run out of ceiling. */
 .sheet-scroll {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
+  min-height: 0;
   /* the sheet runs to the bottom of the screen, so its content needs to be
      able to scroll clear of the home indicator */
   padding-bottom: calc(var(--home-h) + 8px);
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+}
+
+/* The ticker sheet's body is a column with one flexible row in it — the
+   chart — so the anomaly card lands on the bottom edge the way the design
+   has it (I957:18775;351:11700 sits flush at y=468+148=616=the frame's foot). */
+.tk-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: var(--home-h);
 }
 
 /* ── List / Source item · 来源+节选 (1180:20235) ──
@@ -1196,13 +1297,13 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 /* ── Ticker sheet body ── */
 
-.tk-name { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--gutter) 12px; }
-.tk-co { display: flex; align-items: center; gap: 8px; }
+.tk-name { flex: 0 0 auto; padding: 12px var(--gutter); }
+.tk-co { display: flex; align-items: center; gap: 6px; height: 20px; }
 .tk-co img { width: 16px; height: 16px; border-radius: 960px; }
 .tk-co b { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 .tk-co span { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
 .tk-when { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
-.tk-price { display: flex; align-items: baseline; gap: 8px; }
+.tk-price { display: flex; align-items: baseline; gap: 6px; height: 34px; }
 .tk-price b { color: var(--n9); font-size: 24px; font-weight: 400; line-height: 34px; font-variant-numeric: tabular-nums; }
 .tk-chg { font-size: 12px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; }
 .up { color: var(--m3); }
@@ -1213,7 +1314,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* Chart module (Chart/Entity). The toolbar and the legend are markup; only
    the plot itself is a canvas. */
 
-.chart-mod { display: flex; flex-direction: column; }
+.chart-mod { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
 .chart-bar {
   display: flex;
   align-items: center;
@@ -1226,28 +1327,49 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .tf { display: flex; flex: 0 0 auto; gap: 12px; }
 .tf button {
   flex: 0 0 auto;
-  padding: 2px 6px;
-  border-radius: 4px;
   color: var(--n7);
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
 }
-.tf button.on { background: var(--br05); color: var(--n9); font-weight: 500; }
+.tf button.on { color: var(--n9); font-weight: 500; }
 .chart-tools { display: flex; flex: 0 0 auto; gap: 12px; margin-left: auto; }
 .chart-tools button { display: grid; place-items: center; width: 24px; height: 24px; color: var(--n9); }
 .chart-tools .ic { width: 20px; height: 20px; }
-.chart-mode { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; color: var(--n9); font-size: 12px; line-height: 20px; }
+.chart-mode {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+  padding: 0 4px 0 6px;
+  border-radius: 4px;
+  background: var(--br05);
+  color: var(--n9);
+  font-size: 12px;
+  line-height: 20px;
+}
 .chart-mode .ic { width: 12px; height: 12px; color: var(--n9); }
 
 .chart-legend {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 8px;
+  gap: 0 8px;
+  padding: 0 var(--gutter);
+  font-size: 11px;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+}
+/* Volume gets its own line in the design, under the OHLC block. */
+.chart-vol {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
   padding: 0 var(--gutter) 4px;
   font-size: 11px;
-  line-height: 18px;
+  line-height: 20px;
   font-variant-numeric: tabular-nums;
 }
 .chart-legend .dot { width: 8px; height: 8px; border-radius: 960px; background: var(--m3); }
@@ -1256,20 +1378,54 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .chart-legend .v.down { color: var(--m4); }
 .chart-legend .v.up { color: var(--m3); }
 
-.plot { position: relative; width: 100%; }
+.plot { position: relative; flex: 1 1 auto; width: 100%; min-height: 140px; }
+/* The chart's own collapse affordance, top-left of the plot (351:11699). */
+.plot-collapse {
+  position: absolute;
+  z-index: 2;
+  top: 4px;
+  left: 8px;
+  display: grid;
+  width: 26px;
+  height: 20px;
+  border-radius: 4px;
+  background: var(--b10);
+  box-shadow: inset 0 0 0 var(--hair) var(--l12);
+  color: var(--n7);
+  place-items: center;
+}
+.plot-collapse .ic { width: 12px; height: 12px; }
 /* Anomaly card — a coloured label that names the shape of the move, then
    the sentence that explains it. m2 for "look at this", not for "danger". */
 
+/* Two tones, not one: the label rides its own m2-10 strip and the body sits
+   on br03 underneath it (351:11701 → 28 + 108). 12 in from each side, 12
+   above, and nothing below — it ends where the sheet ends. */
 .anom {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
-  gap: 8px;
-  margin: 12px var(--gutter) var(--gutter);
-  padding: 12px;
+  margin: 12px 12px 0;
+  overflow: hidden;
   border-radius: 8px;
-  background: var(--m2-10);
 }
-.anom-label { align-self: center; color: var(--m2); font-size: 12px; font-weight: 500; line-height: 20px; }
+.anom-label {
+  display: grid;
+  height: 28px;
+  background: var(--m2-10);
+  color: var(--m2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  place-items: center;
+}
+.anom-sec {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+  background: var(--br03);
+}
 .anom-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; letter-spacing: 0; }
 .anom-foot { display: flex; align-items: center; justify-content: space-between; }
 .anom-when { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
@@ -1296,11 +1452,14 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transition: opacity .28s ease, transform .34s var(--ease);
 }
 .fs.show { opacity: 1; pointer-events: auto; transform: none; }
-.fs-plot { position: absolute; inset: var(--status-h) 0 0 0; }
+/* The plot runs the whole frame and the status bar sits over it (1076:48248). */
+.fs-plot { position: absolute; inset: 0; }
 .fs-close {
   position: absolute;
   z-index: 3;
-  top: 15px;
+  /* 18 below the status bar, so it clears the battery instead of sitting in
+     the same row as it. */
+  top: calc(var(--status-h) + 18px);
   right: 16px;
   display: grid;
   place-items: center;

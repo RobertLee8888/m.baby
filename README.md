@@ -101,24 +101,22 @@ Where a source has no avatar in the library it gets a monogram — one letter in
 the footer, two or three in the sheet, because the faces overlap by 6 of their
 18 and a second character lands under the next circle.
 
-### The topbar collapses with the scroll
+### The topbar leaves with the list
 
-Twitter's rule, and iOS's before it: a large title is not chrome, it is the
-first thing in the list, so it leaves with the list. Scrolling down fades the
-title out and lifts it, and the bar gives back exactly the 34px line the
-title was sitting on:
+Twitter's home header does not shrink, it goes. A large title is not chrome,
+it is the first thing in the list, so scrolling it away is scrolling away a
+list item: the title fades and lifts, the bar closes to **nothing**, and the
+feed runs right up under the status bar. Scroll back up and it comes back.
 
-| | Height | Made of |
-| --- | --- | --- |
-| At the top | 58 | 16 + **34** + 8 |
-| Collapsed | 24 | 16 + 8 |
+The travel is the bar's own 58px, so it has finished closing at the moment it
+would have scrolled out of view anyway. The title fades at 2.2× that rate,
+because a title at 20% opacity under a half-closed bar reads as a rendering
+bug rather than a transition.
 
-Nothing here is invented. What is left when the title goes is the padding
-that was always around it, and the travel — 34px of scroll — is the title's
-own line height, so the bar finishes closing at the moment the title would
-have scrolled out of view anyway. The title fades at 1.7× that rate, because
-a title at 20% under a half-closed bar reads as a rendering bug rather than a
-transition.
+One thing worth knowing if you touch this: the 16 above the title and the 8
+below it are the *title's margins*, not the bar's padding. With `border-box`
+a padded box cannot be shorter than its own padding, so as padding they
+bottomed the bar out at 24 and it never closed.
 
 Two implementation notes, both of which are the reason it does not judder:
 
@@ -129,14 +127,47 @@ Two implementation notes, both of which are the reason it does not judder:
   bar*, and a spacer the exact height of the expanded topbar stands where the
   topbar is. Collapsing the bar therefore changes no layout inside the
   scroller: `scrollTop` means the same thing before and after, and the first
-  card's top edge lands on the collapsed bar's bottom edge by arithmetic —
-  58 of spacer minus 34 of scroll is the 24 the bar has left. Animating the
-  scroller's own `top` inset instead would double-count every pixel of scroll.
+  card's top edge tracks the bar's bottom edge by arithmetic — 58 of spacer
+  minus *n* of scroll is the 58 − *n* the bar has left. Animating the
+  scroller's own `top` inset instead would double-count every pixel of
+  scroll.
 
 Driving it off `scrollTop` rather than off scroll *direction* is what makes it
 reversible: scrolling back up re-opens the bar exactly as far as you came
 down, and the refresh gesture — which sets `scrollTop` to 0 — re-opens it for
 free.
+
+### Tabs slide
+
+Each screen holds a place on a horizontal track — one screen-width per step
+from the one being shown — so a tab change is a move, not a repaint, and a
+screen keeps its scroll position while it is parked off to the side. The
+places have to be assigned before the first paint; leave them unset and all
+three sit at `translateX(0)` and the last one in the document wins.
+
+### An answer belongs where the question was asked
+
+A pull that comes back with nothing used to raise a toast at the bottom of
+the screen, which is answering somewhere else. Now the spinner hands its place
+in the refresh gutter to the sentence — "You're all caught up" — the sentence
+is readable for a second, and then the gutter closes. Same gesture, same
+place, one less floating object.
+
+### The read boundary
+
+A hairline across the column with the label sitting on it, the line broken by
+the text. It is the shape every messaging app converged on — Slack's "New",
+Telegram's "Unread messages", Discord's rule — and the reason is that a
+filled band reads as a *card*, and this is not content. It is a mark on the
+list. 36px, legible at a glance, and gone from mind the moment you are past
+it.
+
+### The media frame is a pseudo-element
+
+`inset box-shadow` paints under the element's own content, and the image fills
+the tile edge to edge — so the 0.5 frame was in the stylesheet and invisible
+on screen. It is an `::after` now, which is later in tree order and therefore
+above the image.
 
 ### The scroller is the only thing allowed past the gutter
 
@@ -291,16 +322,29 @@ in. With no stored choice the OS preference decides.
 
 ### The two sheets are one object
 
-A scrim, a grabber, a `Topbar/Mweb`, and a scroller. What differs between the
-sources sheet and the ticker sheet is the top edge, and that is a token the
-sheet carries: `--sheet-y` is `status + 85` for sources (144 on an 852 screen)
-and `status + 47` for the ticker (106). Expressing it against the status inset
-rather than as a flat 144 is what keeps both correct on the 874 / 912 / 956
-devices in the switcher.
+A scrim, a grabber, a `Topbar/Mweb`, and a body. Neither has a fixed height:
+every sheet is as tall as its content and no taller than **40 below the status
+bar**, which is the ceiling for all of them. The sources sheet with three rows
+is three rows tall; with eleven it hits the ceiling and scrolls. `flex: 0 1
+auto` on the scroller is what does the hugging — `1 1 auto` would stretch it
+to the ceiling every time.
 
-Sharing the element also means only one sheet can be open, the exit animation
-is written once, and the chart inside the ticker sheet is disposed of on close
-instead of leaking a canvas.
+The ticker sheet always takes the ceiling, because its chart is supposed to
+fill whatever is left. Its body is a column with exactly one flexible row in
+it — the chart — so the anomaly card lands on the bottom edge without being
+positioned there, which is how the design has it (the card's frame sits flush
+at the foot of the 700).
+
+Two more details off the frame: the topbar's right button is at x=345 of 393,
+not flush, so the star sits **8 in from the edge**; and the sources sheet has a
+hairline under its title bar while the ticker sheet does not, because there the
+tab strip already draws one.
+
+Sharing the element means only one sheet can be open, the exit animation is
+written once, and the chart inside the ticker sheet is disposed of on close
+instead of leaking a canvas. The home indicator had to move out of the tab bar
+to sit above an open sheet — a child cannot paint above its own ancestor's
+stacking context.
 
 The status bar sits *in front* of the scrim, not under it, and goes light while
 a sheet is open — the way iOS does it. Fullscreen, the design keeps only the
@@ -346,6 +390,34 @@ What we own is everything around it:
 - **Three labelled lines, in the order they matter.** Previous close in amber,
   the price the event printed at in `main/m2`, and where it is now in
   `main/m3`. That is the entire argument the fullscreen chart makes.
+- **The plot runs the whole frame and the status bar sits over it**, per
+  1076:48248, and the close button is 18 below the status bar so it clears the
+  battery instead of sharing a row with it. The candle pane carries 22% of top
+  margin for the same reason: the previous-close line has to land below the
+  close button, not under it.
+- **The anomaly card is two-tone**, not one: the label rides its own `m2-10`
+  strip and the body sits on `br03` underneath it.
+
+### The tab bar's hairline, and the one screen without one
+
+A 0.5 inset shadow on an 82-tall bar lands on a different subpixel at every
+device height, and vanished at some of them — which is what "sometimes there,
+sometimes not" was. It is a 1px pseudo-element scaled to half from its top
+edge now: the deterministic half pixel. Chat has none at all, because the
+composer already draws that edge.
+
+Chat's thread also stops at the composer's top edge rather than 12 above it,
+so the last line is cut by the box instead of by an invisible line in the
+white space over it.
+
+### The device switcher had to be visible to be working
+
+`fit()` measured the *current* device and scaled it to the stage, so every
+phone came out the same size on screen: switching from a 402 to a 440 changed
+the readout and nothing else, which reads as broken. It measures the largest
+device in `DEVICES` now, so all three share one scale — the big phone just
+fits, the smaller ones are visibly smaller, and the switcher does something
+you can see.
 
 ### What is not built yet
 
@@ -353,6 +425,11 @@ The three chart images in the media rows are Figma exports of an NVDA chart,
 so a card about AVGO shows a tile labelled NVDA. Real per-ticker thumbnails
 would come from the same generator the ticker sheet already uses — that is the
 next obvious thing to do here.
+
+The buy mark on the ticker sheet's chart is a plain circle. The design draws a
+circle with a **B** inside it, and Lightweight Charts puts marker text outside
+the shape rather than in it; a stray B hanging under a dot reads worse than no
+letter, so it is a dot until someone writes a custom series renderer for it.
 
 Inside the ticker sheet, Overview is real and the other five tabs
 (Narratives, Anomalies, News & Social, Smart Events, Financials) name

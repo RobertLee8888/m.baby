@@ -556,10 +556,17 @@
     const w = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     const h = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
     if (w <= 0 || h <= 0) return;
-    const pw = fitEl.offsetWidth;
-    const ph = fitEl.offsetHeight;
-    if (!pw || !ph) return;
-    const s = Math.min(1, w / pw, h / ph);
+    /* Measure the LARGEST device, not the current one. Fitting each device to
+       the stage made every phone come out the same size on screen, so
+       switching from a 402 to a 440 changed the readout and nothing else —
+       the switcher looked broken because it had no visible effect. One shared
+       scale means the big phone just fits and the smaller ones are visibly
+       smaller, which is the whole point of a device switcher. */
+    const bezel = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bezel')) || 0;
+    const refW = Math.max.apply(null, DEVICES.map(d => d.w)) + 2 * bezel;
+    const refH = Math.max.apply(null, DEVICES.map(d => d.h)) + 2 * bezel;
+    if (!refW || !refH) return;
+    const s = Math.min(1, w / refW, h / refH);
     stage.style.setProperty('--fit', Math.max(0.4, s).toFixed(4));
   }
 

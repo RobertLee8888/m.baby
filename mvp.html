@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=5">
+<link rel="stylesheet" href="mvp.css?v=6">
 </head>
 <body>
 
@@ -48,7 +48,10 @@
                      the scroll container's geometry moving under it. The refresh
                      gutter hangs off its bottom edge. -->
                 <div class="lead" aria-hidden="true">
-                  <div class="refresh"><span class="spinner" id="spinner"></span></div>
+                  <div class="refresh">
+                    <span class="spinner" id="spinner"></span>
+                    <span class="refresh-note" id="refreshNote"></span>
+                  </div>
                 </div>
                 <div class="cards" id="cards"></div>
               </div>
@@ -260,8 +263,11 @@
               <span>Me</span>
             </button>
           </div>
-          <div class="home-indicator" aria-hidden="true"><span></span></div>
         </nav>
+
+        <!-- Out of the tab bar so it can sit above an open sheet, the way it
+             does in the design (the sheet's foot is the indicator's ground). -->
+        <div class="home-indicator" aria-hidden="true"><span></span></div>
 
         <!-- ═══ Overlays ═════════════════════════════════════════
              One scrim, one sheet element. Both sheets are the same
@@ -273,7 +279,7 @@
         <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true">
           <div class="grabber" aria-hidden="true"><span></span></div>
           <header class="sheet-top" id="sheetTop"></header>
-          <div class="sheet-scroll" id="sheetScroll"></div>
+          <div class="sheet-scroll" id="sheetBody"></div>
         </section>
 
         <section class="fs" id="fullChart" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Chart">
@@ -299,6 +305,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=5"></script>
+<script src="mvp.js?v=6"></script>
 </body>
 </html>

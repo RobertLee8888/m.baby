@@ -761,15 +761,26 @@
         node.classList.add('enter');
         cardsEl.insertBefore(node, cardsEl.firstElementChild);
       });
+      spinner.classList.remove('spinning');
+      spinner.style.opacity = '0';
+      await springTo(0);
+    } else {
+      /* Nothing came back, so the answer goes where the question was asked:
+         the spinner hands its place to the sentence, the sentence is readable
+         for a second, and then the gutter closes. A toast at the other end of
+         the screen would be answering somewhere else entirely. */
+      spinner.classList.remove('spinning');
+      spinner.style.opacity = '0';
+      refreshNote.textContent = 'You’re all caught up';
+      refreshNote.classList.add('show');
+      await wait(1000);
+      await springTo(0);
+      refreshNote.classList.remove('show');
+      refreshNote.textContent = '';
     }
 
-    await springTo(0);
-    spinner.classList.remove('spinning');
-    spinner.style.opacity = '0';
     track.classList.remove('pulled');
     refreshing = false;
-
-    if (!fresh.length) toast('You’re all caught up');
   }
 
   /* ── the gesture: touch, and a mouse drag so it works on a desktop too ── */
@@ -853,7 +864,9 @@
      re-opens the bar exactly as far as you came down.
      ────────────────────────────── */
 
-  const BAR_TRAVEL = 34;
+  /* The bar's whole height, so it has finished closing exactly when it would
+     have scrolled out of view. */
+  const BAR_TRAVEL = 58;
 
   function paintBar() {
     const p = Math.min(1, Math.max(0, feed.scrollTop / BAR_TRAVEL));
@@ -937,18 +950,24 @@
   const scrim = document.getElementById('scrim');
   const sheet = document.getElementById('sheet');
   const sheetTop = document.getElementById('sheetTop');
-  const sheetScroll = document.getElementById('sheetScroll');
+  const sheetBody = document.getElementById('sheetBody');
 
   let sheetOpen = false;
   let sheetTeardown = null;
 
-  function openSheet(y, header, body, teardown) {
+  /* opts.full  — take the whole ceiling and lay the body out as a column with
+                   one flexible row in it (the ticker sheet).
+     opts.ruled — hairline under the topbar (the sources sheet). */
+  function openSheet(header, nodes, opts) {
+    const o = opts || {};
     closeSheet(true);
-    sheet.style.setProperty('--sheet-y', y);
+    sheet.classList.toggle('full', !!o.full);
+    sheetTop.className = 'sheet-top' + (o.ruled ? ' ruled' : '');
+    sheetBody.className = o.full ? 'tk-body' : 'sheet-scroll';
     sheetTop.replaceChildren(...header);
-    sheetScroll.replaceChildren(...body);
-    sheetScroll.scrollTop = 0;
-    sheetTeardown = teardown || null;
+    sheetBody.replaceChildren(...nodes);
+    sheetBody.scrollTop = 0;
+    sheetTeardown = o.teardown || null;
     sheetOpen = true;
     sheet.setAttribute('aria-hidden', 'false');
     app.classList.add('dim');
@@ -965,7 +984,7 @@
     app.classList.remove('dim');
     const done = () => {
       if (sheetTeardown) { sheetTeardown(); sheetTeardown = null; }
-      if (!sheetOpen) { sheetTop.replaceChildren(); sheetScroll.replaceChildren(); }
+      if (!sheetOpen) { sheetTop.replaceChildren(); sheetBody.replaceChildren(); }
     };
     if (immediate) done(); else window.setTimeout(done, 420);
   }
@@ -1015,12 +1034,13 @@
   function openSources(card) {
     const list = card.sources || [];
     const header = [sheetClose(), el('h2', null, 'Sources · ' + list.length)];
-    openSheet('calc(var(--status-h) + 85px)', header, list.map(sourceRow));
+    openSheet(header, list.map(sourceRow), { ruled: true });
   }
 
   /* ── Ticker sheet (957:18126) ── */
 
-  const TK_TABS = ['Overview', 'Narratives', 'Anomalies', 'News & Social', 'Smart Events', 'Financials'];
+  const TK_TABS = ['Overview', 'Narratives', 'Anomalies', 'News & Social', 'Smart Events',
+    'Filings', 'Options', 'Ownership', 'Peers'];
   const followed = new Set(['GOOG', 'BABA']);   /* the two the Me screen counts */
 
   function starButton(t) {
@@ -1031,14 +1051,11 @@
       b.setAttribute('aria-pressed', String(on));
     };
     paint();
+    /* The star is its own feedback — it goes solid and amber. A toast on top
+       of that is the same news twice. */
     b.addEventListener('click', () => {
-      if (followed.has(t.sym)) {
-        followed.delete(t.sym);
-        toast('Unfollowed ' + t.sym + ' — it will stop leading your feed');
-      } else {
-        followed.add(t.sym);
-        toast('Following ' + t.sym + ' — new signals will reach you');
-      }
+      if (followed.has(t.sym)) followed.delete(t.sym);
+      else followed.add(t.sym);
       paint();
       const count = document.getElementById('followCount');
       if (count) count.textContent = String(followed.size);
@@ -1091,8 +1108,9 @@
 
   function anomalyCard(t) {
     const card = el('div', 'anom');
-    card.appendChild(el('span', 'anom-label', t.anomaly.label));
-    card.appendChild(el('p', 'anom-body', t.anomaly.body));
+    card.appendChild(el('div', 'anom-label', t.anomaly.label));
+    const sec = el('div', 'anom-sec');
+    sec.appendChild(el('p', 'anom-body', t.anomaly.body));
     const f = el('div', 'anom-foot');
     f.appendChild(el('span', 'anom-when', t.anomaly.when));
     const more = btn('anom-more');
@@ -1100,17 +1118,16 @@
     more.appendChild(icon('ui-arrow-up-l2.svg'));
     more.addEventListener('click', () => toast('The full anomaly write-up is the Anomalies tab'));
     f.appendChild(more);
-    card.appendChild(f);
+    sec.appendChild(f);
+    card.appendChild(sec);
     return card;
   }
 
   function openTicker(t) {
     const header = [sheetClose(), el('h2', null, ''), starButton(t)];
     const chart = chartModule(t);
-    openSheet('calc(var(--status-h) + 47px)',
-      header,
-      [tkTabs(), tkName(t), chart.node, anomalyCard(t)],
-      chart.dispose);
+    openSheet(header, [tkTabs(), tkName(t), chart.node, anomalyCard(t)],
+      { full: true, teardown: chart.dispose });
     chart.mount();
   }
 
@@ -1308,7 +1325,10 @@
       const panes = chart.panes();
       if (panes[0]) panes[0].setStretchFactor(3.4);
       if (panes[1]) panes[1].setStretchFactor(1);
-      candles.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.06 }, borderVisible: false });
+      /* More room above the highest print than a chart normally needs, so the
+         previous-close line lands where the design has it — below the close
+         button rather than under it. */
+      candles.priceScale().applyOptions({ scaleMargins: { top: 0.22, bottom: 0.06 }, borderVisible: false });
       vol.priceScale().applyOptions({ scaleMargins: { top: 0.18, bottom: 0.02 }, borderVisible: false });
     } else {
       candles.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.26 }, borderVisible: false });
@@ -1331,15 +1351,30 @@
       });
     });
 
-    if (extras && extras.marker != null && LWC.createSeriesMarkers) {
-      LWC.createSeriesMarkers(candles, [{
+    const marks = [];
+    if (extras && extras.marker != null) {
+      marks.push({
         time: data[extras.marker].time,
         position: 'belowBar',
         color: p.amber,
         shape: 'arrowUp',
         size: 1,
-      }]);
+      });
     }
+    if (extras && extras.badge) {
+      /* The design draws a circle with a B inside it. Lightweight Charts puts
+         marker text outside the shape, not in it, so this is the circle
+         without the letter — a stray B hanging under a dot reads worse than
+         no letter at all. A custom series renderer is what it would take. */
+      marks.push({
+        time: data[Math.min(data.length - 1, extras.badge.at)].time,
+        position: 'inBar',
+        color: p.up,
+        shape: 'circle',
+        size: 1,
+      });
+    }
+    if (marks.length && LWC.createSeriesMarkers) LWC.createSeriesMarkers(candles, marks);
 
     if (extras && extras.onCrosshair) {
       chart.subscribeCrosshairMove(param => {
@@ -1389,49 +1424,52 @@
   function chartModule(t) {
     const node = el('div', 'chart-mod');
 
+    /* Toolbar: the quick ranges, then the interval as a dropdown — the design
+       boxes the interval, not the range, because the interval is the thing
+       with a menu behind it. */
     const bar = el('div', 'chart-bar');
     const tf = el('div', 'tf');
-    let tfIndex = 0;
+    let tfIndex = 2;
     const tfButtons = TIMEFRAMES.map((name, i) => {
-      const b = btn(i === 0 ? 'on' : '');
-      b.textContent = name;
-      b.addEventListener('click', () => {
+      const b2 = btn(i === tfIndex ? 'on' : '');
+      b2.textContent = name;
+      b2.addEventListener('click', () => {
         tfButtons.forEach(x => x.classList.remove('on'));
-        b.classList.add('on');
+        b2.classList.add('on');
         tfIndex = i;
         redraw();
       });
-      tf.appendChild(b);
-      return b;
+      tf.appendChild(b2);
+      return b2;
     });
     bar.appendChild(tf);
 
-    const mode = el('span', 'chart-mode');
+    const mode = btn('chart-mode', 'Interval');
     mode.appendChild(el('span', null, '1m'));
     mode.appendChild(icon('ui-arrow-down-l2.svg'));
+    mode.addEventListener('click', () => toast('The interval menu is the next thing to build here'));
     bar.appendChild(mode);
 
     const tools = el('div', 'chart-tools');
     [['ui-chart-candles-l.svg', 'Candles'], ['ui-chart-indicators-l.svg', 'Indicators'],
      ['ui-chart-expand-l.svg', 'Fullscreen'], ['ui-chart-setting-l.svg', 'Chart settings']]
       .forEach(([file, label]) => {
-        const b = btn('', label);
-        b.appendChild(icon(file));
-        b.addEventListener('click', () => {
+        const b2 = btn('', label);
+        b2.appendChild(icon(file));
+        b2.addEventListener('click', () => {
           if (label === 'Fullscreen') openFullChart();
           else toast(label + ' is the next thing to build here');
         });
-        tools.appendChild(b);
+        tools.appendChild(b2);
       });
     bar.appendChild(tools);
     node.appendChild(bar);
 
-    /* The legend is the OHLC of whatever the crosshair is over, and the
-       last bar when it is over nothing — which is how a chart says
-       "these are the numbers you are looking at". */
+    /* The legend is the OHLC of whatever the crosshair is over, and the last
+       bar when it is over nothing — which is how a chart says "these are the
+       numbers you are looking at". Volume gets its own line, as in the design. */
     const legend = el('div', 'chart-legend');
-    const dot = el('span', 'dot');
-    legend.appendChild(dot);
+    legend.appendChild(el('span', 'dot'));
     const cells = {};
     ['O', 'H', 'L', 'C'].forEach(k => {
       legend.appendChild(el('span', 'k', k));
@@ -1440,29 +1478,35 @@
     });
     const chgCell = el('span', 'v');
     legend.appendChild(chgCell);
-    legend.appendChild(el('span', 'k', 'Volume'));
-    const volCell = el('span', 'v up');
-    legend.appendChild(volCell);
     node.appendChild(legend);
 
+    const volRow = el('div', 'chart-vol');
+    volRow.appendChild(el('span', 'k', 'Volume'));
+    const volCell = el('span', 'v up');
+    volRow.appendChild(volCell);
+    node.appendChild(volRow);
+
     const plot = el('div', 'plot');
-    plot.style.height = '250px';
+    const collapse = btn('plot-collapse', 'Collapse chart');
+    collapse.appendChild(icon('ui-arrow-up-l2.svg'));
+    collapse.addEventListener('click', () => toast('Collapsing the chart is the next thing to build here'));
+    plot.appendChild(collapse);
     node.appendChild(plot);
 
     let chart = null;
     let data = null;
 
     function paintLegend(bar_, volume) {
-      const b = bar_ || { open: data[data.length - 1].open, high: data[data.length - 1].high,
-        low: data[data.length - 1].low, close: data[data.length - 1].close };
-      cells.O.textContent = money(b.open);
-      cells.H.textContent = money(b.high);
-      cells.L.textContent = money(b.low);
-      cells.C.textContent = money(b.close);
-      const d = b.close - b.open;
-      chgCell.textContent = signed(d) + ' ' + pct((d / b.open) * 100);
+      const last = data[data.length - 1];
+      const b2 = bar_ || last;
+      cells.O.textContent = money(b2.open);
+      cells.H.textContent = money(b2.high);
+      cells.L.textContent = money(b2.low);
+      cells.C.textContent = money(b2.close);
+      const d = b2.close - b2.open;
+      chgCell.textContent = signed(d) + ' ' + pct((d / b2.open) * 100);
       chgCell.className = 'v ' + (d >= 0 ? 'up' : 'down');
-      const v = volume == null ? data[data.length - 1].volume : volume;
+      const v = volume == null ? last.volume : volume;
       volCell.textContent = (v / 1000).toFixed(2) + ' K';
     }
 
@@ -1474,6 +1518,8 @@
       const last = data[data.length - 1].close;
       chart = mountChart(plot, data, {
         lines: [{ price: last, tone: 'up', solid: true }],
+        /* the buy mark the design puts on the tape */
+        badge: { at: Math.round(bars * 0.42), text: 'B' },
         onCrosshair: paintLegend,
       });
       paintLegend(null, null);
@@ -1497,7 +1543,6 @@
     if (fsChart) fsChart.dispose();
     fs.classList.add('show');
     fs.setAttribute('aria-hidden', 'false');
-    app.classList.add('full');
     const data = eventSeries(51217);
     /* The three numbers the design labels, in the order they matter:
        where the day started from, what the event printed at, where it is. */
@@ -1515,7 +1560,6 @@
   function closeFullChart() {
     fs.classList.remove('show');
     fs.setAttribute('aria-hidden', 'true');
-    app.classList.remove('full');
     window.setTimeout(() => { if (fsChart) { fsChart.dispose(); fsChart = null; } }, 320);
   }
 
@@ -1535,9 +1579,20 @@
   const tabs = [...document.querySelectorAll('.tab')];
   const screens = new Map([...document.querySelectorAll('.screen')].map(s => [s.dataset.tab, s]));
 
+  const TAB_ORDER = ['feed', 'chat', 'me'];
+  const tabBar = document.getElementById('tabBar');
+
   function showTab(name) {
+    const at = TAB_ORDER.indexOf(name);
     tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
-    screens.forEach((screen, key) => screen.classList.toggle('current', key === name));
+    screens.forEach((screen, key) => {
+      screen.classList.toggle('current', key === name);
+      /* Where this screen sits on the track, in screen-widths from the one
+         being shown. The transition on the transform does the sliding. */
+      screen.style.setProperty('--sx', String(TAB_ORDER.indexOf(key) - at));
+    });
+    /* Chat's composer already draws the edge above the tab bar. */
+    tabBar.classList.toggle('flat', name === 'chat');
   }
 
   tabs.forEach(tab => {
@@ -1618,6 +1673,10 @@
   window.addEventListener('resize', fitPhone);
 
   setTheme(readTheme());
+  /* The screens live on a track now, so their places have to be assigned
+     before the first paint — otherwise all three sit at translateX(0) and the
+     last one in the document wins. */
+  showTab('feed');
   render();
   wireRowDrag(cardsEl);
   paintBar();
