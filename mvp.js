@@ -926,6 +926,10 @@
         horzLine: { color: p.text, width: 1, style: 3, labelBackgroundColor: p.m1 },
       },
       handleScale: { axisPressedMouseMove: false },
+      /* The design is in English throughout, and the library otherwise dates the
+         crosshair in the viewer's own locale — which puts a Chinese month into
+         an English chart. Pin it. */
+      localization: { locale: 'en-US' },
     };
   }
 
