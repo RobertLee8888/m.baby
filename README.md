@@ -12,17 +12,28 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 | | | Source |
 | --- | --- | --- |
 | `index.html` · `shell.css` · `shell.js` | **The shell** — the list, the stage, the phone mockup, and hash routing | — |
-| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the For You feed: ticker headers, markdown/quote/media blocks, source footers, and the new-cards pill. Chat and Me are named placeholders until they are built | [Feed Mobile MVP · For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) |
+| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed, Chat, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Every colour is a Theme variable, so one switch puts all of it in dark mode | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1076-48248) |
 | `alpha-radar.html` · `alpha-radar.css` · `alpha-radar.js` | **Alpha Radar mobile onboarding** — source selection, radar setup, login, and building states across 8 screens. On the three source-selection screens a collection card opens a member bottom sheet | [Alpha Radar onboarding](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=13241-205457) · [Collection member sheet](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=14144-48781) |
 | `onboarding.html` · `styles.css` · `app.js` | **Immersive onboarding** — FinTwit Digest path, 6 screens | [Onboarding · Production v4 · FinTwit path](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243) |
 
 Zero dependencies — plain HTML / CSS / JS, no build step. Alva design tokens (`main/m1 #49a3a6`, `text/n9…n3`, `line/l05…l3`), the Delight typeface, and assets exported from Figma.
 
-## MVP — the For You feed
+## MVP — the whole loop
 
-The first screen of the MVP build (`#/mvp`). Everything below is measured off
-[For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177),
-not eyeballed from a screenshot.
+`#/mvp`. Three screens in the tab bar (For You, Chat, Me) and three overlays
+that open out of a feed card (its sources, a ticker, the chart fullscreen).
+Everything below is measured off the Figma frames listed in Contents, not
+eyeballed from a screenshot.
+
+Three things in a card are doors, and each one opens the surface it points at
+rather than a toast:
+
+| Tap | Opens | Figma |
+| --- | --- | --- |
+| a ticker chip | the ticker sheet, with its own follow star | 957:18126 |
+| the sources row in the footer | the sources sheet for *that* card | 545:62549 |
+| any chart, wide or a tile in a row | the chart, fullscreen | 1076:48248 |
+| Ask Alva in the footer | the Chat screen | 545:62465 |
 
 ### The card is one object
 
@@ -47,15 +58,15 @@ only thing a new card teaches this page:
 | `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
 | `quote` | Markdown - Quote | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
-| `media` | Media = 1 | gutter to gutter, 203 tall |
+| `media` | Media = 1 | gutter to gutter, 240 × 135 |
 | `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
 
 ### The scroller is the only thing allowed past the gutter
 
-A row of media tiles keeps its 16 on the left and runs off the **right** edge
-of the card (`margin-right: -16px` and the padding back). That overflow is
-the affordance: a tile clipped by the screen edge is what says there is more
-to the side. Nothing else on the screen crosses the gutter.
+A row of media tiles bleeds through both gutters and is clipped by the screen
+itself — see [Media rows are cut by the screen](#media-rows-are-cut-by-the-screen-not-by-the-gutter)
+for why that edge, and only that edge, is where a tile may be cut. Nothing
+else on the screen crosses the gutter.
 
 ### Tracking: the font already has it
 
@@ -85,39 +96,187 @@ the one element on this screen with a shadow, because it is the one element
 that is floating. Tapping it runs the identical sequence rather than a second
 one.
 
+**There are two cards waiting, and only the first refresh gets them.** Every
+refresh after that is the other half of the state a feed has to show: the
+spinner runs its turns, nothing new comes back, and the list says so —
+*You're all caught up*. A prototype that always produces content teaches the
+wrong thing about a feed.
+
+When the two do arrive, the boundary between them and what you had already
+read is marked once, in place, the way Twitter marks it: a hairline with
+*You were here* sitting on it, on `content/br03`, 36 tall. It goes in above
+the old first card, before the new ones land, and nothing moves it
+afterwards.
+
 It also **stays put while you read**. The pill is not a scroll affordance; it
 is the count of what is waiting, and that count is still true at the bottom
 of the list. It leaves for exactly two reasons: you tapped it, or you pulled
 the list yourself. Either way the waiting cards are now in the feed, so the
 number has nothing left to say.
 
-### Every stroke is 0.5
+### Every stroke is 0.5, and none of them are borders
 
-One token, `--hair: .5px`, carries every stroke on the screen: the topbar
-rule, the card's bottom edge, the ticker dividers, the media borders, the
-pill's edge, the tab bar's top, and the white ring around the stacked source
-avatars — that ring was the last 1px holdout and is now a hairline like the
-rest. The only 2px arc left is the refresh spinner, and it is an indicator,
-not an edge: at 20px a 0.5px ring does not read as a spinner.
+One token, `--hair: .5px`, carries every stroke on the screen. None of them
+are `border` any more: **Chromium rounds `border-width` up to a whole CSS
+pixel**, so `border-top: .5px` paints exactly the same line as `1px` — on a
+3× phone that is three device rows where the design asks for one and a half.
+The hairlines are inset box-shadows instead, which do paint at a half pixel:
 
-### Media rows scroll sideways on every input
+```css
+box-shadow: inset 0 var(--hair) 0 var(--l12);      /* a top edge      */
+box-shadow: inset 0 0 0 var(--hair) var(--l2);     /* a ring, radius-aware */
+```
 
-A row keeps its native touch scrolling and `pan-x`, so a swipe never gets
+A hairline that costs the layout nothing is also why the cards now measure
+exactly what Figma says — 423 / 525.06 / 581 — instead of half a pixel more
+each. The ticker divider is a 0.5-wide element with a background, and the
+only 2px arc left is the refresh spinner: an indicator, not an edge.
+
+### The line belongs to the top of a card
+
+Cards carry their separator on top, not on the bottom, so the first item in
+the list is delimited above as well and the line travels with the cards when
+the list is pulled. At rest the first card's own line is switched off,
+because the topbar's bottom hairline is already sitting on that exact row and
+two 0.5px lines on one row read as a single thick one. Pull the list away
+from the topbar and the card takes its line back — that gap needs a top edge
+of its own.
+
+### Media rows are cut by the screen, not by the gutter
+
+A row bleeds through **both** gutters — `margin: 0 -16px` with the 16 put
+back as padding — so a tile leaving the row is cut off by the edge of the
+screen, the only place a cut reads as *there is more over there*. Clipped at
+the 16 gutter instead, as it was first built, the tile looked severed in mid
+air. And no scroll snapping: this is a strip you graze along, not a carousel
+that wants to click into position.
+
+The row keeps its native touch scrolling and `pan-x`, so a swipe never gets
 handed to the pull gesture, and it gains a mouse drag for the desktop, where
 there is no finger and the wheel belongs to the feed. A drag past 4px is not
 a tap, so the click it would have fired at the card is swallowed — the same
 rule the pull gesture uses.
 
-### Sharpness
+### One media ratio
 
-The chart tiles are exported at 3× and drawn at 240 × 135 and 361 × 203, so
-they stay crisp on a retina screen instead of resampling a 1× crop.
+A full-width tile is the same shape as a small one, 240 × 135, so the ratio
+is the token and the height follows the device's width (`aspect-ratio`). The
+fixed 203 it started with was only ever right at 393; at 402 or 440 the big
+tile was quietly the wrong shape.
+
+### Sharpness, and cropping inside the frame
+
+The chart tiles are exported at 3× (the wide one at 2×, see below) and drawn
+at 240 × 135 and 361 × 203, so they stay crisp on a retina screen instead of
+resampling a 1× crop.
+
+The crop steps **1 design pixel inside the tile**. The Figma frame draws its
+own 0.5 stroke and 8 radius, and so does this page: take the export at face
+value and both land on top of each other — a doubled edge and a corner
+inside a corner. Inside the tile there is only chart, and the page's own
+hairline and radius do the framing. (The remaining rounded corner in the
+export is cut again by the page's radius, which is the larger of the two.)
+
+### Colour is a role, never a value
+
+Every colour in `mvp.css` is a variable, and every variable is a name from the
+library's **Theme** collection — `background/b0`, `content/b10`, `content/br03`,
+`line/l07…l3`, `text/n2…n10`, `main/m1…m4`. There are exactly two blocks that
+assign them: `:root` for Light and `:root[data-theme="dark"]` for Dark. Nothing
+else in the file names a colour, which is what makes one switch enough.
+
+Dark mode is not an inversion. The library keeps the accents where they are —
+`main/m1 #49a3a6` is the same teal in both modes — and re-grounds only the
+neutrals, so the green pill and the amber star do not shift when the paper
+does. Three consequences worth naming:
+
+- **Icons are masks, not images.** An `<img>` carries its own colour, and there
+  is no way to re-ground it for dark mode without a filter that lies about the
+  alpha. Every monochrome glyph is a single-path SVG used as a
+  `mask-image` over `background: currentColor`, so it takes whichever `text/n*`
+  token its row is already using. One file per glyph, two modes, no duplicates.
+  The exceptions are the things that are *supposed* to keep their colour:
+  ticker logos, avatars, and the amber `star-f`.
+- **The chart is told, not inherited.** A canvas cannot read a CSS variable, so
+  the chart reads the computed value of each token in JS and hands it to
+  TradingView; flipping the mode re-reads them and restyles in place rather
+  than rebuilding the canvas.
+- **Screenshot media gets inverted.** The chart tiles in the feed are white-paper
+  screenshots. In dark mode they take `invert(1) hue-rotate(180deg)`, which
+  darkens the ground and brings the greens and reds back out the same hue they
+  went in.
+
+The switch itself lives in **Me → Preferences → Dark mode**, and there is a
+second one on the desktop stage for whoever is reviewing. The choice is stored,
+and it is stamped onto `<html>` by an inline script in `<head>` — before the
+stylesheet loads — so a dark session never flashes the light palette on the way
+in. With no stored choice the OS preference decides.
+
+### The two sheets are one object
+
+A scrim, a grabber, a `Topbar/Mweb`, and a scroller. What differs between the
+sources sheet and the ticker sheet is the top edge, and that is a token the
+sheet carries: `--sheet-y` is `status + 85` for sources (144 on an 852 screen)
+and `status + 47` for the ticker (106). Expressing it against the status inset
+rather than as a flat 144 is what keeps both correct on the 874 / 912 / 956
+devices in the switcher.
+
+Sharing the element also means only one sheet can be open, the exit animation
+is written once, and the chart inside the ticker sheet is disposed of on close
+instead of leaking a canvas.
+
+The status bar sits *in front* of the scrim, not under it, and goes light while
+a sheet is open — the way iOS does it. Fullscreen, the design keeps only the
+dynamic island: the two side groups fade out, and the close button lands where
+the battery was.
+
+### Sources are simulated, but simulated from the card
+
+Each card carries its own list, and every row is a source that could plausibly
+have produced that card's sentences — the excerpt is the line the card is
+standing on. The $600M ATM card cites the 424B5 filing, the press release, and
+the two people who reacted to it; the download card cites Bloomberg, Reuters,
+the earnings call and the Hugging Face trending page. Where the platform is
+part of the identity, the avatar carries the badge on its own corner rather
+than the row growing a column for it.
+
+### The chart is TradingView's, the styling is ours
+
+`assets/vendor/lightweight-charts.js` — Lightweight Charts 5.2.1, Apache-2.0,
+vendored rather than loaded from a CDN so the page keeps working offline and
+inside a packaged single-file build. It is the same library the design's chart
+module was drawn from: candles, a volume pane, a right-hand price scale and
+labelled price lines are all things it already does properly, and a
+hand-rolled canvas would only be a worse version of it.
+
+What we own is everything around it:
+
+- **Two charts, one mount function.** The difference is structural, and it is
+  one flag. In the ticker sheet there are 250px to work with and the volume is
+  an overlay at the foot of the price pane, the way the design draws it.
+  Fullscreen there is room for the second pane the design draws instead, and
+  the price gets 3.4× the volume's height.
+- **The numbers agree with each other.** The session is generated from a seeded
+  LCG — the same ticker always draws the same session — and then *scaled* so
+  its last close is the price the header quotes. A chart that disagrees with
+  the number above it is worse than no chart. The net change steers the drift,
+  so a red day slopes down and a green one up.
+- **The legend is the crosshair.** O / H / L / C and the volume follow whatever
+  the crosshair is over, and fall back to the last bar when it is over nothing.
+- **The volume tag is an explicit line, not a last-value label.** A last-value
+  label takes the colour of whichever way the final bar went; in the design
+  that tag is always the accent.
+- **Three labelled lines, in the order they matter.** Previous close in amber,
+  the price the event printed at in `main/m2`, and where it is now in
+  `main/m3`. That is the entire argument the fullscreen chart makes.
 
 ### What is not built yet
 
-Ticker Detail, Chat and Me are the next three screens in the MVP page. Chat
-and Me are in the tab bar as named placeholder screens rather than dead taps,
-and a tap on a card says where the detail screen will be.
+Inside the ticker sheet, Overview is real and the other five tabs
+(Narratives, Anomalies, News & Social, Smart Events, Financials) name
+themselves. On Chat, the thread is the design's own transcript and the
+composer is presentational. Everything else that points at a screen nobody has
+built says so once, in a toast, rather than doing nothing at all.
 
 ## Alpha Radar — the 2026-08-18 design round
 

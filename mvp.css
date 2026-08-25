@@ -18,37 +18,97 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MVP · For You feed
-   Figma: Feed Mobile MVP · ⭐️ MVP · For You (1496:32177)
+   MVP — For You, Chat, Me, and the three overlays
+   Figma: Feed Mobile MVP · ⭐️ MVP
+     For You            1496:32177
+     Sources sheet       545:62549
+     Ticker sheet        957:18126
+     Chat                545:62465
+     Me                  360:37134
+     Fullscreen chart   1076:48248
 
    Every length here is a token from Alva-Library, not a guess:
-   spacing 4 / 8 / 12 / 16, hairlines at 0.5px on line/l12 (0.2 for
-   media), radius 8 for content and 960 for the pill, and the type
-   ramp is Delight 24/34 · 16/26 · 14/22 · 12/20 · 10/16 with the
-   library's 1% tracking on every size.
+   spacing 4 / 8 / 12 / 16 / 24 / 28, hairlines at 0.5 on line/l12,
+   radius 4 / 6 / 8 for content and 96 / 960 for pills, and the type
+   ramp is Delight 24/34 · 20/30 · 16/26 · 14/22 · 12/20 · 11/18 ·
+   10/16 with the library's 1% tracking on every size.
 
-   The card is one object: 8px of padding top and bottom, an 8px gap
-   between its three parts (header / content / footer), and a single
-   hairline along the bottom edge. Nothing inside it is a slice of the
-   screen — the media scroller is the only thing allowed past the
-   16px gutter, and only on the right, because that overflow is what
-   says "there is more to the side".
+   And every colour is a variable. Not for tidiness — because the
+   library's Theme collection has two modes, and the only way a
+   prototype can honour that is to name the roles instead of the
+   values. Flip `data-theme` on <html> and the whole app changes
+   mode; nothing below knows which mode it is in.
    ═══════════════════════════════════════════════════════════ */
 
+/* ─────────────────────────────────────────────
+   Theme · Light — Alva-Library / Theme / Light
+   ───────────────────────────────────────────── */
+
 :root {
-  --m1: #49a3a6;
-  --m3: #2a9b7d;
-  --n9: rgba(0, 0, 0, .9);
-  --n7: rgba(0, 0, 0, .7);
-  --n5: rgba(0, 0, 0, .5);
+  /* background/* — the ground the app sits on */
+  --bg-b0: #f7f7f7;
+  --bg-container: #ffffff;
+  --bg-sidebar: #2a2a38;
+
+  /* content/* — surfaces that sit on the ground */
+  --b10: #ffffff;
+  --br03: rgba(0, 0, 0, .03);
+  --br05: rgba(0, 0, 0, .05);
+  --br07: rgba(0, 0, 0, .07);
+
+  /* line/* — the strokes, all of them 0.5 wide */
   --l07: rgba(0, 0, 0, .07);
   --l12: rgba(0, 0, 0, .12);
   --l2: rgba(0, 0, 0, .2);
-  --br03: rgba(0, 0, 0, .03);
+  --l3: rgba(0, 0, 0, .3);
 
-  --hair: .5px;        /* every stroke in this design is 0.5 — no exceptions */
+  /* text/* */
+  --n2: rgba(0, 0, 0, .2);
+  --n3: rgba(0, 0, 0, .3);
+  --n5: rgba(0, 0, 0, .5);
+  --n7: rgba(0, 0, 0, .7);
+  --n9: rgba(0, 0, 0, .9);
+  --n10: #000000;
+  --nr10: #ffffff;
+
+  /* main/* — the accents, identical in both modes */
+  --m1: #49a3a6;
+  --m1-10: rgba(73, 163, 166, .1);
+  --m2: #2196f3;
+  --m2-10: rgba(33, 150, 243, .1);
+  --m3: #2a9b7d;
+  --m4: #e05357;
+
+  /* common/* */
+  --white: #ffffff;
+  --amber: #e6a91a;
+
+  /* Roles the chart needs. TradingView draws on a canvas, so these are
+     read out of the stylesheet in JS and handed to it — same tokens,
+     same two modes, one source. */
+  --chart-grid: rgba(0, 0, 0, .05);
+  --chart-axis: rgba(0, 0, 0, .45);
+  --chart-vol-up: rgba(42, 155, 125, .3);
+  --chart-vol-down: rgba(224, 83, 87, .3);
+
+  --scrim: rgba(0, 0, 0, .4);
+  --lift: rgba(0, 0, 0, .08);
+
+  /* The bezel and the desktop stage — chrome, not app */
+  --desk-1: #eef1f2;
+  --desk-2: #e3e7e9;
+  --stage-ink: rgba(23, 32, 34, .55);
+  --stage-line: rgba(23, 32, 34, .12);
+  --stage-fill: rgba(255, 255, 255, .62);
+
+  /* The media in this feed is screenshot-white. In dark mode the tiles
+     get inverted rather than left glaring — see the dark block. */
+  --media-filter: none;
+
+  --hair: .5px;
   --status-h: 59px;    /* the shell writes the chosen device's inset here */
   --topbar-h: 58px;    /* 16 + 34 + 8 */
+  --sheet-top-h: 56px; /* Topbar/Mweb inside a sheet */
   --tab-h: 48px;       /* 8 + 22 + 2 + 16 */
   --home-h: 34px;
   --gutter: 16px;
@@ -56,12 +116,63 @@
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* ─────────────────────────────────────────────
+   Theme · Dark — Alva-Library / Theme / Dark
+
+   Not an inversion: the library's dark mode keeps the accents exactly
+   where they were and only re-grounds the neutrals, so a green pill is
+   the same green in both modes and only the paper changes.
+   ───────────────────────────────────────────── */
+
+:root[data-theme="dark"] {
+  --bg-b0: #1a1b1f;
+  --bg-container: #15161a;
+  --bg-sidebar: #1d1e24;
+
+  --b10: #15161a;
+  --br03: rgba(255, 255, 255, .03);
+  --br05: rgba(255, 255, 255, .05);
+  --br07: rgba(255, 255, 255, .07);
+
+  --l07: rgba(255, 255, 255, .1);
+  --l12: rgba(255, 255, 255, .12);
+  --l2: rgba(255, 255, 255, .2);
+  --l3: rgba(255, 255, 255, .3);
+
+  --n2: rgba(255, 255, 255, .2);
+  --n3: rgba(255, 255, 255, .3);
+  --n5: rgba(255, 255, 255, .5);
+  --n7: rgba(255, 255, 255, .7);
+  --n9: rgba(255, 255, 255, .9);
+  --n10: #ffffff;
+  --nr10: #000000;
+
+  --chart-grid: rgba(255, 255, 255, .07);
+  --chart-axis: rgba(255, 255, 255, .45);
+  --chart-vol-up: rgba(42, 155, 125, .35);
+  --chart-vol-down: rgba(224, 83, 87, .35);
+
+  --scrim: rgba(0, 0, 0, .6);
+  --lift: rgba(0, 0, 0, .5);
+
+  --desk-1: #202226;
+  --desk-2: #14151a;
+  --stage-ink: rgba(255, 255, 255, .55);
+  --stage-line: rgba(255, 255, 255, .14);
+  --stage-fill: rgba(255, 255, 255, .06);
+
+  /* invert + hue-rotate is the one honest way to put a white-paper
+     screenshot on a dark page: the ground goes dark and the greens and
+     reds come back out the same hue they went in. */
+  --media-filter: invert(1) hue-rotate(180deg);
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { width: 100%; height: 100%; }
 
 body {
   overflow: hidden;
-  background: #e8eaed;
+  background: var(--bg-b0);
   color: var(--n9);
   font-family: 'Delight', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
@@ -74,9 +185,27 @@ body {
   user-select: none;
 }
 
-button { border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; }
+button { border: 0; background: none; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; text-align: left; }
 img { display: block; pointer-events: none; -webkit-user-drag: none; }
 [hidden] { display: none !important; }
+
+/* ─────────────────────────────────────────────
+   Icons
+
+   Every monochrome glyph in the app is a mask, not an <img>. An <img>
+   carries its own colour and there is no way to re-ground it for dark
+   mode without a filter that lies about the alpha; a mask carries only
+   the shape, and `currentColor` puts a themed token into it. One file
+   per icon, two modes, no duplicates.
+   ───────────────────────────────────────────── */
+
+.ic {
+  display: inline-block;
+  flex: 0 0 auto;
+  background: currentColor;
+  -webkit-mask: var(--ic) center / contain no-repeat;
+  mask: var(--ic) center / contain no-repeat;
+}
 
 /* ─────────────────────────────────────────────
    Standalone chrome — the shell hides all of this
@@ -90,7 +219,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background:
     radial-gradient(900px 650px at 80% 0%, rgba(73, 163, 166, .15), transparent 60%),
     radial-gradient(800px 600px at 8% 110%, rgba(73, 163, 166, .1), transparent 58%),
-    linear-gradient(180deg, #eef1f2 0%, #e3e7e9 100%);
+    linear-gradient(180deg, var(--desk-1) 0%, var(--desk-2) 100%);
 }
 .phone {
   position: relative;
@@ -113,7 +242,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: 852px;
   overflow: hidden;
   border-radius: 54px;
-  background: #fff;
+  background: var(--b10);
   box-shadow: 0 0 0 6px #000;
 }
 .phone-buttons .pb {
@@ -130,10 +259,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .stage-controls-left { right: auto; left: 20px; }
 .stage-pill {
   padding: 6px 14px;
-  border: .5px solid rgba(23, 32, 34, .12);
+  border: .5px solid var(--stage-line);
   border-radius: 960px;
-  background: rgba(255, 255, 255, .62);
-  color: rgba(23, 32, 34, .55);
+  background: var(--stage-fill);
+  color: var(--stage-ink);
   font-size: 12px;
   text-decoration: none;
   backdrop-filter: blur(8px);
@@ -149,13 +278,13 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   inset: 0;
   overflow: hidden;
   border-radius: inherit;
-  background: #fff;
+  background: var(--b10);
 }
 .screens { position: absolute; inset: 0; }
 .screen {
   position: absolute;
   inset: 0;
-  background: #fff;
+  background: var(--b10);
   visibility: hidden;
 }
 .screen.current { visibility: visible; }
@@ -164,25 +293,33 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .system-bar {
   position: absolute;
-  z-index: 30;
+  z-index: 82;
   top: 0;
   right: 0;
   left: 0;
   display: flex;
   align-items: center;
   height: var(--status-h);
+  color: var(--n10);
   pointer-events: none;
 }
+/* A sheet dims the app behind it, and the status bar is in front of the
+   scrim rather than under it — so it has to go light, the way iOS does. */
+.mvp-app.dim .system-bar { color: #fff; }
+/* Fullscreen, the design keeps only the island: the chart owns the rest of
+   that row and the close button lands where the battery used to be. */
+.mvp-app.full .system-side { opacity: 0; }
 .system-side { display: flex; flex: 1; align-items: center; justify-content: center; height: 100%; }
 .system-left { padding: 3px 0 0 10px; font-size: 16px; font-weight: 600; line-height: 21px; letter-spacing: 0; }
 .dynamic-island { flex: 0 0 125px; width: 125px; height: 37px; border-radius: 100px; background: #000; }
 .system-right { gap: 8px; padding: 3px 11px 0 0; }
-.system-right > img:first-child { width: 18px; height: 12px; }
-.system-right > img:nth-child(2) { width: 17px; height: 12px; }
+.system-right .sb-signal { width: 18px; height: 12px; }
+.system-right .sb-wifi { width: 17px; height: 12px; }
 .battery { position: relative; width: 27.4px; height: 13px; }
-.battery-outline { position: absolute; inset: 0 auto auto 0; width: 25px; height: 13px; }
-.battery-fill { position: absolute; top: 2px; left: 2px; width: 21px; height: 9px; }
-.battery-end { position: absolute; top: 4.4px; right: 0; width: 1.4px; height: 4.2px; }
+.battery .ic { position: absolute; }
+.battery-outline { inset: 0 auto auto 0; width: 25px; height: 13px; }
+.battery-fill { top: 2px; left: 2px; width: 21px; height: 9px; }
+.battery-end { top: 4.4px; right: 0; width: 1.4px; height: 4.2px; }
 
 /* ── Topbar/Mweb ──
    16 above the title, 8 below it, and the hairline is the whole width
@@ -196,8 +333,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   left: 0;
   height: var(--topbar-h);
   padding: 16px 0 8px var(--gutter);
-  border-bottom: var(--hair) solid var(--l12);
-  background: #fff;
+  background: var(--b10);
+  box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
 .topbar h1 {
   overflow: hidden;
@@ -242,7 +379,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(73, 163, 166, .16);
+  border: 2px solid var(--m1-10);
   border-top-color: var(--m1);
   border-radius: 50%;
   opacity: 0;
@@ -254,21 +391,35 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 /* ── Feed card ── */
 
+/* The hairline belongs to the top of a card, not the bottom: that way the
+   list's first item is delimited above as well, and the line travels with
+   the cards when the list is pulled.
+
+   At rest the first card's own line is suppressed, because the topbar's
+   bottom hairline is already sitting exactly there and two 0.5px lines on
+   the same row read as one thick one. The moment the list is pulled away
+   from the topbar the card takes its line back — that gap needs a top edge
+   of its own. */
 .card {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: var(--hair) solid var(--l12);
-  background: #fff;
+  background: var(--b10);
+  box-shadow: inset 0 var(--hair) 0 var(--l12);
 }
+.cards > :first-child { box-shadow: none; }
+.feed-track.pulled .cards > :first-child { box-shadow: inset 0 var(--hair) 0 var(--l12); }
 .card.enter { animation: card-in .44s var(--ease) both; }
 @keyframes card-in {
   from { opacity: 0; transform: translate3d(0, -10px, 0); }
   to { opacity: 1; transform: none; }
 }
 
-/* Header: one ticker, or up to three divided by a hairline (1496:32409) */
+/* Header: one ticker, or up to three divided by a hairline (1496:32409).
+   Every one of them is an entry point now, so each is a button — which is
+   also why the divider is a sibling and not a border on the ticker: a
+   pressed ticker must not look like it owns the line next to it. */
 
 .card-head {
   display: flex;
@@ -276,12 +427,20 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: var(--gutter);
   padding: 8px var(--gutter);
 }
-.ticker { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.ticker {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  transition: transform .18s var(--ease);
+}
+.ticker:active { transform: scale(.96); }
 .ticker-logo { width: 36px; height: 36px; border-radius: 100px; }
 .ticker-text { display: flex; flex-direction: column; justify-content: center; }
 .ticker-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 .ticker-tone { color: var(--m3); font-size: 10px; font-weight: 400; line-height: 16px; white-space: nowrap; }
-.head-rule { flex: 0 0 auto; align-self: center; width: 0; height: 24px; border-left: var(--hair) solid var(--l12); }
+.head-rule { flex: 0 0 auto; align-self: center; width: var(--hair); height: 24px; background: var(--l12); }
 
 /* Content: markdown blocks, 12 apart */
 
@@ -326,8 +485,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   flex: 0 0 auto;
   width: 20px;
   height: 20px;
-  border: var(--hair) solid var(--l12);
   border-radius: 960px;
+  box-shadow: inset 0 0 0 var(--hair) var(--l12);
 }
 .quote-name { color: var(--n9); font-size: 12px; font-weight: 500; line-height: 20px; }
 .quote-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; }
@@ -344,25 +503,43 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 
 /* Media. One tile fills the gutter-to-gutter width; two or more become a
-   scroller of 240 × 135 tiles that runs off the right edge of the card. */
+   scroller of 240 × 135 tiles that runs off the right edge of the card.
+   Both are buttons: a chart in the feed is a thumbnail of the fullscreen
+   chart, and tapping a thumbnail should open the thing. */
 
-.media {
-  height: 203px;
+/* A full-width tile is the same shape as a small one — 240 × 135 — so the
+   ratio is the token and the height follows the device's width. A fixed
+   203 was only ever right at 393. */
+.media,
+.media-tile {
+  display: block;
   overflow: hidden;
-  border: var(--hair) solid var(--l2);
+  aspect-ratio: 240 / 135;
   border-radius: 8px;
   background: var(--br03);
+  box-shadow: inset 0 0 0 var(--hair) var(--l2);
+  transition: transform .2s var(--ease);
 }
-.media img { width: 100%; height: 100%; object-fit: cover; }
+.media { width: 100%; }
+.media-tile { flex: 0 0 240px; }
+.media img,
+.media-tile img { width: 100%; height: 100%; object-fit: cover; filter: var(--media-filter); }
+.media:active,
+.media-tile:active { transform: scale(.985); }
 
+/* The row bleeds through both gutters, so a tile leaving the row is cut off
+   by the edge of the screen — the only place a cut reads as "there is more
+   over there". Clipped at the 16 gutter instead, it looked severed in mid
+   air. The 16 the first tile starts at is padding now, not margin, so it
+   scrolls away with the content. And no snapping: this is a strip you graze
+   along, not a carousel that wants to click into position. */
 .media-row {
   display: flex;
   gap: 8px;
-  margin-right: calc(var(--gutter) * -1);
-  padding-right: var(--gutter);
+  margin: 0 calc(var(--gutter) * -1);
+  padding: 0 var(--gutter);
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-snap-type: x proximity;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -371,18 +548,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   touch-action: pan-x;
   cursor: grab;
 }
-.media-row.dragging { cursor: grabbing; scroll-snap-type: none; }
+.media-row.dragging { cursor: grabbing; }
 .media-row::-webkit-scrollbar { display: none; }
-.media-tile {
-  flex: 0 0 240px;
-  height: 135px;
-  overflow: hidden;
-  border: var(--hair) solid var(--l2);
-  border-radius: 8px;
-  background: var(--br03);
-  scroll-snap-align: start;
-}
-.media-tile img { width: 100%; height: 100%; object-fit: cover; }
 
 /* Footer: sources on the left, the automation that found the card in the
    middle, Ask Alva on the right (1437:31419) */
@@ -394,14 +561,26 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: 36px;
   padding: 0 8px 0 var(--gutter);
 }
-.foot-lead { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; overflow: hidden; }
+.foot-lead {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 8px;
+  transition: opacity .18s ease;
+}
+.foot-lead:active { opacity: .55; }
 .sources { display: flex; flex: 0 0 auto; align-items: center; }
 .sources img {
   width: 18px;
   height: 18px;
   margin-right: -6px;
   border-radius: 100px;
-  box-shadow: 0 0 0 var(--hair) #fff;
+  background: var(--b10);
+  box-shadow: 0 0 0 var(--hair) var(--b10);
 }
 .sources img:last-child { margin-right: 0; }
 .foot-meta { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
@@ -415,10 +594,29 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   width: 36px;
   height: 36px;
   border-radius: 18px;
+  color: var(--n9);
   transition: background .18s ease, transform .18s var(--ease);
 }
-.ask img { width: 18px; height: 18px; opacity: .9; }
+.ask .ic { width: 18px; height: 18px; }
 .ask:active { background: var(--br03); transform: scale(.94); }
+
+/* ── Where you left off ──
+   Twitter's rule: after a refresh, the boundary between what just arrived
+   and what you had already read is marked once, in place, and then left
+   alone. A hairline with a label sitting on it, not a banner. */
+
+.seen-line {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--gutter);
+  background: var(--br03);
+  box-shadow: inset 0 var(--hair) 0 var(--l12);
+  color: var(--n5);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
 
 /* ── Pill · New cards (1484:46783) ──
    It sits 8 below the topbar, centred, and it is the only thing on this
@@ -434,11 +632,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   justify-content: center;
   gap: 8px;
   padding: 8px 12px;
-  border: var(--hair) solid var(--l07);
   border-radius: 960px;
   background: var(--m1);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, .08);
-  color: #fff;
+  box-shadow: 0 10px 20px var(--lift), inset 0 0 0 var(--hair) var(--l07);
+  color: var(--white);
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
@@ -446,7 +643,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: translateX(-50%);
   transition: opacity .24s ease, transform .32s var(--ease);
 }
-.pill img { width: 14px; height: 14px; }
+.pill .ic { width: 14px; height: 14px; }
 .pill:active { transform: translateX(-50%) scale(.96); }
 .pill.gone {
   opacity: 0;
@@ -462,8 +659,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   right: 0;
   bottom: 0;
   left: 0;
-  border-top: var(--hair) solid var(--l12);
-  background: #fff;
+  background: var(--b10);
+  box-shadow: inset 0 var(--hair) 0 var(--l12);
 }
 .tabs { display: flex; }
 .tab {
@@ -475,10 +672,14 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: 2px;
   height: var(--tab-h);
   padding-top: 8px;
+  color: var(--n7);
 }
-.tab img { width: 22px; height: 22px; opacity: .7; transition: opacity .18s ease; }
+.tab .ic { width: 22px; height: 22px; }
+.tab .ic-on { display: none; }
 .tab span { color: var(--n7); font-size: 10px; font-weight: 400; line-height: 16px; }
-.tab[aria-selected="true"] img { opacity: .9; }
+.tab[aria-selected="true"] { color: var(--n9); }
+.tab[aria-selected="true"] .ic-on { display: inline-block; }
+.tab[aria-selected="true"] .ic-off { display: none; }
 .tab[aria-selected="true"] span { color: var(--n9); font-weight: 500; }
 
 .home-indicator { position: relative; height: var(--home-h); pointer-events: none; }
@@ -489,53 +690,623 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   width: 144px;
   height: 5px;
   border-radius: 100px;
-  background: #000;
+  background: var(--n10);
   transform: translateX(-50%);
 }
 
-/* ── The two screens that are next ── */
+/* ═══════════════════════════════════════════════════════════
+   Chat (545:62465)
+   ═══════════════════════════════════════════════════════════ */
 
-.placeholder {
+/* Topbar/Mweb with a logo instead of a page title: 22 tile at 16, the name
+   next to it, and two 16px controls on the right inside 40px hit areas. */
+
+.chat-top {
   position: absolute;
-  inset: calc(var(--status-h) + var(--topbar-h)) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  z-index: 12;
+  top: var(--status-h);
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--sheet-top-h);
+  padding: 0 8px 0 var(--gutter);
+  background: var(--b10);
+}
+.logo-tile {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--bg-sidebar);
+}
+.logo-tile img { width: 12px; height: 12px; }
+.chat-top h1 { flex: 1 1 auto; color: var(--n9); font-size: 16px; font-weight: 400; line-height: 26px; }
+.icon-btn {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  color: var(--n9);
+  transition: background .18s ease;
+}
+.icon-btn .ic { width: 16px; height: 16px; }
+.icon-btn:active { background: var(--br05); }
+
+/* Tab strip — the same Tab Item as the ticker sheet: 2px of m1 under the
+   active one and nothing under the rest. */
+
+.strip {
+  position: absolute;
+  z-index: 11;
+  top: calc(var(--status-h) + var(--sheet-top-h));
+  right: 0;
+  left: 0;
+  display: flex;
+  gap: var(--gutter);
+  padding: 0 var(--gutter);
+  overflow-x: auto;
+  background: var(--b10);
+  box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
+  scrollbar-width: none;
+}
+/* The same Tab component appears inside the ticker sheet, where it is part
+   of the flow rather than pinned under a topbar. */
+.strip-inline { position: static; flex: 0 0 auto; margin-bottom: 12px; }
+.strip::-webkit-scrollbar { display: none; }
+.strip-item {
+  position: relative;
+  flex: 0 0 auto;
+  padding-bottom: 6px;
+  color: var(--n7);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  white-space: nowrap;
+}
+.strip-item.on { color: var(--n9); font-weight: 500; }
+.strip-item.on::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--m1);
+  content: '';
+}
+
+.thread {
+  position: absolute;
+  inset: calc(var(--status-h) + var(--sheet-top-h) + 28px) 0 calc(var(--tab-h) + var(--home-h) + 76px) 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 0 40px;
-  text-align: center;
+  gap: 28px;
+  padding: var(--gutter);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
 }
-.placeholder img { width: 28px; height: 28px; margin-bottom: 4px; opacity: .35; }
-.ph-title { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
-.ph-sub { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
 
-/* ── Toast ── */
+/* The user's turn is a tinted bubble that hugs its text from the right;
+   Alva's turn is not a bubble at all, it is a header and then markdown at
+   the page's own measure. That asymmetry is the design: one of them is a
+   message, the other is a document. */
+
+.bubble {
+  align-self: flex-end;
+  max-width: min(560px, 100%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--m1-10);
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+}
+.answer { display: flex; flex-direction: column; gap: 12px; }
+.answer-head { display: flex; align-items: center; gap: 8px; height: 22px; }
+.answer-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.answer-time { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.answer p {
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+}
+
+/* ChatBox/Mweb. The gradient above it is what lets the thread run under
+   the composer instead of stopping short of it. */
+
+.composer {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  bottom: calc(var(--tab-h) + var(--home-h));
+  left: 0;
+  padding: 12px;
+  background: linear-gradient(180deg, transparent 0%, var(--b10) 40%);
+}
+.cbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--b10);
+  box-shadow: inset 0 0 0 var(--hair) var(--l2);
+}
+.cbox .ic-add { width: 16px; height: 16px; color: var(--n9); }
+.cbox .ic-mic { width: 16px; height: 16px; color: var(--n9); }
+.cbox-ph {
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--n3);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.send {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--br05);
+  color: var(--n2);
+}
+.send .ic { width: 14px; height: 14px; }
+
+/* ═══════════════════════════════════════════════════════════
+   Me (360:37134)
+   No topbar: this screen's title is the person's own face.
+   ═══════════════════════════════════════════════════════════ */
+
+.me-body {
+  position: absolute;
+  inset: var(--status-h) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  padding: var(--gutter) var(--gutter) 24px;
+}
+.me-head { display: flex; align-items: center; gap: 24px; height: 60px; }
+.me-av { position: relative; flex: 0 0 auto; width: 60px; height: 60px; }
+.me-av > img { width: 60px; height: 60px; border-radius: 960px; object-fit: cover; }
+.me-badge {
+  position: absolute;
+  right: -8px;
+  bottom: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--white);
+  border-radius: 960px;
+  background: var(--bg-b0);
+  color: var(--n5);
+}
+.me-badge .ic { width: 14px; height: 14px; }
+.me-id { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-width: 0; }
+.me-name-row { display: flex; align-items: center; gap: 8px; }
+.me-name { color: var(--n9); font-size: 20px; font-weight: 400; line-height: 30px; }
+.tag {
+  flex: 0 0 auto;
+  height: 18px;
+  padding: 0 8px;
+  border-radius: 96px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 18px;
+  white-space: nowrap;
+}
+.tag-pro { background: var(--m1); color: var(--white); box-shadow: inset 0 0 0 var(--hair) var(--l12); }
+.tag-annual { padding: 0 6px; border-radius: 960px; background: var(--m1-10); color: var(--m1); }
+.me-meta { display: flex; align-items: center; gap: 8px; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.me-div { flex: 0 0 auto; width: var(--hair); height: 12px; background: var(--l12); }
+
+/* Rows. The hairline is on the top of a row for the same reason it is on
+   the top of a card: a group of rows then reads as a list with a lid, and
+   the last row does not end on a line that belongs to nothing. */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 0;
+  box-shadow: inset 0 var(--hair) 0 var(--l12);
+  color: var(--n9);
+  transition: opacity .16s ease;
+}
+.row:active { opacity: .55; }
+.row-open { box-shadow: none; }
+.row .ic-lead { width: 20px; height: 20px; color: var(--n9); }
+.row-label { flex: 1 1 auto; color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
+.row-count { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.row .ic-chev { width: 12px; height: 12px; color: var(--n5); }
+
+.me-group {
+  padding: 12px 0 4px;
+  color: var(--n3);
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* Credits card: what is left on the left at 24/34, and what it is made of
+   on the right at 10/16 — the two things a credit balance has to answer. */
+
+.credits {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--gutter);
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--br03);
+}
+.credits-left { display: flex; flex-direction: column; }
+.credits-cap { color: var(--n5); font-size: 10px; font-weight: 400; line-height: 16px; }
+.credits-num { color: var(--n9); font-size: 24px; font-weight: 400; line-height: 34px; font-variant-numeric: tabular-nums; }
+.credits-right { display: flex; flex-direction: column; align-items: flex-end; }
+.credits-line { display: flex; gap: 8px; font-size: 10px; line-height: 16px; }
+.credits-line b { color: var(--n9); font-weight: 400; font-variant-numeric: tabular-nums; }
+.credits-line span { color: var(--n5); }
+
+/* The switch. Nothing in the Figma file has one — the appearance row is
+   the one thing on this screen the design does not specify, because the
+   design is a mode, not a control. It is built out of the same tokens so
+   it belongs anyway. */
+
+.switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 40px;
+  height: 24px;
+  border-radius: 960px;
+  background: var(--br07);
+  box-shadow: inset 0 0 0 var(--hair) var(--l12);
+  transition: background .22s ease;
+}
+.switch::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 960px;
+  background: var(--white);
+  box-shadow: 0 1px 3px var(--lift), inset 0 0 0 var(--hair) var(--l07);
+  content: '';
+  transition: transform .22s var(--ease);
+}
+.switch[aria-checked="true"] { background: var(--m1); }
+.switch[aria-checked="true"]::after { transform: translateX(16px); }
+
+.me-social { display: flex; gap: 8px; padding: 16px 0 0; box-shadow: inset 0 var(--hair) 0 var(--l12); }
+.me-social button {
+  display: grid;
+  flex: 1 1 0;
+  place-items: center;
+  height: 32px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 var(--hair) var(--l3);
+  color: var(--n9);
+  transition: background .16s ease;
+}
+.me-social button:active { background: var(--br03); }
+.me-social .ic { width: 16px; height: 16px; }
+
+/* ═══════════════════════════════════════════════════════════
+   Sheets — Sources (545:62549) and Ticker (957:18126)
+
+   Both are the same object: a scrim, a grabber, a Topbar/Mweb, and a
+   scroller. What differs is where the top edge sits, which is a token
+   the sheet carries in `--sheet-y`.
+   ═══════════════════════════════════════════════════════════ */
+
+.scrim {
+  position: absolute;
+  z-index: 60;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.scrim.show { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: absolute;
+  z-index: 61;
+  top: var(--sheet-y, 144px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  background: var(--b10);
+  transform: translateY(100%);
+  transition: transform .4s var(--ease);
+}
+.sheet.show { transform: none; }
+.grabber { display: grid; flex: 0 0 auto; height: 12px; place-items: center; }
+.grabber span { width: 36px; height: 4px; border-radius: 960px; background: var(--l12); }
+
+.sheet-top {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  height: var(--sheet-top-h);
+}
+.sheet-top h2 {
+  flex: 1 1 auto;
+  overflow: hidden;
+  color: var(--n9);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sheet-btn {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 48px;
+  height: var(--sheet-top-h);
+  color: var(--n9);
+}
+.sheet-btn.right { width: 40px; }
+.sheet-btn.right .ic { width: 16px; height: 16px; }
+.sheet-btn .ic { width: 20px; height: 20px; }
+.sheet-btn .ic-star-f { color: var(--amber); }
+.sheet-btn .ic { transition: transform .22s var(--ease); }
+.sheet-btn:active .ic { transform: scale(.86); }
+
+.sheet-scroll {
+  flex: 1 1 auto;
+  /* the sheet runs to the bottom of the screen, so its content needs to be
+     able to scroll clear of the home indicator */
+  padding-bottom: calc(var(--home-h) + 8px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── List / Source item · 来源+节选 (1180:20235) ──
+   16 all round, 8 between the two rows, and the hairline under each item.
+   The avatar carries the platform badge on its own corner, so the row does
+   not need a second column just to say where this came from. */
+
+.src {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: var(--gutter);
+  box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
+}
+.src-head { display: flex; align-items: center; gap: 12px; }
+.src-av { position: relative; flex: 0 0 auto; width: 32px; height: 32px; }
+.src-av > img,
+.src-av > .src-mono {
+  width: 32px;
+  height: 32px;
+  border-radius: 960px;
+  box-shadow: inset 0 0 0 var(--hair) var(--l12);
+  object-fit: cover;
+}
+.src-mono {
+  display: grid;
+  place-items: center;
+  background: var(--br05);
+  color: var(--n5);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+}
+.src-badge {
+  position: absolute;
+  top: 17.5px;
+  left: 17.5px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 960px;
+  background: var(--white);
+  box-shadow: 0 0 0 var(--hair) var(--l12);
+  color: #000;
+}
+.src-badge .ic { width: 10px; height: 10px; }
+.src-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
+.src-name { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
+.src-handle { overflow: hidden; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.src-time { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+.src-open {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--b10);
+  box-shadow: inset 0 0 0 var(--hair) var(--l3);
+  color: var(--n9);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: background .16s ease;
+}
+.src-open:active { background: var(--br05); }
+.src-quote { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; letter-spacing: 0; }
+
+/* ── Ticker sheet body ── */
+
+.tk-name { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--gutter) 12px; }
+.tk-co { display: flex; align-items: center; gap: 8px; }
+.tk-co img { width: 16px; height: 16px; border-radius: 960px; }
+.tk-co b { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.tk-co span { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.tk-when { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.tk-price { display: flex; align-items: baseline; gap: 8px; }
+.tk-price b { color: var(--n9); font-size: 24px; font-weight: 400; line-height: 34px; font-variant-numeric: tabular-nums; }
+.tk-chg { font-size: 12px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; }
+.up { color: var(--m3); }
+.down { color: var(--m4); }
+.tk-pre { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.tk-pre b { color: var(--n9); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* Chart module (Chart/Entity). The toolbar and the legend are markup; only
+   the plot itself is a canvas. */
+
+.chart-mod { display: flex; flex-direction: column; }
+.chart-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--gutter);
+  padding: 0 var(--gutter) 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chart-bar::-webkit-scrollbar { display: none; }
+.tf { display: flex; flex: 0 0 auto; gap: 12px; }
+.tf button {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--n7);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+}
+.tf button.on { background: var(--br05); color: var(--n9); font-weight: 500; }
+.chart-tools { display: flex; flex: 0 0 auto; gap: 12px; margin-left: auto; }
+.chart-tools button { display: grid; place-items: center; width: 24px; height: 24px; color: var(--n9); }
+.chart-tools .ic { width: 20px; height: 20px; }
+.chart-mode { display: flex; flex: 0 0 auto; align-items: center; gap: 2px; color: var(--n9); font-size: 12px; line-height: 20px; }
+.chart-mode .ic { width: 12px; height: 12px; color: var(--n9); }
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 0 var(--gutter) 4px;
+  font-size: 11px;
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+}
+.chart-legend .dot { width: 8px; height: 8px; border-radius: 960px; background: var(--m3); }
+.chart-legend .k { color: var(--n5); }
+.chart-legend .v { color: var(--n9); }
+.chart-legend .v.down { color: var(--m4); }
+.chart-legend .v.up { color: var(--m3); }
+
+.plot { position: relative; width: 100%; }
+/* Anomaly card — a coloured label that names the shape of the move, then
+   the sentence that explains it. m2 for "look at this", not for "danger". */
+
+.anom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px var(--gutter) var(--gutter);
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--m2-10);
+}
+.anom-label { align-self: center; color: var(--m2); font-size: 12px; font-weight: 500; line-height: 20px; }
+.anom-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; letter-spacing: 0; }
+.anom-foot { display: flex; align-items: center; justify-content: space-between; }
+.anom-when { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.anom-more { display: flex; align-items: center; gap: 2px; color: var(--m1); font-size: 12px; font-weight: 400; line-height: 20px; }
+.anom-more .ic { width: 12px; height: 12px; color: var(--m1); }
+
+/* ═══════════════════════════════════════════════════════════
+   Fullscreen chart (1076:48248)
+
+   The whole screen is the plot. Two panes, one price scale on the right,
+   and three labelled lines — previous close, the price the event printed
+   at, and where it is now — because that is the entire argument a chart
+   like this makes.
+   ═══════════════════════════════════════════════════════════ */
+
+.fs {
+  position: absolute;
+  z-index: 80;
+  inset: 0;
+  background: var(--b10);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.02);
+  transition: opacity .28s ease, transform .34s var(--ease);
+}
+.fs.show { opacity: 1; pointer-events: auto; transform: none; }
+.fs-plot { position: absolute; inset: var(--status-h) 0 0 0; }
+.fs-close {
+  position: absolute;
+  z-index: 3;
+  top: 15px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 960px;
+  background: var(--n9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  color: var(--nr10);
+  transition: transform .2s var(--ease);
+}
+.fs-close .ic { width: 15px; height: 15px; }
+.fs-close:active { transform: scale(.9); }
+
+/* ── Toast ──
+   Bottom, above the tab bar, and above every overlay in z. A sheet can be
+   open when a follow lands, and the confirmation has to be readable
+   without covering the control that caused it. */
 
 .toast {
   position: absolute;
-  z-index: 50;
-  top: calc(var(--status-h) + var(--topbar-h) + 12px);
+  z-index: 95;
+  bottom: calc(var(--tab-h) + var(--home-h) + 16px);
   left: 50%;
   max-width: 300px;
   padding: 9px 14px;
   border-radius: 20px;
-  background: rgba(24, 24, 24, .88);
+  background: rgba(24, 24, 24, .9);
   color: #fff;
   font-size: 12px;
   line-height: 18px;
   opacity: 0;
   pointer-events: none;
-  transform: translate(-50%, -12px);
+  transform: translate(-50%, 12px);
   transition: opacity .2s ease, transform .3s var(--ease);
 }
+:root[data-theme="dark"] .toast { background: rgba(240, 240, 240, .92); color: #15161a; }
+/* With a sheet open the tab bar is behind it, so the toast drops to the
+   bottom of the screen where a snackbar belongs. */
+.mvp-app.dim .toast { bottom: calc(var(--home-h) + 12px); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ─────────────────────────────────────────────
    Embedded in the prototypes shell (index.html)
    ───────────────────────────────────────────── */
 
-html.embedded .desk { display: block; background: #fff; }
+html.embedded .desk { display: block; background: var(--b10); }
 html.embedded .phone {
   width: 100%;
   height: 100%;
@@ -555,7 +1326,7 @@ html.embedded .phone-screen {
 }
 
 @media (max-width: 520px), (max-height: 700px) and (pointer: coarse) {
-  .desk { display: block; background: #fff; }
+  .desk { display: block; background: var(--b10); }
   .phone { width: 100%; height: 100%; padding: 0; border-radius: 0; background: none; box-shadow: none; }
   .phone-buttons, .stage-controls { display: none; }
   .phone-screen { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }

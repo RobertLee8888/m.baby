@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>MVP · For You feed · Alva prototypes</title>
+<title>MVP · For You, Chat, Me · Alva prototypes</title>
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
@@ -13,7 +13,10 @@
      stage chrome, so the page renders as a bare full-screen app. Set before
      the stylesheet loads so no mockup is ever painted. -->
 <script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
-<link rel="stylesheet" href="mvp.css?v=2">
+<!-- The mode is stamped before the stylesheet loads too, so a dark session
+     never flashes the light palette on the way in. -->
+<script>(function(){try{var t=localStorage.getItem('alva-mvp-theme');if(!t)t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;}catch(e){document.documentElement.dataset.theme='light';}})();</script>
+<link rel="stylesheet" href="mvp.css?v=4">
 </head>
 <body>
 
@@ -28,11 +31,9 @@
     <div class="phone-screen">
       <main class="mvp-app" id="mvpApp">
 
-        <!-- ── The screens ──
-             One MVP screen is built: For You. Chat and Me are the next two,
-             and they are here as named placeholders rather than dead taps. -->
         <div class="screens" id="screens">
 
+          <!-- ═══ For You ═══════════════════════════════════════ -->
           <section class="screen current" id="screenFeed" data-tab="feed" aria-label="For You">
             <header class="topbar"><h1>For You</h1></header>
 
@@ -47,26 +48,174 @@
             </div>
 
             <button class="pill" id="newPill" type="button">
-              <img src="assets/feed-arrow-up.svg" alt="">
-              <span id="newPillText">3 new feeds</span>
+              <span class="ic" style="--ic:url(assets/ui-arrow-up-l1.svg)" aria-hidden="true"></span>
+              <span id="newPillText">2 new feeds</span>
             </button>
           </section>
 
+          <!-- ═══ Chat (545:62465) ══════════════════════════════ -->
           <section class="screen" id="screenChat" data-tab="chat" aria-label="Chat">
-            <header class="topbar"><h1>Chat</h1></header>
-            <div class="placeholder">
-              <img src="assets/feed-tab-chat.svg" alt="">
-              <p class="ph-title">Chat is next in the MVP</p>
-              <p class="ph-sub">Ask Alva about anything in the feed — the thread opens here.</p>
+            <header class="chat-top">
+              <span class="logo-tile" aria-hidden="true"><img src="assets/logo-portrait.svg" alt=""></span>
+              <h1>Alva</h1>
+              <button class="icon-btn" type="button" aria-label="What Alva can do" data-hint="Alva explains what it can do here — a later screen">
+                <span class="ic" style="--ic:url(assets/ui-explain-l.svg)" aria-hidden="true"></span>
+              </button>
+              <button class="icon-btn" type="button" aria-label="Chat settings" data-hint="Chat settings are a later screen">
+                <span class="ic" style="--ic:url(assets/ui-settings-l.svg)" aria-hidden="true"></span>
+              </button>
+            </header>
+
+            <nav class="strip" aria-label="Chat sections">
+              <button class="strip-item on" type="button">Chat</button>
+              <button class="strip-item" type="button" data-hint="Tasks: 5 running automations">Tasks (5)</button>
+              <button class="strip-item" type="button" data-hint="Alerts: 8 unread">Alerts (8)</button>
+              <button class="strip-item" type="button" data-hint="Memory is what Alva keeps between threads">Memory</button>
+              <button class="strip-item" type="button" data-hint="Files: 8 attached to this workspace">Files (8)</button>
+            </nav>
+
+            <div class="thread" id="thread">
+              <p class="bubble">Create today&rsquo;s FinTwit Digest from my chosen FinTwit list.</p>
+
+              <div class="answer">
+                <div class="answer-head">
+                  <span class="logo-tile" aria-hidden="true"><img src="assets/logo-portrait.svg" alt=""></span>
+                  <span class="answer-name">Alva</span>
+                  <span class="answer-time">10:28 PM</span>
+                </div>
+                <p>On it. I&rsquo;ll read today&rsquo;s posts from your 8 selected FinTwit accounts and condense them into one digest &mdash; top calls, ticker mentions, and sentiment shifts.</p>
+                <p>Want me to deliver this automatically each morning?</p>
+              </div>
+
+              <p class="bubble">Yes &mdash; send it to Telegram daily at 7:30 AM.</p>
+
+              <div class="answer">
+                <div class="answer-head">
+                  <span class="logo-tile" aria-hidden="true"><img src="assets/logo-portrait.svg" alt=""></span>
+                  <span class="answer-name">Alva</span>
+                  <span class="answer-time">10:28 PM</span>
+                </div>
+                <p>Done. Your FinTwit Digest is scheduled for 7:30 AM daily and will arrive in Telegram.</p>
+                <p>Today&rsquo;s edition: 8 accounts covered, 14 tickers flagged &mdash; NVDA and BTC drew the most bullish mentions.</p>
+                <p>Highlights: NVDA bulls at 68%, BTC reclaiming $104k, and rising chatter on power-grid names.</p>
+                <p>Tap any ticker in the digest to open its live snapshot.</p>
+              </div>
+            </div>
+
+            <div class="composer">
+              <div class="cbox">
+                <span class="ic ic-add" style="--ic:url(assets/ui-add-l2.svg)" aria-hidden="true"></span>
+                <span class="cbox-ph">Ask Alva anything. @ for context, / for skills</span>
+                <span class="ic ic-mic" style="--ic:url(assets/ui-microphone-l.svg)" aria-hidden="true"></span>
+                <span class="send" aria-hidden="true"><span class="ic" style="--ic:url(assets/ui-arrow-up-l1.svg)"></span></span>
+              </div>
             </div>
           </section>
 
+          <!-- ═══ Me (360:37134) ════════════════════════════════ -->
           <section class="screen" id="screenMe" data-tab="me" aria-label="Me">
-            <header class="topbar"><h1>Me</h1></header>
-            <div class="placeholder">
-              <img src="assets/feed-tab-me.svg" alt="">
-              <p class="ph-title">Me is next in the MVP</p>
-              <p class="ph-sub">Your tickers, your automations, your sources.</p>
+            <div class="me-body">
+
+              <div class="me-head">
+                <span class="me-av">
+                  <img src="assets/avatar-kaleo.png" alt="">
+                  <span class="me-badge" aria-hidden="true"><span class="ic" style="--ic:url(assets/ui-edit-l1.svg)"></span></span>
+                </span>
+                <span class="me-id">
+                  <span class="me-name-row">
+                    <span class="me-name">Sheer</span>
+                    <span class="tag tag-pro">Pro</span>
+                    <span class="tag tag-annual">Annual</span>
+                  </span>
+                  <span class="me-meta">
+                    <span>@sheer</span>
+                    <span class="me-div" aria-hidden="true"></span>
+                    <span>Joined 12/23/2025</span>
+                  </span>
+                </span>
+              </div>
+
+              <button class="row row-open" type="button" data-hint="Usage history is a later screen">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-credit-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Usage</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <div class="credits">
+                <span class="credits-left">
+                  <span class="credits-cap">Available</span>
+                  <span class="credits-num">12,000</span>
+                </span>
+                <span class="credits-right">
+                  <span class="credits-line"><span>Daily</span><b>1,000</b></span>
+                  <span class="credits-line"><span>Monthly</span><b>3,000</b></span>
+                  <span class="credits-line"><span>Pack</span><b>12,000</b></span>
+                </span>
+              </div>
+
+              <p class="me-group">Library</p>
+
+              <button class="row" type="button" data-hint="Your 2 followed tickers live here">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-k-line-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Following tickers</span>
+                <span class="row-count" id="followCount">2</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <button class="row" type="button" data-hint="8 playbooks saved">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-playbooks-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Playbooks</span>
+                <span class="row-count">8</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <p class="me-group">Preferences</p>
+
+              <!-- The one row the Figma file does not have. Dark mode is a
+                   library mode, not a screen, so this is where a prototype
+                   has to put the switch for it. -->
+              <div class="row" role="group" aria-label="Appearance">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-theme-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Dark mode</span>
+                <button class="switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Dark mode"></button>
+              </div>
+
+              <button class="row" type="button" data-hint="Language: English (US)">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-language-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Language</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <button class="row" type="button" data-hint="Settings are a later screen">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-settings-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Settings</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <button class="row" type="button" data-hint="Support opens a chat with the team">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-cs-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Contact us</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <button class="row" type="button" data-hint="Signing out is a later screen">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-logout-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Log Out</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <div class="me-social">
+                <button type="button" aria-label="Discord" data-hint="Alva on Discord">
+                  <span class="ic" style="--ic:url(assets/icon-discord.svg)" aria-hidden="true"></span>
+                </button>
+                <button type="button" aria-label="Telegram" data-hint="Alva on Telegram">
+                  <span class="ic" style="--ic:url(assets/icon-telegram.svg)" aria-hidden="true"></span>
+                </button>
+                <button type="button" aria-label="X" data-hint="Alva on X">
+                  <span class="ic" style="--ic:url(assets/ui-social-x.svg)" aria-hidden="true"></span>
+                </button>
+              </div>
+
             </div>
           </section>
 
@@ -76,12 +225,12 @@
           <div class="system-side system-left"><span>9:41</span></div>
           <div class="dynamic-island"></div>
           <div class="system-side system-right">
-            <img src="assets/status-signal.svg" alt="">
-            <img src="assets/status-wifi.svg" alt="">
+            <span class="ic sb-signal" style="--ic:url(assets/status-signal.svg)"></span>
+            <span class="ic sb-wifi" style="--ic:url(assets/status-wifi.svg)"></span>
             <span class="battery">
-              <img class="battery-outline" src="assets/battery-outline.svg" alt="">
-              <img class="battery-fill" src="assets/battery-fill.svg" alt="">
-              <img class="battery-end" src="assets/battery-end.svg" alt="">
+              <span class="ic battery-outline" style="--ic:url(assets/battery-outline.svg)"></span>
+              <span class="ic battery-fill" style="--ic:url(assets/battery-fill.svg)"></span>
+              <span class="ic battery-end" style="--ic:url(assets/battery-end.svg)"></span>
             </span>
           </div>
         </div>
@@ -89,20 +238,43 @@
         <nav class="tab-bar" id="tabBar" aria-label="Main">
           <div class="tabs" role="tablist">
             <button class="tab" type="button" role="tab" data-tab="feed" aria-selected="true">
-              <img src="assets/feed-tab-track.svg" alt="">
+              <span class="ic ic-off" style="--ic:url(assets/ui-track-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-track-f.svg)" aria-hidden="true"></span>
               <span>For You</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
-              <img src="assets/feed-tab-chat.svg" alt="">
+              <span class="ic ic-off" style="--ic:url(assets/ui-chat-ai-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-chat-ai-f.svg)" aria-hidden="true"></span>
               <span>Chat</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="me" aria-selected="false">
-              <img src="assets/feed-tab-me.svg" alt="">
+              <span class="ic ic-off" style="--ic:url(assets/ui-me-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-me-f.svg)" aria-hidden="true"></span>
               <span>Me</span>
             </button>
           </div>
           <div class="home-indicator" aria-hidden="true"><span></span></div>
         </nav>
+
+        <!-- ═══ Overlays ═════════════════════════════════════════
+             One scrim, one sheet element. Both sheets are the same
+             object with a different top edge and a different body,
+             so only one can be open and the exit animation is shared. -->
+
+        <div class="scrim" id="scrim"></div>
+
+        <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true">
+          <div class="grabber" aria-hidden="true"><span></span></div>
+          <header class="sheet-top" id="sheetTop"></header>
+          <div class="sheet-scroll" id="sheetScroll"></div>
+        </section>
+
+        <section class="fs" id="fullChart" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Chart">
+          <div class="fs-plot" id="fsPlot"></div>
+          <button class="fs-close" id="fsClose" type="button" aria-label="Close chart">
+            <span class="ic" style="--ic:url(assets/close-l1.svg)" aria-hidden="true"></span>
+          </button>
+        </section>
 
         <div class="toast" id="toast" role="status"></div>
 
@@ -114,10 +286,12 @@
     <a class="stage-pill" href="index.html#/mvp">← All prototypes</a>
   </nav>
   <div class="stage-controls">
-    <button class="stage-pill" id="restartButton">Restart</button>
+    <button class="stage-pill" id="themeButton" type="button">Dark mode</button>
+    <button class="stage-pill" id="restartButton" style="margin-left:8px">Restart</button>
   </div>
 </div>
 
-<script src="mvp.js?v=2"></script>
+<script src="assets/vendor/lightweight-charts.js"></script>
+<script src="mvp.js?v=4"></script>
 </body>
 </html>

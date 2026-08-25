@@ -58,12 +58,12 @@
     },
     {
       title: 'MVP',
-      subtitle: 'The MVP, screen by screen. First one built: the For You feed — ticker headers, markdown cards, media scrollers, source footers, and the new-cards pill.',
+      subtitle: 'The MVP end to end: the For You feed, Chat and Me, plus the three things a card opens — its sources, a ticker, and the chart fullscreen. One switch puts all of it in dark mode.',
       edited: '2026-08-25',
       href: 'mvp.html',
-      meta: 'Mobile · 1 of 3 screens',
+      meta: 'Mobile · 3 screens · 3 overlays',
       figma: {
-        label: 'Feed Mobile MVP · For You',
+        label: 'Feed Mobile MVP · ⭐️ MVP',
         url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177',
       },
     },
