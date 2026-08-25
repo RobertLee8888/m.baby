@@ -357,7 +357,22 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
      bar would have bottomed out at 24 instead of closing. */
   padding: 0 0 0 var(--gutter);
   background: var(--b10);
-  box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
+}
+/* The hairline is its own element pinned to the bar's bottom edge, not an
+   inset shadow on the bar: an inset shadow has nothing to paint on once the
+   bar's height reaches 0, so the line vanished exactly when the list needed
+   a floor most. This one rides down with the bar and stays. */
+.bar-rule {
+  position: absolute;
+  z-index: 13;
+  top: calc(var(--status-h) + var(--bar-h));
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--l12);
+  pointer-events: none;
+  transform: scaleY(.5);
+  transform-origin: top;
 }
 .topbar h1 {
   overflow: hidden;
@@ -420,8 +435,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   inset: 0;
   display: grid;
   color: var(--n5);
-  font-size: 12px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 22px;
   opacity: 0;
   place-items: center;
   transition: opacity .2s ease;
@@ -543,14 +558,18 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .quote-name { color: var(--n9); font-size: 12px; font-weight: 500; line-height: 20px; }
 .quote-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; }
+/* The mark's own box in the frame is 29 × 46 at x=327 of 361 and y=-5 — so it
+   hangs 5 above the tile and sits 5 in from the right, and the 46 line box on
+   a 64 glyph is what lifts it that far up inside itself. */
 .quote-mark {
   position: absolute;
-  top: -4px;
-  right: 12px;
+  top: -5px;
+  right: 5px;
+  width: 29px;
   color: var(--m3);
   font-size: 64px;
   font-weight: 600;
-  line-height: 1;
+  line-height: 46px;
   opacity: .6;
   pointer-events: none;
 }
@@ -640,26 +659,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .foot-lead:active { opacity: .55; }
 .sources { display: flex; flex: 0 0 auto; align-items: center; }
-.sources img,
-.sources .foot-mono {
+.sources img {
   width: 18px;
   height: 18px;
   margin-right: -6px;
   border-radius: 100px;
   background: var(--b10);
   box-shadow: 0 0 0 var(--hair) var(--b10);
+  object-fit: cover;
 }
-.sources .foot-mono {
-  display: grid;
-  place-items: center;
-  background: var(--br07);
-  color: var(--n5);
-  font-size: 9px;
-  font-weight: 500;
-  line-height: 12px;
-  letter-spacing: 0;
-}
-.sources > :last-child { margin-right: 0; }
+.sources img:last-child { margin-right: 0; }
 .foot-meta { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
 .automation { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
 .automation img { width: 12px; height: 12px; }
@@ -683,37 +692,33 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    alone. A hairline with a label sitting on it, not a banner. */
 
 /* The shape every messaging app converged on — Slack's "New", Telegram's
-   "Unread messages", Discord's red rule — is a hairline across the column
-   with the label sitting on it, the line broken by the text. Not a filled
-   band: a band is a card, and this is not content, it is a mark on the list.
-   It costs 36px, reads at a glance, and disappears the moment you are past
-   it. */
+   "Unread messages", Discord's rule: two rules with the label between them,
+   real gaps either side rather than a single line running behind the text.
+   The block is banded top and bottom like a row of its own, because that is
+   what it is — a row that says where you stopped. */
 .seen-line {
-  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 36px;
+  gap: 12px;
+  height: 48px;
+  padding: 0 var(--gutter);
   background: var(--b10);
+  box-shadow: inset 0 var(--hair) 0 var(--l12), inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
-.seen-line::before {
-  position: absolute;
-  top: 50%;
-  right: var(--gutter);
-  left: var(--gutter);
+.seen-line i {
+  flex: 1 1 auto;
   height: var(--hair);
   background: var(--l12);
-  content: '';
 }
 .seen-line span {
-  position: relative;
-  padding: 0 10px;
-  background: var(--b10);
+  flex: 0 0 auto;
   color: var(--n5);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
-  line-height: 18px;
+  line-height: 20px;
 }
+/* Its own bottom rule is the next card's top rule — one line, not two. */
+.seen-line + .card { box-shadow: none; }
 
 /* ── Pill · New cards (1484:46783) ──
    It sits 8 below the topbar, centred, and it is the only thing on this
@@ -1242,24 +1247,17 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
 .src-head { display: flex; align-items: center; gap: 12px; }
+.src-who { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
 .src-av { position: relative; flex: 0 0 auto; width: 32px; height: 32px; }
-.src-av > img,
-.src-av > .src-mono {
+.src-av > img {
   width: 32px;
   height: 32px;
   border-radius: 960px;
+  background: var(--b10);
   box-shadow: inset 0 0 0 var(--hair) var(--l12);
   object-fit: cover;
 }
-.src-mono {
-  display: grid;
-  place-items: center;
-  background: var(--br05);
-  color: var(--n5);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 18px;
-}
+/* The platform badge rides the avatar's own corner (17.5, 17.5 of 32). */
 .src-badge {
   position: absolute;
   top: 17.5px;
@@ -1293,7 +1291,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transition: background .16s ease;
 }
 .src-open:active { background: var(--br05); }
-.src-quote { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; letter-spacing: 0; }
+/* 14/22 as of the updated frame (I1180:20235;1178:20248) — it was 12/20. */
+.src-quote { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; letter-spacing: 0; }
 
 /* ── Ticker sheet body ── */
 

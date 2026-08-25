@@ -97,9 +97,40 @@ counted. The two the pill brings in carry the *fewest*: a story that broke
 two minutes ago has not been picked up yet, and that asymmetry is most of
 what makes "just now" believable.
 
-Where a source has no avatar in the library it gets a monogram — one letter in
-the footer, two or three in the sheet, because the faces overlap by 6 of their
-18 and a second character lands under the next circle.
+### Every source has a face
+
+No monograms. A letter in a circle is what you put there when you have not
+decided who the source is, and at 18px in an overlapping stack it reads as
+placeholder art. Every row carries a real image instead, from one of three
+places:
+
+- **The outlet's own mark** — Bloomberg's B, the Reuters dots, CNN, Apple
+  Podcasts, SemiAnalysis, and Reddit and Hugging Face fetched into
+  `assets/src-*.svg`. Square glyph marks only: a wordmark squeezed into a
+  32px circle is unreadable, which is why the wide ones were thrown away
+  again after being downloaded.
+- **The company's own logo, when the company is the one talking.** A
+  Form 8-K row shows the company that filed it, an earnings-call row shows
+  the company whose call it was — and those are the same seven files the
+  ticker chips use, so there is nothing extra to keep in sync. This is also
+  why "SEC EDGAR · AAOI · Form 424B5" became "Applied Optoelectronics ·
+  SEC filing · Form 424B5": the filer is the source, and the filer has a
+  logo.
+- **The account's avatar**, for the nine handles. Nine faces, nine handles,
+  and a handle keeps its face wherever it turns up — the same account on two
+  stories is the same person.
+
+The press cast is small on purpose: it is the outlets whose marks read at
+32px. Rows that used to be attributed to an outlet with no usable mark were
+re-attributed rather than given a letter tile.
+
+### The line under the topbar is its own element
+
+The bar's bottom hairline used to be an inset shadow on the bar, and an inset
+shadow has nothing to paint on once the bar's height reaches 0 — so the line
+disappeared at exactly the moment the list most needed a floor under the
+status bar. It is a separate 0.5 rule pinned to `status + bar-h` now: it rides
+down with the bar and stays after the bar is gone.
 
 ### The topbar leaves with the list
 
@@ -155,12 +186,14 @@ place, one less floating object.
 
 ### The read boundary
 
-A hairline across the column with the label sitting on it, the line broken by
-the text. It is the shape every messaging app converged on — Slack's "New",
-Telegram's "Unread messages", Discord's rule — and the reason is that a
-filled band reads as a *card*, and this is not content. It is a mark on the
-list. 36px, legible at a glance, and gone from mind the moment you are past
-it.
+Two rules with the label between them and a real 12px gap either side — not
+one line running behind the text — banded top and bottom like a row of its
+own, 48 tall. It is the shape every messaging app converged on: Slack's
+"New", Telegram's "Unread messages", Discord's rule. A filled band reads as a
+*card* and this is not content; a single line with text sitting on it reads
+as a line someone forgot to break. What it is is a row that says where you
+stopped, so it is banded like a row. Its bottom rule is the next card's top
+rule — one line, not two.
 
 ### The media frame is a pseudo-element
 
@@ -350,6 +383,19 @@ The status bar sits *in front* of the scrim, not under it, and goes light while
 a sheet is open — the way iOS does it. Fullscreen, the design keeps only the
 dynamic island: the two side groups fade out, and the close button lands where
 the battery was.
+
+### Type sizes come off the frame, and the frame moves
+
+The sources sheet's excerpt is 14/22, not 12/20 — the frame was updated and
+that was the change. Worth knowing that the row's gaps are not uniform
+either: the avatar and the byline are one group 8 apart, and *that* group, the
+time and the button are the row's three columns 12 apart. One flat gap of 12
+puts the handle too far from the face it belongs to.
+
+The quote block's mark is likewise measured, not eyeballed: its box is
+29 × 46 at x=327 of the 361-wide tile and y=−5, so it hangs 5 above the tile
+and sits 5 in from the right — and the 46px line box on a 64px glyph is what
+lifts the glyph that far up inside its own box.
 
 ### Sources are simulated, but simulated from the card
 

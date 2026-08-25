@@ -190,28 +190,46 @@
      sheet it opens.
      ────────────────────────────── */
 
+  /* Every source has a face, and every face is a real image: the outlet's own
+     mark, the company's own logo when the company is the one talking, or the
+     account's avatar. No monograms — a letter in a circle is what you put
+     there when you have not decided who the source is. The company logos are
+     the same files the ticker chips use, which is also the right answer: a
+     Form 8-K row should look like the company that filed it. */
   const AV = {
     bloomberg: A + 'alpha-source-bloomberg.png',
     reuters: A + 'alpha-source-reuters.png',
-    tv: A + 'feed-avatar-src2.png',
-    src1: A + 'feed-avatar-src1.png',
-    src3: A + 'feed-avatar-src3.png',
-    moore: A + 'feed-avatar-quote.png',
+    cnn: A + 'feed-avatar-src2.png',
     semi: A + 'avatar-semianalysis.png',
-    pod: A + 'alpha-source-podcast.png',
-    p1: A + 'alpha-podcast-1.png',
-    p3: A + 'alpha-podcast-3.png',
-    f1: A + 'alpha-fintwit-1.png',
-    f2: A + 'alpha-fintwit-2.png',
-    f3: A + 'alpha-fintwit-3.png',
-    f5: A + 'alpha-fintwit-5.png',
-    f6: A + 'alpha-fintwit-6.png',
-    f7: A + 'alpha-fintwit-7.png',
+    podcast: A + 'alpha-source-podcast.png',
+    reddit: A + 'src-reddit.svg',
+    hf: A + 'src-hf.svg',
+    moore: A + 'feed-avatar-quote.png',
+
+    goog: A + 'feed-logo-goog.svg',
+    meta: A + 'feed-logo-meta.svg',
+    baba: A + 'feed-logo-baba.svg',
+    aaoi: A + 'feed-logo-aaoi.svg',
+    avgo: A + 'feed-logo-avgo.svg',
+    amd: A + 'feed-logo-amd.svg',
+    msft: A + 'feed-logo-msft.svg',
+
+    /* Nine accounts, nine faces, and each handle keeps its face wherever it
+       turns up — the same account on two stories is the same person. */
+    weights: A + 'alpha-fintwit-1.png',
+    optical: A + 'alpha-fintwit-2.png',
+    token: A + 'alpha-fintwit-3.png',
+    silicon: A + 'alpha-fintwit-5.png',
+    hbm: A + 'alpha-fintwit-6.png',
+    carry: A + 'alpha-fintwit-7.png',
+    longrun: A + 'alpha-ready-avatar-4.png',
+    tape: A + 'alpha-podcast-8.png',
+    dilute: A + 'alpha-ready-avatar-3.png',
   };
 
+  /* x() carries the platform badge on the avatar's corner; pic() does not. */
   const x = (name, handle, time, avatar, quote) =>
     ({ name, handle, time, badge: 'x', img: avatar, quote });
-  const org = (name, handle, time, mono, quote) => ({ name, handle, time, mono, quote });
   const pic = (name, handle, time, avatar, quote) => ({ name, handle, time, img: avatar, quote });
 
   /* 1 · Alibaba's open-weight downloads — 7 */
@@ -220,149 +238,149 @@
       'Alibaba’s open-weight Qwen family passed 3 billion cumulative downloads over the past six months, ahead of Meta’s Llama.'),
     pic('Reuters', 'reuters.com', '3h ago', AV.reuters,
       'Chinese open-source releases are being pulled into Western fine-tuning pipelines at a rate that surprised even their authors.'),
-    org('Alibaba Group', 'Q1 FY27 earnings call', '1d ago', 'BA',
+    pic('Alibaba Group', 'Q1 FY27 earnings call', '1d ago', AV.baba,
       'Model distribution is now a first-order channel for the cloud business, not a marketing line.'),
-    org('Hugging Face', 'Trending · August 2026', '6h ago', 'HF',
+    pic('Hugging Face', 'Trending · August 2026', '6h ago', AV.hf,
       'Four of the ten most-downloaded text models this month are Qwen derivatives.'),
-    x('Weights & Moats', '@weightsandmoats', '5h ago', AV.f1,
+    x('Weights & Moats', '@weightsandmoats', '5h ago', AV.weights,
       'Download counts are a proxy for mindshare, not revenue. Worth keeping the two apart.'),
-    org('The Information', 'theinformation.com', '9h ago', 'TI',
+    pic('SemiAnalysis', 'semianalysis.com', '9h ago', AV.semi,
       'Meta has begun benchmarking its next open release against Qwen rather than against its own previous version.'),
-    org('r/LocalLLaMA', 'Reddit thread', '11h ago', 'r/',
+    pic('r/LocalLLaMA', 'Reddit thread', '11h ago', AV.reddit,
       'The fine-tune ecosystem picked a favourite about a week in, and it has not moved since.'),
   ];
 
   /* 2 · AAOI's $600M at-the-market program — 5 */
   const SRC_AAOI = [
-    org('SEC EDGAR', 'AAOI · Form 424B5', '2h ago', 'SE',
+    pic('Applied Optoelectronics', 'SEC filing · Form 424B5', '2h ago', AV.aaoi,
       'The company may offer and sell shares of common stock having an aggregate offering price of up to $600,000,000.'),
-    org('Applied Optoelectronics', 'Press release', '2h ago', 'AO',
-      'Proceeds are intended for capacity expansion and general corporate purposes.'),
-    x('Optical Floor', '@opticalfloor', '1h ago', AV.f2,
+    x('Optical Floor', '@opticalfloor', '1h ago', AV.optical,
       'A $600M ATM into this tape is a statement about capex, not about the quarter.'),
-    x('CNBC Television', '@CNBC', '3h ago', AV.tv,
+    x('Bloomberg', '@business', '3h ago', AV.bloomberg,
       'Optical names gave back most of the AI-datacenter premium in a single session.'),
-    org('Barron’s', 'barrons.com', '4h ago', 'BA',
-      'Dilution of roughly 18% at current prices, assuming the full program is used.'),
+    x('CNN Business', '@cnnbusiness', '3h ago', AV.cnn,
+      'The second leg down came without a matching move in the optical peer group.'),
+    x('Dilution Math', '@dilutionmath', '4h ago', AV.dilute,
+      'Roughly 18% dilution at current prices, assuming the full program is used.'),
   ];
 
   /* 3 · Cheaper models, more inference — 6 */
   const SRC_INFERENCE = [
     x('Olivia Moore', '@omooretweets', '4h ago', AV.moore,
       'Many tasks may have reached diminishing returns on intelligence, and that is where the margin opportunity is.'),
-    org('a16z', 'Podcast · ep. 214', '1d ago', 'a16',
+    pic('Acquired', 'Podcast · ep. 214', '1d ago', AV.podcast,
       'The interesting story this year is COGS, not list price.'),
-    org('Nebius', 'Q2 FY26 earnings call', '2d ago', 'NB',
-      'Utilisation, not list price, is what shows up in our revenue line.'),
-    org('Palantir', 'Q2 FY26 shareholder letter', '2d ago', 'PL',
+    pic('Microsoft', 'Azure Q2 FY26 earnings call', '2d ago', AV.msft,
+      'Utilisation, not list price, is what shows up in the revenue line.'),
+    x('Carry & Roll', '@carryandroll', '2d ago', AV.carry,
       'Lower inference cost lands in gross margin before it lands in price.'),
-    org('r/LocalLLaMA', 'Reddit thread', '8h ago', 'r/',
+    pic('r/LocalLLaMA', 'Reddit thread', '8h ago', AV.reddit,
       'Everyone I know swapped to the cheap model and then tripled their call volume.'),
-    x('Token Ledger', '@tokenledger', '10h ago', AV.f3,
+    x('Token Ledger', '@tokenledger', '10h ago', AV.token,
       'Serving revenue per model is up even though the headline price per million tokens is down.'),
   ];
 
   /* 4 · Broadcom's fourth custom-accelerator customer — 4 */
   const SRC_XPU = [
-    org('Broadcom', 'Q3 FY26 earnings call', '3h ago', 'AV',
+    pic('Broadcom', 'Q3 FY26 earnings call', '3h ago', AV.avgo,
       'Our AI accelerator backlog now extends four quarters, and it is customer-committed rather than forecast.'),
-    org('SEC EDGAR', 'AVGO · Form 8-K', '3h ago', 'SE',
-      'A fourth hyperscale customer has committed to a multi-generation custom accelerator program.'),
     pic('Reuters', 'reuters.com', '2h ago', AV.reuters,
       'Two people familiar with the schedule said first silicon is targeted for the second half of next year.'),
-    x('Silicon Ledger', '@siliconledger', '4h ago', AV.f5,
+    pic('Microsoft', 'Azure engineering blog', '4h ago', AV.msft,
+      'The next generation of the inference fleet is deliberately dual-sourced.'),
+    x('Silicon Ledger', '@siliconledger', '4h ago', AV.silicon,
       'Four committed XPU customers is the number that turns this from a project business into a product line.'),
   ];
 
   /* 5 · The AVGO gap that half-closed — 3 */
   const SRC_AVGO_POP = [
-    x('HBM Watch', '@hbmwatch', '5h ago', AV.f6,
+    x('HBM Watch', '@hbmwatch', '5h ago', AV.hbm,
       'The note everyone traded was a restatement of the March allocation figures, not new guidance.'),
     x('Bloomberg', '@business', '4h ago', AV.bloomberg,
       'Broadcom shares gave back half an early gain after the supply-chain note was clarified.'),
-    org('Nasdaq', 'Market activity', '3h ago', 'NQ',
+    x('Tape Reader', '@tapereader', '3h ago', AV.tape,
       'Volume finished at 1.6× the twenty-day median with no closing imbalance.'),
   ];
 
   /* 6 · AMD's second customer for the same part — 9 */
   const SRC_SECOND_SOURCE = [
-    x('Silicon Ledger', '@siliconledger', '6h ago', AV.f5,
+    x('Silicon Ledger', '@siliconledger', '6h ago', AV.silicon,
       'A second source does not need to win the benchmark. It needs to exist at contract time.'),
-    org('AMD', 'Q2 FY26 earnings call', '1d ago', 'AM',
+    pic('AMD', 'Q2 FY26 earnings call', '1d ago', AV.amd,
       'MI-series revenue is now split across more than one hyperscale customer.'),
-    org('Microsoft', 'Azure engineering blog', '2d ago', 'MS',
+    pic('Microsoft', 'Azure engineering blog', '2d ago', AV.msft,
       'The inference fleet is deliberately dual-sourced for the next generation.'),
-    org('The Information', 'theinformation.com', '8h ago', 'TI',
-      'Azure’s second-source order is smaller than the headline but runs multi-year.'),
+    pic('SemiAnalysis', 'semianalysis.com', '8h ago', AV.semi,
+      'The second-source order is smaller than the headline suggests but runs multi-year.'),
     pic('Reuters', 'reuters.com', '10h ago', AV.reuters,
       'Analysts read the deal as a validation of the software stack rather than of the silicon.'),
-    x('Carry & Roll', '@carryandroll', '7h ago', AV.f7,
+    x('Carry & Roll', '@carryandroll', '7h ago', AV.carry,
       'A second source is worth more to the buyer than to the seller. Price it from the buyer’s side.'),
-    org('r/hardware', 'Reddit thread', '12h ago', 'r/',
+    pic('r/hardware', 'Reddit thread', '12h ago', AV.reddit,
       'The ROCm complaints in this thread are noticeably milder than a year ago.'),
-    pic('Acquired', 'Podcast · ep. 191', '2d ago', AV.pod,
+    pic('Acquired', 'Podcast · ep. 191', '2d ago', AV.podcast,
       'The whole second-source playbook is about removing a single point of failure from a supply chain.'),
-    org('Barron’s', 'barrons.com', '1d ago', 'BA',
+    x('Token Ledger', '@tokenledger', '1d ago', AV.token,
       'Gross-margin guidance implies the second-source pricing is not a giveaway.'),
   ];
 
   /* 7 · Alibaba's third consecutive cloud raise — 11 */
   const SRC_BABA_CLOUD = [
-    org('Alibaba Group', 'Q1 FY27 earnings call', '5h ago', 'BA',
+    pic('Alibaba Group', 'Q1 FY27 earnings call', '5h ago', AV.baba,
       'For the first time the raise is attributable to external model serving rather than to internal workloads.'),
-    org('SEC EDGAR', 'BABA · Form 6-K', '5h ago', 'SE',
-      'AI-related cloud revenue represented more than 20% of segment revenue, against approximately 10% a year earlier.'),
     x('Bloomberg', '@business', '6h ago', AV.bloomberg,
       'Third straight quarterly raise, and the first one management pinned on outside customers.'),
     pic('Reuters', 'reuters.com', '6h ago', AV.reuters,
       'Cloud growth outpaced the wider Chinese market for the fourth consecutive quarter.'),
-    org('Caixin', 'caixinglobal.com', '7h ago', 'CX',
-      'Domestic enterprises are standardising on the open weights and paying for the hosted endpoints.'),
-    x('Weights & Moats', '@weightsandmoats', '8h ago', AV.f1,
+    x('Weights & Moats', '@weightsandmoats', '8h ago', AV.weights,
       'Open weights are the acquisition channel. The cloud line is the revenue.'),
-    org('South China Morning Post', 'scmp.com', '9h ago', 'SC',
-      'Capacity additions in Zhangjiakou and Nantong were brought forward two quarters.'),
-    x('CNBC Television', '@CNBC', '10h ago', AV.tv,
-      'The guidance raise, not the print, is what the desk traded this morning.'),
-    x('The Long Run', '@thelongrun', '11h ago', AV.f2,
+    x('The Long Run', '@thelongrun', '11h ago', AV.longrun,
       'Twenty percent of segment revenue from AI serving is the first number here that is hard to argue with.'),
-    org('r/investing', 'Reddit thread', '14h ago', 'r/',
+    x('CNN Business', '@cnnbusiness', '10h ago', AV.cnn,
+      'The guidance raise, not the print, is what the desk traded this morning.'),
+    pic('r/investing', 'Reddit thread', '14h ago', AV.reddit,
       'Everyone was watching the commerce line and the cloud line is what moved.'),
-    pic('Invest Like the Best', 'Podcast · ep. 402', '2d ago', AV.p1,
+    pic('Invest Like the Best', 'Podcast · ep. 402', '2d ago', AV.podcast,
       'Distribution first, monetisation second, is a strategy Western vendors abandoned too early.'),
+    pic('SemiAnalysis', 'semianalysis.com', '9h ago', AV.semi,
+      'Capacity additions in Zhangjiakou and Nantong were brought forward two quarters.'),
+    x('Token Ledger', '@tokenledger', '12h ago', AV.token,
+      'AI-related cloud revenue went past a fifth of the segment, against roughly a tenth a year ago.'),
+    x('Tape Reader', '@tapereader', '13h ago', AV.tape,
+      'The pre-open gap never filled, and volume ran at 2.1× the twenty-day median through the close.'),
   ];
 
   /* 8 · META's newsless drift — 8 */
   const SRC_META_DRIFT = [
     x('Bloomberg', '@business', '6h ago', AV.bloomberg,
       'Meta shares drifted lower through the session with no company-specific catalyst on the tape.'),
-    org('Nasdaq', 'Market activity', '6h ago', 'NQ',
+    x('Tape Reader', '@tapereader', '6h ago', AV.tape,
       'No block prints and no closing imbalance; the decline was spread evenly across the session.'),
-    x('Token Ledger', '@tokenledger', '7h ago', AV.f3,
+    x('Token Ledger', '@tokenledger', '7h ago', AV.token,
       'This is the download story being priced, one basis point at a time.'),
-    org('The Information', 'theinformation.com', '8h ago', 'TI',
+    pic('SemiAnalysis', 'semianalysis.com', '8h ago', AV.semi,
       'The next open release has slipped a quarter, according to two people involved.'),
     pic('Reuters', 'reuters.com', '9h ago', AV.reuters,
       'Sell-side notes published into the close reframed rather than downgraded.'),
-    x('Open Weights', '@openweights_', '10h ago', AV.f6,
+    x('Weights & Moats', '@weightsandmoats', '10h ago', AV.weights,
       'Llama derivatives are still the biggest family on the hub. Downloads are not the same as deployments.'),
-    org('r/LocalLLaMA', 'Reddit thread', '11h ago', 'r/',
+    pic('r/LocalLLaMA', 'Reddit thread', '11h ago', AV.reddit,
       'Half this thread has already moved to Qwen for fine-tuning and stayed on Llama for serving.'),
-    org('Barron’s', 'barrons.com', '12h ago', 'BA',
+    x('Carry & Roll', '@carryandroll', '12h ago', AV.carry,
       'Options skew is unchanged on the week, which argues against a re-rate.'),
   ];
 
   /* Refresh · AAOI's first tranche prices — 2 */
   const SRC_AAOI_PRICING = [
-    org('SEC EDGAR', 'AAOI · 424B5 prospectus supplement', 'just now', 'SE',
+    pic('Applied Optoelectronics', 'SEC filing · 424B5 supplement', 'just now', AV.aaoi,
       'The shares offered hereby are being sold at a price representing a discount to the last reported sale price.'),
-    x('Optical Floor', '@opticalfloor', '3m ago', AV.f2,
+    x('Optical Floor', '@opticalfloor', '3m ago', AV.optical,
       'First tranche is being marketed below last night’s close. That is the whole move this morning.'),
   ];
 
   /* Refresh · the fourth XPU customer gets a name — 1 */
   const SRC_AVGO_NAMED = [
-    org('Broadcom', 'Press release', '2m ago', 'AV',
+    pic('Broadcom', 'Press release', '2m ago', AV.avgo,
       'Broadcom and Google have extended their custom accelerator collaboration by two further generations.'),
   ];
 
@@ -454,7 +472,7 @@
         { type: 'title', text: 'A Second Source Only Has To Exist' },
         {
           type: 'quote',
-          avatar: AV.f5,
+          avatar: AV.silicon,
           name: '@siliconledger',
           text: 'A second source does not need to win the benchmark. It needs to exist at contract time — that is the whole trade, and it is worth more to the buyer than it is to the seller.',
         },
@@ -635,13 +653,7 @@
        the design shows; the rest are behind the number. */
     const lead = btn('foot-lead', 'Sources');
     const stack = el('div', 'sources');
-    card.sources.slice(0, 3).forEach(src => {
-      if (src.img) stack.appendChild(img(src.img));
-      /* One letter, not two: the faces overlap by 6 of their 18, so a second
-         character lands under the next circle. The sheet has room for the
-         full monogram; the stack does not. */
-      else stack.appendChild(el('span', 'foot-mono', (src.mono || src.name).slice(0, 1)));
-    });
+    card.sources.slice(0, 3).forEach(src => stack.appendChild(img(src.img)));
     lead.appendChild(stack);
     const n = card.sources.length;
     lead.appendChild(el('span', 'foot-meta', n + (n === 1 ? ' source · ' : ' sources · ') + card.age));
@@ -708,7 +720,10 @@
   /* Twitter's line: it marks the boundary once, where the reading stopped,
      and nothing moves it afterwards. */
   function seenLine() {
-    const line = el('div', 'seen-line', 'You were here');
+    const line = el('div', 'seen-line');
+    line.appendChild(el('i'));
+    line.appendChild(el('span', null, 'You were here'));
+    line.appendChild(el('i'));
     line.dataset.seen = '1';
     return line;
   }
@@ -1004,20 +1019,24 @@
     const row = el('div', 'src');
 
     const head = el('div', 'src-head');
+
+    /* Avatar and byline are one group 8 apart; that group, the time and the
+       button are the row's three columns, 12 apart (I1180:20235;1178:20237). */
+    const who = el('span', 'src-who');
     const av = el('span', 'src-av');
-    if (s.img) av.appendChild(img(s.img));
-    else av.appendChild(el('span', 'src-mono', s.mono || s.name.slice(0, 2)));
+    av.appendChild(img(s.img));
     if (s.badge === 'x') {
       const badge = el('span', 'src-badge');
       badge.appendChild(icon('ui-social-x.svg'));
       av.appendChild(badge);
     }
-    head.appendChild(av);
+    who.appendChild(av);
 
     const id = el('span', 'src-id');
     id.appendChild(el('span', 'src-name', s.name));
     id.appendChild(el('span', 'src-handle', s.handle));
-    head.appendChild(id);
+    who.appendChild(id);
+    head.appendChild(who);
 
     head.appendChild(el('span', 'src-time', s.time));
 
