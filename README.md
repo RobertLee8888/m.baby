@@ -12,7 +12,7 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 | | | Source |
 | --- | --- | --- |
 | `index.html` · `shell.css` · `shell.js` | **The shell** — the list, the stage, the phone mockup, and hash routing | — |
-| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed, Chat, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Every colour is a Theme variable, so one switch puts all of it in dark mode | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1076-48248) |
+| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed (three card types, eight items, a topbar that collapses on scroll), Chat, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Every colour is a Theme variable, so one switch puts all of it in dark mode | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1076-48248) |
 | `alpha-radar.html` · `alpha-radar.css` · `alpha-radar.js` | **Alpha Radar mobile onboarding** — source selection, radar setup, login, and building states across 8 screens. On the three source-selection screens a collection card opens a member bottom sheet | [Alpha Radar onboarding](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=13241-205457) · [Collection member sheet](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=14144-48781) |
 | `onboarding.html` · `styles.css` · `app.js` | **Immersive onboarding** — FinTwit Digest path, 6 screens | [Onboarding · Production v4 · FinTwit path](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243) |
 
@@ -47,10 +47,31 @@ no shadow. Three parts, each with its own gutter rule:
 | Content | `0 16` | markdown blocks, 12 apart |
 | Footer | `0 8 0 16`, 36 tall | source stack + count, the automation that found the card, Ask Alva |
 
-### The feed is data
+### Three cards, three data types
 
-A card is a header, a list of blocks, and a footer, so the block type is the
-only thing a new card teaches this page:
+The three cards in the Figma frame are not three layouts. They are three
+kinds of thing Alva found, and each one has its own grammar of blocks — which
+is what makes them tell apart at a glance in a list you are thumbing through:
+
+| Type | What it is | Blocks | Tickers | Playbook |
+| --- | --- | --- | --- | --- |
+| `event` | a company event, read and analysed | `text` → media | one or several | `company-events` |
+| `anomaly` | one name moving in a way that needs explaining | `lead` → `text` → `media` | **exactly one** | `unusual-moves` |
+| `source` | something a source published, tracked and analysed | `title` → `quote` → `text` → `mediaRow` | one or several | `investor-roundtable` |
+
+An anomaly gets exactly one ticker because an anomaly belongs to a single
+tape: two names cannot share one unusual move. The other two can carry a
+whole basket, and do — the download story runs across GOOG, META and BABA
+because that is who it is about.
+
+The `lead` exists only on anomalies, and the `quote` only on source cards.
+That is not decoration: an anomaly has to say *what happened* before it says
+why, and a source card has to show the passage before it shows the read. The
+footer's playbook name follows from the type rather than being typed in, so a
+card cannot claim to have come from an automation that would not have found
+it.
+
+### The blocks themselves
 
 | Block | Figma | Type |
 | --- | --- | --- |
@@ -60,6 +81,62 @@ only thing a new card teaches this page:
 | `quote` | Markdown - Quote | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
 | `media` | Media = 1 | gutter to gutter, 240 × 135 |
 | `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
+
+### The source list is the only source of truth
+
+A card carries its own `sources` array, and everything about sources is read
+off it. The count in the footer is `sources.length`, the faces are the first
+three of them, and the sheet is the whole list. There is no second place to
+edit, so the footer cannot disagree with what opens when you tap it — which
+it did, before this: every card said "5 sources" and showed the same three
+faces while the sheet held seven rows.
+
+Ten items, ten different counts — 11, 9, 8, 7, 6, 5, 4, 3, 2, 1 — because a
+feed where every story has the same number of sources is a feed nobody
+counted. The two the pill brings in carry the *fewest*: a story that broke
+two minutes ago has not been picked up yet, and that asymmetry is most of
+what makes "just now" believable.
+
+Where a source has no avatar in the library it gets a monogram — one letter in
+the footer, two or three in the sheet, because the faces overlap by 6 of their
+18 and a second character lands under the next circle.
+
+### The topbar collapses with the scroll
+
+Twitter's rule, and iOS's before it: a large title is not chrome, it is the
+first thing in the list, so it leaves with the list. Scrolling down fades the
+title out and lifts it, and the bar gives back exactly the 34px line the
+title was sitting on:
+
+| | Height | Made of |
+| --- | --- | --- |
+| At the top | 58 | 16 + **34** + 8 |
+| Collapsed | 24 | 16 + 8 |
+
+Nothing here is invented. What is left when the title goes is the padding
+that was always around it, and the travel — 34px of scroll — is the title's
+own line height, so the bar finishes closing at the moment the title would
+have scrolled out of view anyway. The title fades at 1.7× that rate, because
+a title at 20% under a half-closed bar reads as a rendering bug rather than a
+transition.
+
+Two implementation notes, both of which are the reason it does not judder:
+
+- **One number.** The scroll handler writes `--bar-p` (0 → 1) and nothing
+  else. The bar's height and the new-cards pill's position are both `calc()`
+  off it, so they cannot fall out of step.
+- **The scroll container never resizes.** The feed starts under the *status
+  bar*, and a spacer the exact height of the expanded topbar stands where the
+  topbar is. Collapsing the bar therefore changes no layout inside the
+  scroller: `scrollTop` means the same thing before and after, and the first
+  card's top edge lands on the collapsed bar's bottom edge by arithmetic —
+  58 of spacer minus 34 of scroll is the 24 the bar has left. Animating the
+  scroller's own `top` inset instead would double-count every pixel of scroll.
+
+Driving it off `scrollTop` rather than off scroll *direction* is what makes it
+reversible: scrolling back up re-opens the bar exactly as far as you came
+down, and the refresh gesture — which sets `scrollTop` to 0 — re-opens it for
+free.
 
 ### The scroller is the only thing allowed past the gutter
 
@@ -271,6 +348,11 @@ What we own is everything around it:
   `main/m3`. That is the entire argument the fullscreen chart makes.
 
 ### What is not built yet
+
+The three chart images in the media rows are Figma exports of an NVDA chart,
+so a card about AVGO shows a tile labelled NVDA. Real per-ticker thumbnails
+would come from the same generator the ticker sheet already uses — that is the
+next obvious thing to do here.
 
 Inside the ticker sheet, Overview is real and the other five tabs
 (Narratives, Anomalies, News & Social, Smart Events, Financials) name

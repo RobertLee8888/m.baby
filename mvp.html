@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=4">
+<link rel="stylesheet" href="mvp.css?v=5">
 </head>
 <body>
 
@@ -44,7 +44,12 @@
                  come into view with it. -->
             <div class="feed" id="feed">
               <div class="feed-track" id="feedTrack">
-                <div class="refresh" aria-hidden="true"><span class="spinner" id="spinner"></span></div>
+                <!-- Stands where the topbar is, so the bar can collapse without
+                     the scroll container's geometry moving under it. The refresh
+                     gutter hangs off its bottom edge. -->
+                <div class="lead" aria-hidden="true">
+                  <div class="refresh"><span class="spinner" id="spinner"></span></div>
+                </div>
                 <div class="cards" id="cards"></div>
               </div>
             </div>
@@ -294,6 +299,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=4"></script>
+<script src="mvp.js?v=5"></script>
 </body>
 </html>

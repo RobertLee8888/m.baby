@@ -76,18 +76,18 @@
       co: 'Alphabet Inc', mkt: 'NASDAQ', price: 208.44, chg: 1.86, pct: 0.9,
       pre: { price: 209.1, chg: 0.66, pct: 0.32, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 91021, base: 208.4, anomaly: {
+      seed: 91021, anomaly: {
         label: 'Unusual Volume Concentration',
         body: 'Two thirds of the session’s volume printed in the first forty minutes, against a five-day average of one third. The move held its level afterwards rather than fading, which reads as positioning rather than a single order.',
         when: 'Aug 25, 2026 · 21:47 GMT+8',
       },
     },
     META: {
-      sym: 'META', logo: A + 'feed-logo-meta.svg', tone: '▲ Bullish',
+      sym: 'META', logo: A + 'feed-logo-meta.svg', tone: '▼ Bearish',
       co: 'Meta Platforms', mkt: 'NASDAQ', price: 742.18, chg: -6.02, pct: -0.8,
       pre: { price: 739.6, chg: -2.58, pct: -0.35, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 41773, base: 742.2, anomaly: {
+      seed: 41773, anomaly: {
         label: 'Unusual Price Movement',
         body: 'A drift lower on no company news, tracking the open-weight download story rather than any change in guidance. Options skew barely moved, which argues against a fundamental re-rate.',
         when: 'Aug 25, 2026 · 21:12 GMT+8',
@@ -98,87 +98,284 @@
       co: 'Alibaba Group', mkt: 'NYSE', price: 148.92, chg: 3.41, pct: 2.34,
       pre: { price: 149.75, chg: 0.83, pct: 0.56, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 30559, base: 148.9, anomaly: {
+      seed: 30559, anomaly: {
         label: 'Unusual Price Movement',
         body: 'Re-rating on distribution rather than earnings: the three-billion-download figure landed pre-open and the gap never filled. Volume ran at 2.1× the twenty-day median through the close.',
         when: 'Aug 25, 2026 · 20:58 GMT+8',
       },
     },
     AAOI: {
-      sym: 'AAOI', logo: A + 'feed-logo-aaoi.svg', tone: '▲ Bullish',
+      sym: 'AAOI', logo: A + 'feed-logo-aaoi.svg', tone: '▼ Bearish',
       co: 'Applied Optoelectronics', mkt: 'NASDAQ', price: 32.17, chg: -4.06, pct: -11.21,
       pre: { price: 31.84, chg: -0.33, pct: -1.03, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 77213, base: 32.2, anomaly: {
+      seed: 77213, anomaly: {
         label: 'Unusual Price Movement',
         body: 'Sell-side re-rating after the $600M at-the-market program was filed, helped by dilution math rather than any fresh market or sector lift. The second leg down came without a matching move in optical peers.',
         when: 'Aug 25, 2026 · 21:47 GMT+8',
       },
     },
+    AVGO: {
+      sym: 'AVGO', logo: A + 'feed-logo-avgo.svg', tone: '▲ Bullish',
+      co: 'Broadcom Inc', mkt: 'NASDAQ', price: 412.66, chg: 9.84, pct: 2.45,
+      pre: { price: 414.2, chg: 1.54, pct: 0.37, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 60817, anomaly: {
+        label: 'Unusual Volume Concentration',
+        body: 'A 4% gap up on a supply-chain note, half of it given back by lunch, and volume that never came back down: 1.6× the twenty-day median with no closing imbalance. The tape says positioning, not one desk chasing a print.',
+        when: 'Aug 25, 2026 · 22:04 GMT+8',
+      },
+    },
+    AMD: {
+      sym: 'AMD', logo: A + 'feed-logo-amd.svg', tone: '▲ Bullish',
+      co: 'Advanced Micro Devices', mkt: 'NASDAQ', price: 187.3, chg: -3.12, pct: -1.64,
+      pre: { price: 188.05, chg: 0.75, pct: 0.4, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 22409, anomaly: {
+        label: 'Unusual Options Activity',
+        body: 'Call volume in the front two expiries ran at three times open interest while the shares finished lower, which is the shape of a position being built into weakness rather than sold into strength.',
+        when: 'Aug 25, 2026 · 21:33 GMT+8',
+      },
+    },
+    MSFT: {
+      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', tone: '▲ Bullish',
+      co: 'Microsoft Corp', mkt: 'NASDAQ', price: 521.44, chg: 1.98, pct: 0.38,
+      pre: { price: 522.1, chg: 0.66, pct: 0.13, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 15493, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'A quiet session in the shares while the names it buys silicon from moved several percent. When the buyer does not move and the suppliers do, the market is pricing the cost line rather than the demand line.',
+        when: 'Aug 25, 2026 · 21:05 GMT+8',
+      },
+    },
   };
 
   const GOOG = TICKERS.GOOG, META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
+  const AVGO = TICKERS.AVGO, AMD = TICKERS.AMD, MSFT = TICKERS.MSFT;
+
+  /* ──────────────────────────────
+     What kind of thing a card is
+
+     The three cards in the Figma frame are not three layouts, they are three
+     data types, and each one has its own grammar of blocks. That is what makes
+     them tell apart at a glance in a scrolling list:
+
+       event    a company event, read and analysed — one paragraph, then media.
+                One ticker or several.
+       anomaly  one name moving in a way that needs explaining — the one-line
+                what happened, the why, and the chart. Exactly one ticker,
+                because an anomaly belongs to a single tape.
+       source   something a source published, tracked and analysed — the named
+                thesis, the passage itself, the read, then media. One or
+                several tickers.
+
+     The automation in the footer is the playbook that found the card, so it
+     follows from the type rather than being decoration.
+     ────────────────────────────── */
+
+  const AUTOMATION = {
+    event: 'company-events',
+    anomaly: 'unusual-moves',
+    source: 'investor-roundtable',
+  };
 
   /* ──────────────────────────────
      Sources
 
      Simulated, but simulated from the card they belong to: every row is a
-     source that could plausibly have produced that card's sentences, and
-     the excerpt is the line the card is standing on.
+     source that could plausibly have produced that card's sentences, and the
+     excerpt is the line the card is standing on. Each card has its own list,
+     and the list is the single source of truth — the count and the avatars in
+     the footer are read off it, so the footer can never disagree with the
+     sheet it opens.
      ────────────────────────────── */
 
+  const AV = {
+    bloomberg: A + 'alpha-source-bloomberg.png',
+    reuters: A + 'alpha-source-reuters.png',
+    tv: A + 'feed-avatar-src2.png',
+    src1: A + 'feed-avatar-src1.png',
+    src3: A + 'feed-avatar-src3.png',
+    moore: A + 'feed-avatar-quote.png',
+    semi: A + 'avatar-semianalysis.png',
+    pod: A + 'alpha-source-podcast.png',
+    p1: A + 'alpha-podcast-1.png',
+    p3: A + 'alpha-podcast-3.png',
+    f1: A + 'alpha-fintwit-1.png',
+    f2: A + 'alpha-fintwit-2.png',
+    f3: A + 'alpha-fintwit-3.png',
+    f5: A + 'alpha-fintwit-5.png',
+    f6: A + 'alpha-fintwit-6.png',
+    f7: A + 'alpha-fintwit-7.png',
+  };
+
+  const x = (name, handle, time, avatar, quote) =>
+    ({ name, handle, time, badge: 'x', img: avatar, quote });
+  const org = (name, handle, time, mono, quote) => ({ name, handle, time, mono, quote });
+  const pic = (name, handle, time, avatar, quote) => ({ name, handle, time, img: avatar, quote });
+
+  /* 1 · Alibaba's open-weight downloads — 7 */
   const SRC_DOWNLOADS = [
-    { name: 'Bloomberg', handle: '@business', time: '2h ago', badge: 'x', img: A + 'alpha-source-bloomberg.png',
-      quote: 'Alibaba’s open-weight Qwen family passed 3 billion cumulative downloads over the past six months, ahead of Meta’s Llama.' },
-    { name: 'Reuters', handle: 'reuters.com', time: '3h ago', img: A + 'alpha-source-reuters.png',
-      quote: 'Chinese open-source releases are being pulled into Western fine-tuning pipelines at a rate that surprised even their authors.' },
-    { name: 'Alibaba Group', handle: 'Q1 FY27 earnings call', time: '1d ago', mono: 'BA',
-      quote: 'Model distribution is now a first-order channel for the cloud business, not a marketing line.' },
-    { name: 'Hugging Face', handle: 'Trending · August 2026', time: '6h ago', mono: 'HF',
-      quote: 'Four of the ten most-downloaded text models this month are Qwen derivatives.' },
-    { name: 'Jukan', handle: '@Jukanlosreve', time: '5h ago', badge: 'x', mono: 'JK',
-      quote: 'Download counts are a proxy for mindshare, not revenue. Worth keeping the two apart.' },
-    { name: 'The Information', handle: 'theinformation.com', time: '9h ago', mono: 'TI',
-      quote: 'Meta has begun benchmarking its next open release against Qwen rather than against its own previous version.' },
-    { name: 'r/LocalLLaMA', handle: 'Reddit thread', time: '11h ago', mono: 'r/',
-      quote: 'The fine-tune ecosystem picked a favourite about a week in, and it has not moved since.' },
+    x('Bloomberg', '@business', '2h ago', AV.bloomberg,
+      'Alibaba’s open-weight Qwen family passed 3 billion cumulative downloads over the past six months, ahead of Meta’s Llama.'),
+    pic('Reuters', 'reuters.com', '3h ago', AV.reuters,
+      'Chinese open-source releases are being pulled into Western fine-tuning pipelines at a rate that surprised even their authors.'),
+    org('Alibaba Group', 'Q1 FY27 earnings call', '1d ago', 'BA',
+      'Model distribution is now a first-order channel for the cloud business, not a marketing line.'),
+    org('Hugging Face', 'Trending · August 2026', '6h ago', 'HF',
+      'Four of the ten most-downloaded text models this month are Qwen derivatives.'),
+    x('Weights & Moats', '@weightsandmoats', '5h ago', AV.f1,
+      'Download counts are a proxy for mindshare, not revenue. Worth keeping the two apart.'),
+    org('The Information', 'theinformation.com', '9h ago', 'TI',
+      'Meta has begun benchmarking its next open release against Qwen rather than against its own previous version.'),
+    org('r/LocalLLaMA', 'Reddit thread', '11h ago', 'r/',
+      'The fine-tune ecosystem picked a favourite about a week in, and it has not moved since.'),
   ];
 
+  /* 2 · AAOI's $600M at-the-market program — 5 */
   const SRC_AAOI = [
-    { name: 'SEC EDGAR', handle: 'AAOI · Form 424B5', time: '2h ago', mono: 'SE',
-      quote: 'The company may offer and sell shares of common stock having an aggregate offering price of up to $600,000,000.' },
-    { name: 'Applied Optoelectronics', handle: 'Press release', time: '2h ago', mono: 'AO',
-      quote: 'Proceeds are intended for capacity expansion and general corporate purposes.' },
-    { name: 'Dylan Patel', handle: '@dylan522p', time: '1h ago', badge: 'x', img: A + 'avatar-semianalysis.png',
-      quote: 'A $600M ATM into this tape is a statement about capex, not about the quarter.' },
-    { name: 'CNBC Television', handle: '@CNBC', time: '3h ago', badge: 'x', img: A + 'feed-avatar-src2.png',
-      quote: 'Optical names gave back most of the AI-datacenter premium in a single session.' },
-    { name: 'Barron’s', handle: 'barrons.com', time: '4h ago', mono: 'BA',
-      quote: 'Dilution of roughly 18% at current prices, assuming the full program is used.' },
+    org('SEC EDGAR', 'AAOI · Form 424B5', '2h ago', 'SE',
+      'The company may offer and sell shares of common stock having an aggregate offering price of up to $600,000,000.'),
+    org('Applied Optoelectronics', 'Press release', '2h ago', 'AO',
+      'Proceeds are intended for capacity expansion and general corporate purposes.'),
+    x('Optical Floor', '@opticalfloor', '1h ago', AV.f2,
+      'A $600M ATM into this tape is a statement about capex, not about the quarter.'),
+    x('CNBC Television', '@CNBC', '3h ago', AV.tv,
+      'Optical names gave back most of the AI-datacenter premium in a single session.'),
+    org('Barron’s', 'barrons.com', '4h ago', 'BA',
+      'Dilution of roughly 18% at current prices, assuming the full program is used.'),
   ];
 
+  /* 3 · Cheaper models, more inference — 6 */
   const SRC_INFERENCE = [
-    { name: 'Olivia Moore', handle: '@omooretweets', time: '4h ago', badge: 'x', img: A + 'feed-avatar-quote.png',
-      quote: 'Many tasks may have reached diminishing returns on intelligence, and that is where the margin opportunity is.' },
-    { name: 'a16z', handle: 'Podcast · ep. 214', time: '1d ago', mono: 'a16',
-      quote: 'The interesting story this year is COGS, not list price.' },
-    { name: 'Nebius', handle: 'Q2 FY26 earnings call', time: '2d ago', mono: 'NB',
-      quote: 'Utilisation, not list price, is what shows up in our revenue line.' },
-    { name: 'Palantir', handle: 'Q2 FY26 shareholder letter', time: '2d ago', mono: 'PL',
-      quote: 'Lower inference cost lands in gross margin before it lands in price.' },
-    { name: 'r/LocalLLaMA', handle: 'Reddit thread', time: '8h ago', mono: 'r/',
-      quote: 'Everyone I know swapped to the cheap model and then tripled their call volume.' },
-    { name: 'SemiAnalysis', handle: '@dylan522p', time: '10h ago', badge: 'x', img: A + 'avatar-semianalysis.png',
-      quote: 'Serving revenue per model is up even though the headline price per million tokens is down.' },
+    x('Olivia Moore', '@omooretweets', '4h ago', AV.moore,
+      'Many tasks may have reached diminishing returns on intelligence, and that is where the margin opportunity is.'),
+    org('a16z', 'Podcast · ep. 214', '1d ago', 'a16',
+      'The interesting story this year is COGS, not list price.'),
+    org('Nebius', 'Q2 FY26 earnings call', '2d ago', 'NB',
+      'Utilisation, not list price, is what shows up in our revenue line.'),
+    org('Palantir', 'Q2 FY26 shareholder letter', '2d ago', 'PL',
+      'Lower inference cost lands in gross margin before it lands in price.'),
+    org('r/LocalLLaMA', 'Reddit thread', '8h ago', 'r/',
+      'Everyone I know swapped to the cheap model and then tripled their call volume.'),
+    x('Token Ledger', '@tokenledger', '10h ago', AV.f3,
+      'Serving revenue per model is up even though the headline price per million tokens is down.'),
   ];
 
-  const SOURCES = [A + 'feed-avatar-src1.png', A + 'feed-avatar-src2.png', A + 'feed-avatar-src3.png'];
+  /* 4 · Broadcom's fourth custom-accelerator customer — 4 */
+  const SRC_XPU = [
+    org('Broadcom', 'Q3 FY26 earnings call', '3h ago', 'AV',
+      'Our AI accelerator backlog now extends four quarters, and it is customer-committed rather than forecast.'),
+    org('SEC EDGAR', 'AVGO · Form 8-K', '3h ago', 'SE',
+      'A fourth hyperscale customer has committed to a multi-generation custom accelerator program.'),
+    pic('Reuters', 'reuters.com', '2h ago', AV.reuters,
+      'Two people familiar with the schedule said first silicon is targeted for the second half of next year.'),
+    x('Silicon Ledger', '@siliconledger', '4h ago', AV.f5,
+      'Four committed XPU customers is the number that turns this from a project business into a product line.'),
+  ];
 
-  const foot = (meta, sources) => ({ sources: SOURCES, meta: meta, automation: 'investor-roundtable', list: sources });
+  /* 5 · The AVGO gap that half-closed — 3 */
+  const SRC_AVGO_POP = [
+    x('HBM Watch', '@hbmwatch', '5h ago', AV.f6,
+      'The note everyone traded was a restatement of the March allocation figures, not new guidance.'),
+    x('Bloomberg', '@business', '4h ago', AV.bloomberg,
+      'Broadcom shares gave back half an early gain after the supply-chain note was clarified.'),
+    org('Nasdaq', 'Market activity', '3h ago', 'NQ',
+      'Volume finished at 1.6× the twenty-day median with no closing imbalance.'),
+  ];
+
+  /* 6 · AMD's second customer for the same part — 9 */
+  const SRC_SECOND_SOURCE = [
+    x('Silicon Ledger', '@siliconledger', '6h ago', AV.f5,
+      'A second source does not need to win the benchmark. It needs to exist at contract time.'),
+    org('AMD', 'Q2 FY26 earnings call', '1d ago', 'AM',
+      'MI-series revenue is now split across more than one hyperscale customer.'),
+    org('Microsoft', 'Azure engineering blog', '2d ago', 'MS',
+      'The inference fleet is deliberately dual-sourced for the next generation.'),
+    org('The Information', 'theinformation.com', '8h ago', 'TI',
+      'Azure’s second-source order is smaller than the headline but runs multi-year.'),
+    pic('Reuters', 'reuters.com', '10h ago', AV.reuters,
+      'Analysts read the deal as a validation of the software stack rather than of the silicon.'),
+    x('Carry & Roll', '@carryandroll', '7h ago', AV.f7,
+      'A second source is worth more to the buyer than to the seller. Price it from the buyer’s side.'),
+    org('r/hardware', 'Reddit thread', '12h ago', 'r/',
+      'The ROCm complaints in this thread are noticeably milder than a year ago.'),
+    pic('Acquired', 'Podcast · ep. 191', '2d ago', AV.pod,
+      'The whole second-source playbook is about removing a single point of failure from a supply chain.'),
+    org('Barron’s', 'barrons.com', '1d ago', 'BA',
+      'Gross-margin guidance implies the second-source pricing is not a giveaway.'),
+  ];
+
+  /* 7 · Alibaba's third consecutive cloud raise — 11 */
+  const SRC_BABA_CLOUD = [
+    org('Alibaba Group', 'Q1 FY27 earnings call', '5h ago', 'BA',
+      'For the first time the raise is attributable to external model serving rather than to internal workloads.'),
+    org('SEC EDGAR', 'BABA · Form 6-K', '5h ago', 'SE',
+      'AI-related cloud revenue represented more than 20% of segment revenue, against approximately 10% a year earlier.'),
+    x('Bloomberg', '@business', '6h ago', AV.bloomberg,
+      'Third straight quarterly raise, and the first one management pinned on outside customers.'),
+    pic('Reuters', 'reuters.com', '6h ago', AV.reuters,
+      'Cloud growth outpaced the wider Chinese market for the fourth consecutive quarter.'),
+    org('Caixin', 'caixinglobal.com', '7h ago', 'CX',
+      'Domestic enterprises are standardising on the open weights and paying for the hosted endpoints.'),
+    x('Weights & Moats', '@weightsandmoats', '8h ago', AV.f1,
+      'Open weights are the acquisition channel. The cloud line is the revenue.'),
+    org('South China Morning Post', 'scmp.com', '9h ago', 'SC',
+      'Capacity additions in Zhangjiakou and Nantong were brought forward two quarters.'),
+    x('CNBC Television', '@CNBC', '10h ago', AV.tv,
+      'The guidance raise, not the print, is what the desk traded this morning.'),
+    x('The Long Run', '@thelongrun', '11h ago', AV.f2,
+      'Twenty percent of segment revenue from AI serving is the first number here that is hard to argue with.'),
+    org('r/investing', 'Reddit thread', '14h ago', 'r/',
+      'Everyone was watching the commerce line and the cloud line is what moved.'),
+    pic('Invest Like the Best', 'Podcast · ep. 402', '2d ago', AV.p1,
+      'Distribution first, monetisation second, is a strategy Western vendors abandoned too early.'),
+  ];
+
+  /* 8 · META's newsless drift — 8 */
+  const SRC_META_DRIFT = [
+    x('Bloomberg', '@business', '6h ago', AV.bloomberg,
+      'Meta shares drifted lower through the session with no company-specific catalyst on the tape.'),
+    org('Nasdaq', 'Market activity', '6h ago', 'NQ',
+      'No block prints and no closing imbalance; the decline was spread evenly across the session.'),
+    x('Token Ledger', '@tokenledger', '7h ago', AV.f3,
+      'This is the download story being priced, one basis point at a time.'),
+    org('The Information', 'theinformation.com', '8h ago', 'TI',
+      'The next open release has slipped a quarter, according to two people involved.'),
+    pic('Reuters', 'reuters.com', '9h ago', AV.reuters,
+      'Sell-side notes published into the close reframed rather than downgraded.'),
+    x('Open Weights', '@openweights_', '10h ago', AV.f6,
+      'Llama derivatives are still the biggest family on the hub. Downloads are not the same as deployments.'),
+    org('r/LocalLLaMA', 'Reddit thread', '11h ago', 'r/',
+      'Half this thread has already moved to Qwen for fine-tuning and stayed on Llama for serving.'),
+    org('Barron’s', 'barrons.com', '12h ago', 'BA',
+      'Options skew is unchanged on the week, which argues against a re-rate.'),
+  ];
+
+  /* Refresh · AAOI's first tranche prices — 2 */
+  const SRC_AAOI_PRICING = [
+    org('SEC EDGAR', 'AAOI · 424B5 prospectus supplement', 'just now', 'SE',
+      'The shares offered hereby are being sold at a price representing a discount to the last reported sale price.'),
+    x('Optical Floor', '@opticalfloor', '3m ago', AV.f2,
+      'First tranche is being marketed below last night’s close. That is the whole move this morning.'),
+  ];
+
+  /* Refresh · the fourth XPU customer gets a name — 1 */
+  const SRC_AVGO_NAMED = [
+    org('Broadcom', 'Press release', '2m ago', 'AV',
+      'Broadcom and Google have extended their custom accelerator collaboration by two further generations.'),
+  ];
+
+  /* ──────────────────────────────
+     The feed
+     ────────────────────────────── */
 
   const CARDS = [
     {
+      type: 'event',
       tickers: [GOOG, META, BABA],
+      age: '1h ago',
+      sources: SRC_DOWNLOADS,
       blocks: [
         {
           type: 'text',
@@ -186,10 +383,12 @@
         },
         { type: 'mediaRow', items: [CHART_TILE, CHART_TILE, CHART_TILE] },
       ],
-      foot: foot('5 sources · 1h ago', SRC_DOWNLOADS),
     },
     {
+      type: 'anomaly',
       tickers: [AAOI],
+      age: '1h ago',
+      sources: SRC_AAOI,
       blocks: [
         { type: 'lead', text: 'AAOI fell again after announcing a $600 million at-the-market equity-sale program' },
         {
@@ -198,15 +397,17 @@
         },
         { type: 'media', src: CHART_WIDE },
       ],
-      foot: foot('5 sources · 1h ago', SRC_AAOI),
     },
     {
+      type: 'source',
       tickers: [GOOG, META, BABA],
+      age: '2h ago',
+      sources: SRC_INFERENCE,
       blocks: [
         { type: 'title', text: 'Cheaper Models Expand Inference Volume' },
         {
           type: 'quote',
-          avatar: A + 'feed-avatar-quote.png',
+          avatar: AV.moore,
           name: 'Olivia Moore',
           text: 'Many tasks may have reached diminishing returns on intelligence, that products may stop automatically switching to each new frontier model, and that this creates many opportunities for application builders to reduce COGS.',
         },
@@ -216,44 +417,113 @@
         },
         { type: 'mediaRow', items: [CHART_CANDLES, CHART_CANDLES, CHART_CANDLES] },
       ],
-      foot: foot('5 sources · 1h ago', SRC_INFERENCE),
-    },
-  ];
-
-  /* What the pill brings in. Same grammar, fresher timestamps — the point
-     of the pill is that the top of the feed moved, not that a new kind of
-     card exists. */
-  const NEW_CARDS = [
-    {
-      tickers: [AAOI],
-      blocks: [
-        { type: 'lead', text: 'AAOI opens the session 4% lower as the equity-sale program starts pricing' },
-        { type: 'mediaRow', items: [CHART_TILE, CHART_TILE, CHART_TILE] },
-      ],
-      foot: foot('3 sources · just now', SRC_AAOI),
     },
     {
-      tickers: [GOOG],
+      type: 'event',
+      tickers: [AVGO, MSFT],
+      age: '2h ago',
+      sources: SRC_XPU,
       blocks: [
-        { type: 'title', text: 'Inference Demand Outruns Its Own Price Cuts' },
         {
           type: 'text',
-          text: 'Token prices fell again this quarter, and usage rose faster than the cut — so serving revenue per model keeps climbing even as the headline price per million tokens drops.',
+          text: 'Broadcom told analysts its AI-accelerator backlog now extends four quarters out and is customer-committed rather than forecast, after a fourth hyperscaler signed a multi-generation custom-XPU program. The 8-K does not name the buyer, but the delivery window lines up with the next Fairwater build-out, and Azure has said its inference fleet is deliberately dual-sourced.',
+        },
+        { type: 'mediaRow', items: [CHART_CANDLES, CHART_TILE, CHART_CANDLES] },
+      ],
+    },
+    {
+      type: 'anomaly',
+      tickers: [AVGO],
+      age: '3h ago',
+      sources: SRC_AVGO_POP,
+      blocks: [
+        { type: 'lead', text: 'AVGO gapped up 4% at the open and gave half of it back before lunch' },
+        {
+          type: 'text',
+          text: 'The move started pre-market on a supply-chain note about HBM allocation, and faded once the sell-side clarified that the note restated March figures rather than adding guidance. What does not fit a pure headline pop is the volume: it finished at 1.6× the twenty-day median with no closing imbalance, which reads as positioning rather than one desk chasing a print.',
         },
         { type: 'media', src: CHART_WIDE },
       ],
-      foot: foot('4 sources · 2m ago', SRC_INFERENCE),
     },
     {
-      tickers: [META, BABA],
+      type: 'source',
+      tickers: [AMD, MSFT],
+      age: '4h ago',
+      sources: SRC_SECOND_SOURCE,
+      blocks: [
+        { type: 'title', text: 'A Second Source Only Has To Exist' },
+        {
+          type: 'quote',
+          avatar: AV.f5,
+          name: '@siliconledger',
+          text: 'A second source does not need to win the benchmark. It needs to exist at contract time — that is the whole trade, and it is worth more to the buyer than it is to the seller.',
+        },
+        {
+          type: 'text',
+          text: 'MI-series revenue is now split across more than one hyperscale customer, which moves the argument off benchmarks and onto contract structure. The Azure order is smaller than the headline suggests but runs multi-year, and gross-margin guidance implies the pricing is not a giveaway. AMD is the direct expression; MSFT is the buyer whose cost curve bends, which is the slower and less visible half of the same trade.',
+        },
+        { type: 'mediaRow', items: [CHART_TILE, CHART_CANDLES, CHART_TILE] },
+      ],
+    },
+    {
+      type: 'event',
+      tickers: [BABA],
+      age: '5h ago',
+      sources: SRC_BABA_CLOUD,
       blocks: [
         {
           type: 'text',
-          text: 'Open-weight releases from both camps landed within a day of each other, and the download curves have the same shape: a flat first week, then a step change once the fine-tuning community picks a favourite.',
+          text: 'Alibaba raised its cloud-revenue guidance for the third consecutive quarter and, for the first time, attributed the raise to external model serving rather than to internal workloads. The 6-K puts AI-related cloud revenue past a fifth of segment revenue, against roughly a tenth a year ago, and management framed open-weight distribution as the acquisition channel that feeds it — the same story the download figures have been telling from the outside.',
         },
-        { type: 'mediaRow', items: [CHART_TILE, CHART_TILE, CHART_TILE] },
+        { type: 'mediaRow', items: [CHART_TILE, CHART_CANDLES, CHART_TILE] },
       ],
-      foot: foot('6 sources · 5m ago', SRC_DOWNLOADS),
+    },
+    {
+      type: 'anomaly',
+      tickers: [META],
+      age: '6h ago',
+      sources: SRC_META_DRIFT,
+      blocks: [
+        { type: 'lead', text: 'META drifted 1.4% lower all session with no company news to point at' },
+        {
+          type: 'text',
+          text: 'No filing, no guidance change, and options skew unchanged on the week — the drift tracked the open-weight download story rather than anything Meta said. Sell-side notes published into the close reframed rather than downgraded. A session shaped like this one is usually positioning ahead of a narrative, not a re-rate of the business.',
+        },
+        { type: 'media', src: CHART_WIDE },
+      ],
+    },
+  ];
+
+  /* What the pill brings in. Same three types, same grammar, only fresher —
+     and the newest items carry the fewest sources, because that is what new
+     means: the story has not been picked up yet. */
+  const NEW_CARDS = [
+    {
+      type: 'anomaly',
+      tickers: [AAOI],
+      age: 'just now',
+      sources: SRC_AAOI_PRICING,
+      blocks: [
+        { type: 'lead', text: 'AAOI opens 4% lower as the equity-sale program starts pricing' },
+        {
+          type: 'text',
+          text: 'The prospectus supplement went out overnight and the first tranche is being marketed at a discount to last night’s close. Nothing about the business changed between yesterday and this morning; what changed is the share count the market has to absorb.',
+        },
+        { type: 'media', src: CHART_WIDE },
+      ],
+    },
+    {
+      type: 'event',
+      tickers: [AVGO, GOOG],
+      age: '2m ago',
+      sources: SRC_AVGO_NAMED,
+      blocks: [
+        {
+          type: 'text',
+          text: 'Broadcom named the fourth custom-accelerator customer this morning: Google, extending the existing TPU relationship by two further generations rather than adding a new logo. That makes the backlog figure less of a surprise and the customer concentration more of one.',
+        },
+        { type: 'mediaRow', items: [CHART_CANDLES, CHART_CANDLES, CHART_TILE] },
+      ],
     },
   ];
 
@@ -301,7 +571,10 @@
     wrap.appendChild(img(t.logo, 'ticker-logo'));
     const text = el('div', 'ticker-text');
     text.appendChild(el('span', 'ticker-name', t.sym));
-    text.appendChild(el('span', 'ticker-tone', t.tone));
+    /* The tone is Alva's stance on the name, not today's direction — the
+       design puts ▲ Bullish on three tickers at once — so the colour follows
+       the arrow rather than the tape. */
+    text.appendChild(el('span', 'ticker-tone' + (t.tone.indexOf('\u25bc') === 0 ? ' down' : ''), t.tone));
     wrap.appendChild(text);
     wrap.addEventListener('click', e => { e.stopPropagation(); openTicker(t); });
     return wrap;
@@ -357,17 +630,27 @@
 
     const footEl = el('div', 'card-foot');
 
+    /* Both halves of the footer come off card.sources, so the count and the
+       faces can never drift from the sheet the row opens. Three faces is what
+       the design shows; the rest are behind the number. */
     const lead = btn('foot-lead', 'Sources');
     const stack = el('div', 'sources');
-    card.foot.sources.forEach(src => stack.appendChild(img(src)));
+    card.sources.slice(0, 3).forEach(src => {
+      if (src.img) stack.appendChild(img(src.img));
+      /* One letter, not two: the faces overlap by 6 of their 18, so a second
+         character lands under the next circle. The sheet has room for the
+         full monogram; the stack does not. */
+      else stack.appendChild(el('span', 'foot-mono', (src.mono || src.name).slice(0, 1)));
+    });
     lead.appendChild(stack);
-    lead.appendChild(el('span', 'foot-meta', card.foot.meta));
+    const n = card.sources.length;
+    lead.appendChild(el('span', 'foot-meta', n + (n === 1 ? ' source · ' : ' sources · ') + card.age));
     lead.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
     footEl.appendChild(lead);
 
     const auto = el('div', 'automation');
     auto.appendChild(img(A + 'feed-dot-green.svg'));
-    auto.appendChild(el('span', null, card.foot.automation));
+    auto.appendChild(el('span', null, AUTOMATION[card.type] || AUTOMATION.event));
     footEl.appendChild(auto);
 
     const ask = btn('ask', 'Ask Alva');
@@ -419,10 +702,7 @@
   function nextBatch() {
     if (served) return [];
     served = true;
-    const stamps = ['just now', '2m ago'];
-    return NEW_CARDS.slice(0, 2).map((card, i) => Object.assign({}, card, {
-      foot: Object.assign({}, card.foot, { meta: card.foot.meta.split(' · ')[0] + ' · ' + stamps[i] }),
-    }));
+    return NEW_CARDS.slice();
   }
 
   /* Twitter's line: it marks the boundary once, where the reading stopped,
@@ -556,6 +836,31 @@
   function setPill(show) { pill.classList.toggle('gone', !show); }
 
   pill.addEventListener('click', e => { e.preventDefault(); refresh(); });
+
+  /* ──────────────────────────────
+     The topbar collapses with the scroll
+
+     Twitter's rule, and iOS's before it: a large title is not chrome, it is
+     the first thing in the list, so it leaves with the list. The title fades
+     and lifts, and the bar gives back exactly the 34px line the title was
+     sitting on — 58 down to 24, which is the 16 and 8 of padding that were
+     always around it.
+
+     The whole thing is one number written to a custom property, so the bar's
+     height and the pill's position both follow from it and nothing has to be
+     kept in sync by hand. Driving it straight off scrollTop (rather than off
+     scroll direction) is what makes it reversible: scrolling back up
+     re-opens the bar exactly as far as you came down.
+     ────────────────────────────── */
+
+  const BAR_TRAVEL = 34;
+
+  function paintBar() {
+    const p = Math.min(1, Math.max(0, feed.scrollTop / BAR_TRAVEL));
+    app.style.setProperty('--bar-p', p.toFixed(4));
+  }
+
+  feed.addEventListener('scroll', paintBar, { passive: true });
 
   /* ──────────────────────────────
      Media rows: a sideways drag scrolls them on a desktop, where there is
@@ -708,7 +1013,7 @@
   }
 
   function openSources(card) {
-    const list = card.foot.list || [];
+    const list = card.sources || [];
     const header = [sheetClose(), el('h2', null, 'Sources · ' + list.length)];
     openSheet('calc(var(--status-h) + 85px)', header, list.map(sourceRow));
   }
@@ -1287,6 +1592,7 @@
     pillText.textContent = '2 new feeds';
     setPill(true);
     feed.scrollTop = 0;
+    paintBar();
     showTab('feed');
     hideToast();
   }
@@ -1314,5 +1620,6 @@
   setTheme(readTheme());
   render();
   wireRowDrag(cardsEl);
+  paintBar();
   fitPhone();
 })();

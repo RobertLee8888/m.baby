@@ -274,6 +274,11 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    ───────────────────────────────────────────── */
 
 .mvp-app {
+  /* How far the topbar has collapsed: 0 at the top of the feed, 1 once the
+     title has scrolled away. The scroll handler writes it; everything that
+     has to move with the bar reads --bar-h. */
+  --bar-p: 0;
+  --bar-h: calc(var(--topbar-h) - 34px * var(--bar-p));
   position: absolute;
   inset: 0;
   overflow: hidden;
@@ -323,7 +328,18 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 /* ── Topbar/Mweb ──
    16 above the title, 8 below it, and the hairline is the whole width
-   (1496:32179). ── */
+   (1496:32179).
+
+   It collapses on scroll, the way a large title does in Twitter and in every
+   iOS list built on one: the title fades and lifts, and the bar loses exactly
+   the height of the line the title was sitting on — 58 (16 + 34 + 8) down to
+   24 (16 + 8). Nothing is invented: what is left when the title goes is the
+   padding that was always around it.
+
+   The travel is 34px of scroll, the title's own line height, so the bar has
+   finished collapsing at the moment the title would have scrolled out of
+   view. The title fades faster than the bar closes (×1.7) because a title at
+   20% opacity under a half-closed bar reads as a rendering bug. ── */
 
 .topbar {
   position: absolute;
@@ -331,7 +347,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   top: var(--status-h);
   right: 0;
   left: 0;
-  height: var(--topbar-h);
+  height: var(--bar-h);
+  overflow: hidden;
   padding: 16px 0 8px var(--gutter);
   background: var(--b10);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
@@ -344,6 +361,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   line-height: 34px;
   text-overflow: ellipsis;
   white-space: nowrap;
+  opacity: calc(1 - var(--bar-p) * 1.7);
+  transform: translate3d(0, calc(-10px * var(--bar-p)), 0);
 }
 
 /* ── The feed ──
@@ -352,7 +371,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .feed {
   position: absolute;
-  inset: calc(var(--status-h) + var(--topbar-h)) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  inset: var(--status-h) 0 calc(var(--tab-h) + var(--home-h)) 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -367,10 +386,20 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .feed-track { position: relative; will-change: transform; }
 .feed-track.springing { transition: transform .42s var(--ease); }
 
+/* The scroller starts under the status bar, and a spacer the height of the
+   expanded topbar stands where the topbar is. That is what lets the bar
+   shrink freely: the scroll container's geometry never changes, so scrollTop
+   means the same thing before and after, and the first card's top edge lands
+   exactly on the collapsed bar's bottom by construction (58 of spacer − 34
+   of scroll = 24 of bar).
+
+   The refresh gutter hangs off the bottom of that spacer, so at rest it sits
+   behind the topbar and a pull brings it out from under it. */
+.lead { position: relative; height: var(--topbar-h); }
 .refresh {
   position: absolute;
   right: 0;
-  bottom: 100%;
+  bottom: 0;
   left: 0;
   display: grid;
   height: var(--refresh-h);
@@ -440,6 +469,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .ticker-text { display: flex; flex-direction: column; justify-content: center; }
 .ticker-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 .ticker-tone { color: var(--m3); font-size: 10px; font-weight: 400; line-height: 16px; white-space: nowrap; }
+.ticker-tone.down { color: var(--m4); }
 .head-rule { flex: 0 0 auto; align-self: center; width: var(--hair); height: 24px; background: var(--l12); }
 
 /* Content: markdown blocks, 12 apart */
@@ -574,7 +604,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .foot-lead:active { opacity: .55; }
 .sources { display: flex; flex: 0 0 auto; align-items: center; }
-.sources img {
+.sources img,
+.sources .foot-mono {
   width: 18px;
   height: 18px;
   margin-right: -6px;
@@ -582,7 +613,17 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background: var(--b10);
   box-shadow: 0 0 0 var(--hair) var(--b10);
 }
-.sources img:last-child { margin-right: 0; }
+.sources .foot-mono {
+  display: grid;
+  place-items: center;
+  background: var(--br07);
+  color: var(--n5);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 12px;
+  letter-spacing: 0;
+}
+.sources > :last-child { margin-right: 0; }
 .foot-meta { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
 .automation { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
 .automation img { width: 12px; height: 12px; }
@@ -625,7 +666,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .pill {
   position: absolute;
   z-index: 14;
-  top: calc(var(--status-h) + var(--topbar-h) + 8px);
+  top: calc(var(--status-h) + var(--bar-h) + 8px);
   left: 50%;
   display: flex;
   align-items: center;
