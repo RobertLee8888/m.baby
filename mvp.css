@@ -366,11 +366,35 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: 0 0 0 var(--gutter);
   background: var(--b10);
 }
-/* The bar carries no hairline of its own: the frame switches its bottom
-   stroke off (1496:32179), because the line you see under it at rest *is* the
-   first card's top rule, sitting exactly at the bar's bottom edge. One line,
-   owned by the thing that scrolls. When the bar closes there is no line, which
-   is the same answer as "no bar". */
+/* At rest the bar needs no hairline of its own: the frame switches that stroke
+   off (1496:32179), because the line under it *is* the first card's top rule,
+   sitting exactly at the bar's bottom edge by construction. One line, owned by
+   the thing that scrolls.
+
+   The moment the list moves, that stops being true — the card's rule travels
+   up under the bar and the text below runs into the chrome with nothing
+   between them. So the rule exists but is tied to the scroll: it is pinned to
+   `status + bar-h`, which is the bottom of whatever is left of the bar and,
+   once the bar has closed, the bottom of the status bar itself. It fades in
+   over the first three pixels of scroll, so it has taken over by the time the
+   card's own rule has left, and the two are never both visible.
+
+   It is its own element and not an inset shadow on the bar, because an inset
+   shadow has nothing to paint on once the bar's height reaches 0 — which is
+   exactly the state that needs the line most. */
+.bar-rule {
+  position: absolute;
+  z-index: 13;
+  top: calc(var(--status-h) + var(--bar-h));
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--l12);
+  opacity: clamp(0, calc(var(--bar-p) * 20), 1);
+  pointer-events: none;
+  transform: scaleY(.5);
+  transform-origin: top;
+}
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
@@ -508,9 +532,12 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .card-auto { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; }
 .card-auto img { flex: 0 0 auto; width: 14px; height: 14px; }
+/* Grey, not m1. The meta row is provenance, not a link — the green dot already
+   says the automation is live, and a teal name beside it read as something to
+   tap. n5 against the age's n3 keeps the two halves of the row ordered. */
 .card-auto span {
   overflow: hidden;
-  color: var(--m1);
+  color: var(--n5);
   font-size: 12px;
   font-weight: 400;
   line-height: 20px;
@@ -1469,21 +1496,22 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .src-name { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
 .src-handle { overflow: hidden; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 .src-time { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+/* A link, not a button. It follows the timestamp on the same line with 8
+   between them, so the tail of the row reads as one thing — when it was said,
+   and where to go and read it — instead of a 28-tall control competing with
+   the name on the left. m1 at the timestamp's own size, Medium against the
+   time's Regular so the actionable half is the one that carries weight. */
+.src-tail { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
 .src-open {
   flex: 0 0 auto;
-  height: 28px;
-  padding: 4px 12px;
-  border-radius: 4px;
-  background: var(--b10);
-  box-shadow: inset 0 0 0 var(--hair) var(--l3);
-  color: var(--n9);
+  color: var(--m1);
   font-size: 12px;
   font-weight: 500;
   line-height: 20px;
   white-space: nowrap;
-  transition: background .16s ease;
+  transition: opacity .16s ease;
 }
-.src-open:active { background: var(--br05); }
+.src-open:active { opacity: .55; }
 /* 14/22 as of the updated frame (I1180:20235;1178:20248) — it was 12/20. */
 .src-quote { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; letter-spacing: 0; }
 

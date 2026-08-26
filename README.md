@@ -44,7 +44,7 @@ seam inside the card is 12, and each part owns its own half of that 12:
 
 | | Padding | Height | Contents |
 | --- | --- | --- | --- |
-| Meta | `4 16 0` | 24 | 14px status dot + the automation in `main/m1`, the age right-aligned in `text/n3` |
+| Meta | `4 16 0` | 24 | 14px status dot + the automation in `text/n5`, the age right-aligned in `text/n3` |
 | Header | `12 16` | 62 | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
 | Content | `0 16` | hugs | markdown blocks, 12 apart; the read and its Show more row are one block inside that 12, stacked at 0 |
 | Footer | `12 16 4` | 48 | source stack + name + `+N`, and one 32-tall labelled button |
@@ -145,10 +145,12 @@ each of the four moved for a reason:
 to live in the footer: the automation that produced the card, and how old the
 card is. That is the right place for both. The automation is a byline — it says
 which playbook was watching when this happened — and a byline belongs above
-the thing it signs, not down among the actions. The name is `main/m1` beside a
-14px status dot; the age is right-aligned in `text/n3`, which is the instance's
-own override of the component's `text/n5`, and the quieter grey is right,
-because the age is the one thing on the card nobody came for.
+the thing it signs, not down among the actions. The name is `text/n5` beside a
+14px status dot — grey, not the component's `main/m1`, because the row is
+provenance and not a link: the green dot already says the automation is live,
+and a teal name beside it read as something to tap. The age is right-aligned in
+`text/n3`, one step quieter again, because it is the one thing on the card
+nobody came for.
 
 **Ticker / Stance** (`1664:17174`) replaces the price and change that used to
 sit under the symbol. This is the biggest change in the round and the most
@@ -283,6 +285,18 @@ The press cast is small on purpose: it is the outlets whose marks read at
 32px. Rows that used to be attributed to an outlet with no usable mark were
 re-attributed rather than given a letter tile.
 
+### The way out of a source row is a link, not a button
+
+The row's tail is the timestamp and the way out, 8 apart on one line: when it
+was said, and where to go and read it. `View original` is `main/m1` Medium at
+the timestamp's own size — Medium against the time's Regular, so the actionable
+half is the one carrying weight — with no fill, no radius and no hairline.
+
+It used to be a 28-tall outlined button, and at the end of a row whose left
+side is a name and a handle that control was the loudest thing in the sheet
+while being the least interesting: the excerpt underneath is what you came for.
+A link reads as a way out without asking to be the point.
+
 ### The avatar is the channel, the badge is the platform
 
 A source is either a voice on somebody else's platform or a publisher on its
@@ -336,16 +350,26 @@ Alva design assets rather than the accounts' own photographs, which is the one
 place the sheet is dressed rather than quoted — X's image host is not
 reachable from here.
 
-### The topbar has no line of its own
+### The topbar's line belongs to the scroll, not to the bar
 
-The frame switches the bar's bottom stroke off (1496:32179), and it is right
-to: the line you see under the bar at rest **is the first card's top rule**,
-sitting exactly at the bar's bottom edge by construction. One line, owned by
-the thing that scrolls. Two rounds of this build drew a second rule pinned to
-`status + bar-h` and suppressed the first card's — which looked identical at
-rest and wrong everywhere else, because a pull opened a gap with a line
-floating above it. When the bar closes there is now no line at all, which is
-the same answer as "no bar".
+The frame switches the bar's bottom stroke off (1496:32179), and **at rest that
+is right**: the line under the bar is the first card's own top rule, sitting at
+the bar's bottom edge by construction. One line, owned by the thing that
+scrolls.
+
+The moment the list moves it stops being right. The card's rule travels up
+under the bar, and from then until the bar has fully closed there is nothing
+between the chrome and the text — a paragraph running straight into the status
+bar. Removing the rule outright, which this build did for two rounds, traded a
+double line at rest for no line at all in the state that needs one most.
+
+So the rule exists and is tied to the scroll: pinned to `status + bar-h` — the
+bottom of whatever is left of the bar, and once the bar has closed, the bottom
+of the status bar itself — and faded in over the first three pixels of travel,
+so it has taken over by the time the card's rule has left. The two are never
+both visible. It is a standalone element rather than an inset shadow on the bar
+because an inset shadow has nothing to paint on at height 0, which is exactly
+the state that needs it.
 
 ### The topbar leaves with the list
 
@@ -458,36 +482,42 @@ table without any of it being written down twice:
 Which is also why a card with three charts is **shorter** than one with a
 single chart: the strip is 135 tall and the wide tile is 203.
 
-Then three rules, in this order:
+Then two rules:
 
-1. **② first.** If `bodyLines − n < 2` the fold saves nothing once the Show
-   more row is paid for, so the body stays whole and no row is inserted. This
-   is checked before ①, because a two-line body under `n = 1` is better shown
-   than hidden — folding it to one line and adding the row costs the same two
-   lines and reads worse.
-2. **① then.** If `n ≤ 1` there is no room for a line worth reading, so the
-   whole paragraph folds and the card keeps only the row.
-3. **③ otherwise.** The fold lands on a sentence end — never mid-sentence,
-   never with an ellipsis. If the first sentence alone does not fit, the whole
-   paragraph folds.
+1. **②** If `bodyLines − n < 2` the fold saves nothing once the Show more row
+   is paid for, so the body stays whole and no row is inserted.
+2. **③** Otherwise the fold lands on a sentence end — never mid-sentence,
+   never with an ellipsis — and **never below one whole sentence**. The first
+   sentence goes in before the budget is consulted; every sentence after it has
+   to fit.
 
-The three cases on the board are three cards in this feed, and they land on the
-frame's heights exactly: the Alibaba event at **451** (case A, `n = 11`, no
-fold), the SMTC anomaly at **553** (case E, `n = 5`, folded to five lines and
-stopped at "fiscal 2028."), the NBIS · PLTR batch at **499** (case C, `n = 2`,
-first sentence is three lines, whole paragraph folded). Open that last one and
-it is **609**, which is the frame's 展开态.
+That last clause is the one place the budget is allowed to lose, and it is
+worth losing there. A card that opens showing none of its own read is a card
+you cannot triage, and making the list triageable is the entire point of the
+budget — so the floor is one complete sentence even when that sentence is
+taller than `n`. Eleven of the twenty cards are in that position, and the
+board's own 两态 frame drew this all along: the same card at **565** with its
+first sentence, not at 499 with only a row. The "fold the paragraph entirely"
+state is gone.
 
-Across the seventeen cards in the list the mean height goes from **629 to
-564.9** — the board predicted 568. Five stay over 573, and all five are held up
-by a quote plus a full-width tile with the read already folded to nothing;
-there is no line left to take.
+Four numbers off the board, and all four land: the Alibaba event at **451**
+(case A, `n = 11`, no fold), the SMTC anomaly at **553** (case E, `n = 5`,
+folded to five lines and stopped at "fiscal 2028."), the NBIS · PLTR batch at
+**565** (两态 收起态, `n = 2`, first sentence only), and that same card at
+**609** open (两态 展开态).
+
+The floor costs height. Across the seventeen cards in the list the mean goes
+from **629 to 602.4** rather than to the 564.9 the old rule reached, and seven
+stay over 573 instead of five. That is the trade: a shorter list that tells you
+nothing, or a slightly taller one where every card says one true thing.
 
 **Sentence ends only, and only real ones.** A full stop counts when what
 follows is a space and then a capital, a digit or a dollar sign, and not when
 it sits between digits or after a lone capital. That keeps `$341.9M`, `1.6T`,
 `U.S. equity` and `fiscal 2028.` on the right side of the line, which a split
-on `.` does not. 0 of 20 cards fold mid-sentence.
+on `.` does not. Verified across the list: 0 folds mid-sentence, 0 empty
+bodies, 0 folds keeping less than one whole sentence, and every kept string a
+prefix of its own full text.
 
 ### Read the instances, not the master
 

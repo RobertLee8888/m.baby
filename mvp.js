@@ -1220,16 +1220,19 @@
      with three charts is *shorter* than one with a single chart: the strip is
      135 tall and the wide tile is 203.
 
-     Then three rules, in this order:
+     Then two rules:
 
        ② if bodyLines − n < 2 the fold would save nothing once the Show more
           row is paid for, so the body stays whole and no row is inserted.
-       ① if n ≤ 1 there is no room for a useful line, so the whole paragraph
-          folds and the card keeps only the row. ② is checked first, because a
-          two-line body under n = 1 is better shown than hidden.
-       ③ otherwise the fold lands on a sentence end — never mid-sentence, and
-          never with an ellipsis. If the first sentence alone does not fit, the
-          whole paragraph folds.
+       ③ otherwise the fold lands on a sentence end — never mid-sentence, never
+          with an ellipsis — and **never below one whole sentence**. The first
+          sentence is kept even when it is taller than n, which is the one case
+          where the budget loses: a card that opens showing nothing of its own
+          read is a card you cannot triage, and the whole point of the budget is
+          to make the list triageable. The board's earlier "fold the paragraph
+          entirely" state is gone with it, and that is what its own 两态 frame
+          drew all along — the same card at 565 with its first sentence, not at
+          499 with only a row.
 
      Expanding happens in place: no scroll change, no navigation, and no Show
      less on the way back — the row is not rendered once the card is open.
@@ -1288,22 +1291,23 @@
     /* ② — folding would not buy a line */
     if (bodyLines - n < 2) return;
 
-    /* ① and ③ — how much of the read survives */
-    let kept = '';
-    if (n > 1) {
-      const parts = sentences(full);
-      let take = '';
-      for (let i = 0; i < parts.length; i++) {
-        const probe = (take ? take + ' ' : '') + parts[i];
-        body.textContent = probe;
-        if (body.offsetHeight > n * FOLD_LINE) break;
-        take = probe;
-      }
-      kept = take;
+    /* ③ — whole sentences, and never fewer than one. The first sentence goes
+       in before the budget is consulted; after that each further sentence has
+       to fit. */
+    const parts = sentences(full);
+    let kept = parts[0] || full;
+    for (let i = 1; i < parts.length; i++) {
+      const probe = kept + ' ' + parts[i];
+      body.textContent = probe;
+      if (body.offsetHeight > n * FOLD_LINE) break;
+      kept = probe;
     }
 
+    /* A single-sentence read keeps everything, and then there is nothing to
+       hide behind a row. */
+    if (kept.length >= full.length) { body.textContent = full; return; }
+
     body.textContent = kept;
-    body.style.height = kept ? '' : '0px';
     fold.appendChild(showMoreRow(fold));
   }
 
@@ -1359,7 +1363,7 @@
     const done = () => {
       fold.classList.remove('anim');
       delete fold.dataset.busy;
-      body.style.height = toH ? '' : '0px';
+      body.style.height = '';
       if (!folded && liveRow) liveRow.remove();
       if (folded && liveRow) { liveRow.style.height = ''; liveRow.style.opacity = ''; }
     };
@@ -1721,12 +1725,15 @@
     who.appendChild(id);
     head.appendChild(who);
 
-    head.appendChild(el('span', 'src-time', s.time));
-
+    /* The time and the way out are one group at the end of the row, 8 apart:
+       when it was said, and where to read it. */
+    const tail = el('div', 'src-tail');
+    tail.appendChild(el('span', 'src-time', s.time));
     const open = btn('src-open');
     open.textContent = 'View original';
     open.addEventListener('click', () => toast('The original opens outside Alva'));
-    head.appendChild(open);
+    tail.appendChild(open);
+    head.appendChild(tail);
 
     row.appendChild(head);
     row.appendChild(el('p', 'src-quote', s.quote));

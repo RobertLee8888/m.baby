@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=15">
+<link rel="stylesheet" href="mvp.css?v=17">
 </head>
 <body>
 
@@ -38,6 +38,7 @@
           <!-- ═══ For You ═══════════════════════════════════════ -->
           <section class="screen current" id="screenFeed" data-tab="feed" aria-label="For You">
             <header class="topbar"><h1>For You</h1></header>
+            <div class="bar-rule" aria-hidden="true"></div>
 
             <!-- The feed scrolls; the track inside it is what the pull moves,
                  so the refresh gutter can sit just above the first card and
@@ -308,6 +309,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=15"></script>
+<script src="mvp.js?v=17"></script>
 </body>
 </html>
