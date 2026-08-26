@@ -1062,6 +1062,18 @@
     if (b.type === 'text') {
       const fold = el('div', 'fold');
       fold.appendChild(el('p', 'blk-text blk-body', b.text));
+      fold.addEventListener('click', () => {
+        if (!fold.classList.contains('is-folded')) return;
+        const selection = window.getSelection && window.getSelection();
+        if (selection && !selection.isCollapsed && selection.rangeCount &&
+            fold.contains(selection.getRangeAt(0).commonAncestorContainer)) return;
+        setFolded(fold, false);
+      });
+      fold.addEventListener('keydown', e => {
+        if (!fold.classList.contains('is-folded') || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault();
+        setFolded(fold, false);
+      });
       return fold;
     }
     if (b.type === 'lead') return el('p', 'blk-text blk-lead', b.text);
@@ -1196,60 +1208,40 @@
   /* ──────────────────────────────
      Collapse and expand (1796:19551)
 
-     One card has to fit one screen. The read is the only block allowed to
-     fold; the headline, the quote and the media stay whole, because a
-     truncated quote is a misquote and a cropped chart is a lie.
+     The read is the only block allowed to fold; the headline, quote and media
+     stay whole. There is no fixed card height or pre-counted shell. Each card
+     first lays out at its real width with its full text, then the browser
+     measures the full card, the body, and a real Show more row.
 
-     The budget is nineteen lines:
+         body budget = visible card height − measured non-body height
+                       − measured Show more height
 
-         19 = (573 − 150) / 22
+     The visible card height is the feed viewport below its expanded topbar,
+     so device height and font metrics naturally change the result. The body
+     line height is also read from computed style rather than copied here.
 
-     573 is the tallest card that still fits one screen, 150 is the card's own
-     shell (8 of padding + 24 of meta + 62 of header + 48 of footer + 8), and
-     22 is the body's line height. Every other block spends part of that
-     budget, and what it spends is simply its rendered height plus the 12 of
-     gap above it, in line units:
-
-         n = 19 − Σ ceil((blockHeight + 12) / 22) − 1
-
-     The trailing −1 is the Show more row itself, which sits on the body's last
-     line and so costs exactly one. That one formula reproduces the frame's own
-     placeholder table without any of it being written down twice — a one-line
-     title spends 2, a two-line lead 3, a four-line quote 7, a full-width
-     media 10, a scrolling strip of two or three 7. Which is also why a card
-     with three charts is *shorter* than one with a single chart: the strip is
-     135 tall and the wide tile is 203.
-
-     Then two rules:
-
-       ② if bodyLines − n < 2 the fold would save nothing once the Show more
-          row is paid for, so the body stays whole and no row is inserted.
-       ③ otherwise the fold lands on a sentence end — never mid-sentence, never
-          with an ellipsis — and **never below one whole sentence**. The first
-          sentence is kept even when it is taller than n, which is the one case
-          where the budget loses: a card that opens showing nothing of its own
-          read is a card you cannot triage, and the whole point of the budget is
-          to make the list triageable. The board's earlier "fold the paragraph
-          entirely" state is gone with it, and that is what its own 两态 frame
-          drew all along — the same card at 565 with its first sentence, not at
-          499 with only a row.
+     A card that already fits stays whole. A fold that hides fewer than two
+     lines is also skipped because the extra row would buy no useful density.
+     Otherwise the preview lands on a sentence end and never shows an empty
+     body. The first sentence is the floor: one real line stays one line, two
+     or three real lines stay complete. Only a first sentence longer than
+     three lines is safely shortened on line three with an ellipsis.
 
      Expanding happens in place: no scroll change, no navigation, and no Show
      less on the way back — the row is not rendered once the card is open.
      ────────────────────────────── */
 
-  const FOLD_CAP = 573;      /* the tallest card that still fits one screen */
-  const FOLD_SHELL = 150;    /* 8 + 24 + 62 + 48 + 8 */
-  const FOLD_LINE = 22;      /* the body's line height */
-  const FOLD_GAP = 12;       /* the content column's own gap */
-  const FOLD_ROW = 22;       /* the Show more row */
-  const FOLD_BUDGET = Math.floor((FOLD_CAP - FOLD_SHELL) / FOLD_LINE);   /* 19 */
+  const FIRST_SENTENCE_MAX_LINES = 3;
 
-  /* Sentence ends only, and only real ones: a full stop counts when what
-     follows it is a space and then a capital, a digit or a dollar sign. That
-     keeps "$341.9M", "1.6T", "U.S. equity" and "fiscal 2028." on the right
-     side of the line, which a naive split on "." does not. */
+  /* Intl.Segmenter keeps decimals and abbreviations intact and also handles
+     punctuation outside English. The small fallback preserves the previous
+     full-stop behaviour on older embedded browsers. */
   function sentences(text) {
+    if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+      const segmenter = new Intl.Segmenter(undefined, { granularity: 'sentence' });
+      return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean);
+    }
+
     const out = [];
     let start = 0;
     for (let i = 0; i < text.length; i++) {
@@ -1270,52 +1262,136 @@
 
   /* offsetHeight, not getBoundingClientRect: the desktop bezel scales the
      phone with a transform, and a scaled rect would put every measurement in
-     the wrong unit. */
-  const lines = px => Math.round(px / FOLD_LINE);
-  const spend = px => Math.ceil((px + FOLD_GAP) / FOLD_LINE);
+     the wrong unit. The lead is the expanded topbar's place in the scroller;
+     removing it from the feed viewport gives the height actually visible
+     below the topbar when a person first meets the card. */
+  function visibleCardHeight() {
+    const lead = document.querySelector('#screenFeed .lead');
+    return Math.max(0, feed.clientHeight - (lead ? lead.offsetHeight : 0));
+  }
+
+  function lineHeightOf(node) {
+    const value = parseFloat(window.getComputedStyle(node).lineHeight);
+    return Number.isFinite(value) && value > 0 ? value : 22;
+  }
+
+  const lineCount = (px, lineHeight) => Math.max(1, Math.round(px / lineHeight));
+
+  function setFoldInteractive(fold, interactive) {
+    fold.classList.toggle('is-folded', interactive);
+    if (interactive) {
+      fold.setAttribute('role', 'button');
+      fold.setAttribute('tabindex', '0');
+      fold.setAttribute('aria-label', 'Show more');
+    } else {
+      fold.removeAttribute('role');
+      fold.removeAttribute('tabindex');
+      fold.removeAttribute('aria-label');
+    }
+  }
+
+  function fitsLines(body, text, maxLines, lineHeight) {
+    body.textContent = text;
+    return body.offsetHeight <= maxLines * lineHeight + 0.5;
+  }
+
+  /* Prefer word boundaries, but fall back to characters for CJK or a single
+     long token. Binary search keeps this cheap even for Premium-length text. */
+  function ellipsizeToLines(body, text, maxLines, lineHeight) {
+    const wordBreaks = Array.from(text.matchAll(/\s+/g), match => match.index).filter(Boolean);
+    const breaks = wordBreaks.length > 1
+      ? wordBreaks.concat(text.length)
+      : Array.from({ length: text.length }, (_, i) => i + 1);
+    let low = 0;
+    let high = breaks.length - 1;
+    let best = '…';
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const probe = text.slice(0, breaks[mid]).trimEnd() + '…';
+      if (fitsLines(body, probe, maxLines, lineHeight)) {
+        best = probe;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+    body.textContent = best;
+    return best;
+  }
 
   function foldCard(node) {
     const fold = node.querySelector('.fold');
-    if (!fold) return;
+    if (!fold || fold.dataset.busy || fold.dataset.expanded === '1') return;
     const body = fold.querySelector('.blk-body');
-    const full = body.textContent;
+    const full = fold.dataset.full || body.textContent;
     fold.dataset.full = full;
+    const oldRow = fold.querySelector('.showmore');
+    if (oldRow) oldRow.remove();
+    setFoldInteractive(fold, false);
+    body.style.height = '';
+    body.textContent = full;
 
-    let used = 0;
-    Array.prototype.forEach.call(node.querySelectorAll('.card-body > *'), b => {
-      if (b !== fold) used += spend(b.offsetHeight);
-    });
-    const n = FOLD_BUDGET - used - 1;
-    const bodyLines = lines(body.offsetHeight);
+    const cap = visibleCardHeight();
+    const fullCardHeight = node.offsetHeight;
+    const fullBodyHeight = body.offsetHeight;
+    const lineHeight = lineHeightOf(body);
+    const bodyLines = lineCount(fullBodyHeight, lineHeight);
 
-    /* ② — folding would not buy a line */
-    if (bodyLines - n < 2) return;
+    fold.dataset.cap = String(cap);
+    fold.dataset.fullLines = String(bodyLines);
+    delete fold.dataset.previewLines;
+    delete fold.dataset.firstSentenceClamped;
 
-    /* ③ — whole sentences, and never fewer than one. The first sentence goes
-       in before the budget is consulted; after that each further sentence has
-       to fit. */
+    if (fullCardHeight <= cap) return;
+
+    /* Measure the actual row in the same layout instead of assuming its CSS
+       height. This happens before paint, so the temporary row is never seen. */
+    const measuringRow = showMoreRow();
+    fold.appendChild(measuringRow);
+    const rowHeight = measuringRow.offsetHeight || lineHeight;
+    measuringRow.remove();
+
+    const nonBodyHeight = fullCardHeight - fullBodyHeight;
+    const bodyBudget = Math.max(0, cap - nonBodyHeight - rowHeight);
+    const budgetLines = Math.max(0, Math.floor(bodyBudget / lineHeight));
+
+    /* A fold that hides less than two lines adds an action without reducing
+       the card enough to matter. */
+    if (bodyLines - budgetLines < 2) return;
+
     const parts = sentences(full);
-    let kept = parts[0] || full;
-    for (let i = 1; i < parts.length; i++) {
-      const probe = kept + ' ' + parts[i];
-      body.textContent = probe;
-      if (body.offsetHeight > n * FOLD_LINE) break;
-      kept = probe;
+    const first = parts[0] || full;
+    body.textContent = first;
+    const firstLines = lineCount(body.offsetHeight, lineHeight);
+    let kept = first;
+    let targetLines = Math.max(budgetLines, Math.min(firstLines, FIRST_SENTENCE_MAX_LINES));
+
+    if (firstLines > FIRST_SENTENCE_MAX_LINES) {
+      kept = ellipsizeToLines(body, first, FIRST_SENTENCE_MAX_LINES, lineHeight);
+      targetLines = FIRST_SENTENCE_MAX_LINES;
+      fold.dataset.firstSentenceClamped = '1';
+    } else {
+      for (let i = 1; i < parts.length; i++) {
+        const probe = kept + ' ' + parts[i];
+        if (!fitsLines(body, probe, targetLines, lineHeight)) break;
+        kept = probe;
+      }
     }
 
-    /* A single-sentence read keeps everything, and then there is nothing to
-       hide behind a row. */
     if (kept.length >= full.length) { body.textContent = full; return; }
 
     body.textContent = kept;
-    fold.appendChild(showMoreRow(fold));
+    const previewLines = lineCount(body.offsetHeight, lineHeight);
+    if (bodyLines - previewLines < 2) { body.textContent = full; return; }
+
+    fold.dataset.previewLines = String(previewLines);
+    fold.appendChild(showMoreRow());
+    setFoldInteractive(fold, true);
   }
 
-  function showMoreRow(fold) {
-    const row = btn('showmore', 'Show more');
-    row.textContent = 'Show more';
-    row.addEventListener('click', e => { e.stopPropagation(); setFolded(fold, false); });
-    return row;
+  function showMoreRow() {
+    return el('span', 'showmore', 'Show more');
   }
 
   /* One function both ways. The design gives the open card no way back, so
@@ -1329,9 +1405,12 @@
 
     if (!folded) {
       if (!row) return;
+      setFoldInteractive(fold, false);
+      fold.dataset.expanded = '1';
       body.textContent = fold.dataset.full;
     } else {
       if (row) return;
+      delete fold.dataset.expanded;
       /* Re-derive the fold rather than remembering it: the card may have been
          re-measured since, and the formula is cheap. */
       const card = fold.closest('.card');
@@ -1347,7 +1426,8 @@
     const toH = body.offsetHeight;
     body.style.height = fromH + 'px';
     const liveRow = fold.querySelector('.showmore');
-    if (liveRow && !folded) { liveRow.style.height = FOLD_ROW + 'px'; liveRow.style.opacity = '1'; }
+    const liveRowHeight = liveRow ? (liveRow.offsetHeight || lineHeightOf(body)) : 0;
+    if (liveRow && !folded) { liveRow.style.height = liveRowHeight + 'px'; liveRow.style.opacity = '1'; }
 
     /* Commit the start frame before the end frame, or the browser coalesces
        the two and the card jumps. */
@@ -1356,7 +1436,7 @@
     fold.dataset.busy = '1';
     body.style.height = toH + 'px';
     if (liveRow) {
-      liveRow.style.height = folded ? FOLD_ROW + 'px' : '0px';
+      liveRow.style.height = folded ? liveRowHeight + 'px' : '0px';
       liveRow.style.opacity = folded ? '1' : '0';
     }
 
@@ -1385,7 +1465,8 @@
     mediaTurn = 0;
     cardsEl.replaceChildren();
     CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
-    /* The fold is measured, so it runs once the cards are in the document. */
+    /* The full cards are in the document before this synchronous pass, but
+       the browser has not painted them yet. */
     foldPass();
   }
 
@@ -1725,12 +1806,13 @@
     who.appendChild(id);
     head.appendChild(who);
 
-    /* The time and the way out are one group at the end of the row, 8 apart:
+    /* The time and the way out are one group at the end of the row, 12 apart:
        when it was said, and where to read it. */
     const tail = el('div', 'src-tail');
     tail.appendChild(el('span', 'src-time', s.time));
-    const open = btn('src-open');
-    open.textContent = 'View original';
+    const open = btn('src-open', 'View original');
+    open.appendChild(el('span', null, 'View'));
+    open.appendChild(icon('ui-popout-l.svg'));
     open.addEventListener('click', () => toast('The original opens outside Alva'));
     tail.appendChild(open);
     head.appendChild(tail);
@@ -2394,7 +2476,12 @@
     phone.style.transform = 'scale(' + Math.max(0.45, scale) + ')';
   }
 
-  window.addEventListener('resize', fitPhone);
+  let foldResizeFrame = 0;
+  window.addEventListener('resize', () => {
+    fitPhone();
+    window.cancelAnimationFrame(foldResizeFrame);
+    foldResizeFrame = window.requestAnimationFrame(foldPass);
+  });
 
   setTheme(readTheme());
   /* The screens live on a track now, so their places have to be assigned
@@ -2405,4 +2492,7 @@
   wireRowDrag(cardsEl);
   paintBar();
   fitPhone();
+  /* Webfont metrics can change line wraps after the first synchronous pass.
+     Re-measure once they settle; expanded cards stay expanded. */
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(foldPass);
 })();

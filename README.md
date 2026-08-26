@@ -287,10 +287,11 @@ re-attributed rather than given a letter tile.
 
 ### The way out of a source row is a link, not a button
 
-The row's tail is the timestamp and the way out, 8 apart on one line: when it
-was said, and where to go and read it. `View original` is `main/m1` Medium at
-the timestamp's own size — Medium against the time's Regular, so the actionable
-half is the one carrying weight — with no fill, no radius and no hairline.
+The row's tail sits at the top right: the timestamp and the way out are 12px
+apart so they do not read as one phrase. `View` is `text/n7` Regular at the
+timestamp's own 12/20 size, followed by the 14px `popout-l` icon. The icon is
+the affordance, so the text has no underline, extra weight, fill, radius or
+hairline. The timestamp steps back to `text/n3`.
 
 It used to be a 28-tall outlined button, and at the end of a row whose left
 side is a name and a handle that control was the loudest thing in the sheet
@@ -450,74 +451,40 @@ ground they were two more white rows in a stack of white rows, and the seam
 between "what just arrived" and "what you had already read" is exactly the
 thing that has to *not* look like a card.
 
-### One card, one screen — the read folds and nothing else does
+### One card, one visible feed — measure first, then fold the read
 
 `1796:19551`. A card opens collapsed, and the only block allowed to fold is the
 read. The headline, the quote and the media stay whole, because a truncated
 quote is a misquote and a cropped chart is a lie.
 
-The budget is nineteen lines:
+There is no fixed `573` cap and no assumed `150` shell. A card first renders at
+its real width with all content present. Before paint, the browser measures the
+full card, the body, and a real Show more row. The current limit is the feed
+viewport below its expanded topbar:
 
-    19 = (573 − 150) / 22
+    body budget = visible card height − measured non-body height
+                  − measured Show more height
 
-573 is the tallest card that still fits one screen, 150 is the card's own shell
-(8 of padding + 24 of meta + 62 of header + 48 of footer + 8), 22 is the body's
-line height. Every other block spends part of that budget, and what it spends
-is its rendered height plus the 12 of gap above it, in line units:
+The body line height comes from computed style, so device height, font metrics,
+text wrapping, media count and quote height all enter through the actual
+layout. Fonts trigger one more pass after loading, and viewport changes trigger
+a re-measure. A card a person has already expanded stays expanded.
 
-    n = 19 − Σ ceil((blockHeight + 12) / 22) − 1
+Then three rules:
 
-The trailing −1 is the Show more row, which sits on the body's last line and so
-costs exactly one. That single formula reproduces the frame's whole placeholder
-table without any of it being written down twice:
+1. If the full card fits, show it whole.
+2. If folding would hide fewer than two body lines, show it whole: adding an
+   action row would buy no useful density.
+3. Otherwise land on a sentence end while guaranteeing visible body content.
+   A first sentence that occupies one, two or three real lines stays complete.
+   Only when the first sentence itself exceeds three lines is it shortened on
+   line three with an ellipsis.
 
-| block | frame says | the formula gives |
-| --- | --- | --- |
-| one-line title | lines + 1 = 2 | `ceil((28 + 12) / 22)` = 2 |
-| two-line lead | lines + 1 = 3 | `ceil((44 + 12) / 22)` = 3 |
-| four-line quote | lines + 3 = 7 | `ceil((128 + 12) / 22)` = 7 |
-| one media | 10 | `ceil((203 + 12) / 22)` = 10 |
-| two or three media | 7 | `ceil((135 + 12) / 22)` = 7 |
-
-Which is also why a card with three charts is **shorter** than one with a
-single chart: the strip is 135 tall and the wide tile is 203.
-
-Then two rules:
-
-1. **②** If `bodyLines − n < 2` the fold saves nothing once the Show more row
-   is paid for, so the body stays whole and no row is inserted.
-2. **③** Otherwise the fold lands on a sentence end — never mid-sentence,
-   never with an ellipsis — and **never below one whole sentence**. The first
-   sentence goes in before the budget is consulted; every sentence after it has
-   to fit.
-
-That last clause is the one place the budget is allowed to lose, and it is
-worth losing there. A card that opens showing none of its own read is a card
-you cannot triage, and making the list triageable is the entire point of the
-budget — so the floor is one complete sentence even when that sentence is
-taller than `n`. Eleven of the twenty cards are in that position, and the
-board's own 两态 frame drew this all along: the same card at **565** with its
-first sentence, not at 499 with only a row. The "fold the paragraph entirely"
-state is gone.
-
-Four numbers off the board, and all four land: the Alibaba event at **451**
-(case A, `n = 11`, no fold), the SMTC anomaly at **553** (case E, `n = 5`,
-folded to five lines and stopped at "fiscal 2028."), the NBIS · PLTR batch at
-**565** (两态 收起态, `n = 2`, first sentence only), and that same card at
-**609** open (两态 展开态).
-
-The floor costs height. Across the seventeen cards in the list the mean goes
-from **629 to 602.4** rather than to the 564.9 the old rule reached, and seven
-stay over 573 instead of five. That is the trade: a shorter list that tells you
-nothing, or a slightly taller one where every card says one true thing.
-
-**Sentence ends only, and only real ones.** A full stop counts when what
-follows is a space and then a capital, a digit or a dollar sign, and not when
-it sits between digits or after a lone capital. That keeps `$341.9M`, `1.6T`,
-`U.S. equity` and `fiscal 2028.` on the right side of the line, which a split
-on `.` does not. Verified across the list: 0 folds mid-sentence, 0 empty
-bodies, 0 folds keeping less than one whole sentence, and every kept string a
-prefix of its own full text.
+Sentence segmentation uses the browser's locale-aware sentence segmenter, so
+decimals, abbreviations and non-English punctuation do not need a hand-written
+list. Older embedded browsers keep the existing conservative full-stop
+fallback. The preview is always a prefix of the full read, and `Show more` is
+only inserted when content is actually hidden.
 
 ### Read the instances, not the master
 
@@ -526,11 +493,11 @@ frames overrides that to **`Medium/14`** — and that is the value, which is als
 why the row is 22 tall and not 20. Building from the master put this label a
 size too small.
 
-At 14/22 the row is exactly one body line, which is what makes the formula's
-`−1` exact rather than approximate, and the label sits at the body's own size
-directly under it instead of shrinking away from it. `main/m1`, Medium, left
-aligned, no chevron, 1% tracking — the rendered label measures 73.45px against
-the frame's 74.
+At 14/22 the row is exactly one body line, and the label sits at the body's own
+size directly under it instead of shrinking away from it. The runtime still
+measures the row's rendered height rather than assuming that number. `main/m1`,
+Medium, left aligned, no chevron, 1% tracking — the rendered label measures
+73.45px against the frame's 74.
 
 This is the second time an instance override has been the real value and the
 master has not (the header's and footer's padding were the first). The rule
@@ -807,8 +774,8 @@ the battery was.
 The sources sheet's excerpt is 14/22, not 12/20 — the frame was updated and
 that was the change. Worth knowing that the row's gaps are not uniform
 either: the avatar and the byline are one group 8 apart, and *that* group, the
-time and the button are the row's three columns 12 apart. One flat gap of 12
-puts the handle too far from the face it belongs to.
+time and the `View` link are the row's three columns 12 apart. One flat gap of
+12 puts the handle too far from the face it belongs to.
 
 The quote block's mark is likewise measured, not eyeballed: its box is
 29 × 46 at x=327 of the 361-wide tile and y=−5, so it hangs 5 above the tile

@@ -640,11 +640,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .blk-title { padding-top: 2px; font-size: 16px; font-weight: 500; line-height: 26px; }
 
 /* ── Body + Show more (1796:18622) ──
-   One card has to fit one screen, so the read folds and everything else stays
-   whole. The two rows are a block of their own inside the content's 12, and
-   the frame stacks them at 0 — the Show more row sits directly on the last
-   line of the body, which is why folding to n lines and adding the row costs
-   exactly one line more than n.
+   The read folds and everything else stays whole. The body and row are a block
+   of their own inside the content's 12, stacked at 0 so a rendered-height
+   measurement can treat the row as part of the preview without approximation.
 
    Both rows animate their height, and they animate *together*: the body grows
    while the row closes, so on a tap the quote and the media below are pushed
@@ -653,6 +651,12 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    quick-then-settled rather than as a slow slide. ── */
 
 .fold { display: flex; width: 100%; flex-direction: column; }
+.fold.is-folded { cursor: pointer; }
+.fold.is-folded:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--m1);
+  outline-offset: 4px;
+}
 /* The body is clipped rather than re-flowed: the full text is already in the
    node when the animation starts, so nothing re-wraps mid-transition. */
 .fold .blk-body { overflow: hidden; }
@@ -1466,7 +1470,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: var(--gutter);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
-.src-head { display: flex; align-items: center; gap: 12px; }
+.src-head { display: flex; align-items: flex-start; gap: 12px; }
 .src-who { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
 .src-av { position: relative; flex: 0 0 auto; width: 32px; height: 32px; }
 .src-av > img {
@@ -1495,22 +1499,26 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .src-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
 .src-name { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
 .src-handle { overflow: hidden; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.src-time { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
-/* A link, not a button. It follows the timestamp on the same line with 8
-   between them, so the tail of the row reads as one thing — when it was said,
-   and where to go and read it — instead of a 28-tall control competing with
-   the name on the left. m1 at the timestamp's own size, Medium against the
-   time's Regular so the actionable half is the one that carries weight. */
-.src-tail { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; }
+.src-time { flex: 0 0 auto; color: var(--n3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+/* The timestamp and link sit at the row's top edge, but their 12px separation
+   keeps them from reading as one phrase. View uses text/n7 at the timestamp's
+   size and a 14px popout glyph; the icon supplies affordance, so there is no
+   underline or extra weight. */
+.src-tail { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 12px; }
 .src-open {
+  display: flex;
   flex: 0 0 auto;
-  color: var(--m1);
+  align-items: center;
+  gap: 2px;
+  color: var(--n7);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 20px;
+  text-decoration: none;
   white-space: nowrap;
   transition: opacity .16s ease;
 }
+.src-open .ic { width: 14px; height: 14px; }
 .src-open:active { opacity: .55; }
 /* 14/22 as of the updated frame (I1180:20235;1178:20248) — it was 12/20. */
 .src-quote { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; letter-spacing: 0; }
