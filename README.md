@@ -46,7 +46,7 @@ seam inside the card is 12, and each part owns its own half of that 12:
 | --- | --- | --- | --- |
 | Meta | `4 16 0` | 24 | 14px status dot + the automation in `main/m1`, the age right-aligned in `text/n3` |
 | Header | `12 16` | 62 | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
-| Content | `0 16` | hugs | markdown blocks, 12 apart |
+| Content | `0 16` | hugs | markdown blocks, 12 apart; the read and its Show more row are one block inside that 12, stacked at 0 |
 | Footer | `12 16 4` | 48 | source stack + name + `+N`, and one 32-tall labelled button |
 
 8 of card + 4 of meta = 12 above the automation line; 0 + 12 = 12 to the ticker
@@ -425,6 +425,97 @@ the app's own floor show through is what makes them read that way: on the card
 ground they were two more white rows in a stack of white rows, and the seam
 between "what just arrived" and "what you had already read" is exactly the
 thing that has to *not* look like a card.
+
+### One card, one screen — the read folds and nothing else does
+
+`1796:19551`. A card opens collapsed, and the only block allowed to fold is the
+read. The headline, the quote and the media stay whole, because a truncated
+quote is a misquote and a cropped chart is a lie.
+
+The budget is nineteen lines:
+
+    19 = (573 − 150) / 22
+
+573 is the tallest card that still fits one screen, 150 is the card's own shell
+(8 of padding + 24 of meta + 62 of header + 48 of footer + 8), 22 is the body's
+line height. Every other block spends part of that budget, and what it spends
+is its rendered height plus the 12 of gap above it, in line units:
+
+    n = 19 − Σ ceil((blockHeight + 12) / 22) − 1
+
+The trailing −1 is the Show more row, which sits on the body's last line and so
+costs exactly one. That single formula reproduces the frame's whole placeholder
+table without any of it being written down twice:
+
+| block | frame says | the formula gives |
+| --- | --- | --- |
+| one-line title | lines + 1 = 2 | `ceil((28 + 12) / 22)` = 2 |
+| two-line lead | lines + 1 = 3 | `ceil((44 + 12) / 22)` = 3 |
+| four-line quote | lines + 3 = 7 | `ceil((128 + 12) / 22)` = 7 |
+| one media | 10 | `ceil((203 + 12) / 22)` = 10 |
+| two or three media | 7 | `ceil((135 + 12) / 22)` = 7 |
+
+Which is also why a card with three charts is **shorter** than one with a
+single chart: the strip is 135 tall and the wide tile is 203.
+
+Then three rules, in this order:
+
+1. **② first.** If `bodyLines − n < 2` the fold saves nothing once the Show
+   more row is paid for, so the body stays whole and no row is inserted. This
+   is checked before ①, because a two-line body under `n = 1` is better shown
+   than hidden — folding it to one line and adding the row costs the same two
+   lines and reads worse.
+2. **① then.** If `n ≤ 1` there is no room for a line worth reading, so the
+   whole paragraph folds and the card keeps only the row.
+3. **③ otherwise.** The fold lands on a sentence end — never mid-sentence,
+   never with an ellipsis. If the first sentence alone does not fit, the whole
+   paragraph folds.
+
+The three cases on the board are three cards in this feed, and they land on the
+frame's heights exactly: the Alibaba event at **451** (case A, `n = 11`, no
+fold), the SMTC anomaly at **553** (case E, `n = 5`, folded to five lines and
+stopped at "fiscal 2028."), the NBIS · PLTR batch at **499** (case C, `n = 2`,
+first sentence is three lines, whole paragraph folded). Open that last one and
+it is **609**, which is the frame's 展开态.
+
+Across the seventeen cards in the list the mean height goes from **629 to
+564.9** — the board predicted 568. Five stay over 573, and all five are held up
+by a quote plus a full-width tile with the read already folded to nothing;
+there is no line left to take.
+
+**Sentence ends only, and only real ones.** A full stop counts when what
+follows is a space and then a capital, a digit or a dollar sign, and not when
+it sits between digits or after a lone capital. That keeps `$341.9M`, `1.6T`,
+`U.S. equity` and `fiscal 2028.` on the right side of the line, which a split
+on `.` does not. 0 of 20 cards fold mid-sentence.
+
+### Expanding is one movement, not a jump
+
+Tapping Show more expands in place: no navigation, no scroll change, and **no
+Show less** on the way back — the row is not rendered once the card is open.
+That is X's behaviour on mobile, and it is what the board specifies.
+
+The motion is the part worth building carefully. Two things animate together
+over 300ms: the body's height grows to the full paragraph, and the Show more
+row's height closes from 22 to 0. So the quote and the media below are pushed
+down by what the body gained *and* pulled back up by the 22 the row gave up, in
+one continuous movement rather than two. The body already holds the full text
+when the transition starts, so nothing re-wraps mid-animation — it is a clip
+opening, not a reflow.
+
+The curve is not `--ease`. That one is the pull's, and it puts 78% of the travel
+in the first fifth of the time; on a 110px height change that reads as a snap
+followed by a crawl, which is the "instant" the brief rules out. The fold uses
+an ease-out quad, solved rather than guessed — `cubic-bezier(0.25, 0.46, 0.45,
+0.94)`, which lands 45% of the distance at a quarter of the duration, 77% at
+half and 94% at three quarters, with no tail. Measured on the running build:
+50% / 77% / 95% / 100%, across 15 to 18 distinct frames.
+
+`setFolded` takes the direction as an argument rather than existing twice, so
+closing is the same three lines as opening and animates the same way — verified
+both directions. The design gives an open card no control to close it, so only
+the opening direction has a button; the other half is there for the day it
+does.
 
 ### The count picks the media layout, not the card
 

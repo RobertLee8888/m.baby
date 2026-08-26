@@ -1055,7 +1055,15 @@
   }
 
   function block(b, card) {
-    if (b.type === 'text') return el('p', 'blk-text', b.text);
+    /* The read is the only block that ever folds, so it comes wrapped: the
+       Show more row joins it inside the wrapper rather than beside it in the
+       content column, which is what puts the row directly on the body's last
+       line instead of 12 below it. */
+    if (b.type === 'text') {
+      const fold = el('div', 'fold');
+      fold.appendChild(el('p', 'blk-text blk-body', b.text));
+      return fold;
+    }
     if (b.type === 'lead') return el('p', 'blk-text blk-lead', b.text);
     if (b.type === 'title') return el('p', 'blk-text blk-title', b.text);
 
@@ -1185,12 +1193,200 @@
   let refreshing = false;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
 
+  /* ──────────────────────────────
+     Collapse and expand (1796:19551)
+
+     One card has to fit one screen. The read is the only block allowed to
+     fold; the headline, the quote and the media stay whole, because a
+     truncated quote is a misquote and a cropped chart is a lie.
+
+     The budget is nineteen lines:
+
+         19 = (573 − 150) / 22
+
+     573 is the tallest card that still fits one screen, 150 is the card's own
+     shell (8 of padding + 24 of meta + 62 of header + 48 of footer + 8), and
+     22 is the body's line height. Every other block spends part of that
+     budget, and what it spends is simply its rendered height plus the 12 of
+     gap above it, in line units:
+
+         n = 19 − Σ ceil((blockHeight + 12) / 22) − 1
+
+     The trailing −1 is the Show more row itself, which sits on the body's last
+     line and so costs exactly one. That one formula reproduces the frame's own
+     placeholder table without any of it being written down twice — a one-line
+     title spends 2, a two-line lead 3, a four-line quote 7, a full-width
+     media 10, a scrolling strip of two or three 7. Which is also why a card
+     with three charts is *shorter* than one with a single chart: the strip is
+     135 tall and the wide tile is 203.
+
+     Then three rules, in this order:
+
+       ② if bodyLines − n < 2 the fold would save nothing once the Show more
+          row is paid for, so the body stays whole and no row is inserted.
+       ① if n ≤ 1 there is no room for a useful line, so the whole paragraph
+          folds and the card keeps only the row. ② is checked first, because a
+          two-line body under n = 1 is better shown than hidden.
+       ③ otherwise the fold lands on a sentence end — never mid-sentence, and
+          never with an ellipsis. If the first sentence alone does not fit, the
+          whole paragraph folds.
+
+     Expanding happens in place: no scroll change, no navigation, and no Show
+     less on the way back — the row is not rendered once the card is open.
+     ────────────────────────────── */
+
+  const FOLD_CAP = 573;      /* the tallest card that still fits one screen */
+  const FOLD_SHELL = 150;    /* 8 + 24 + 62 + 48 + 8 */
+  const FOLD_LINE = 22;      /* the body's line height */
+  const FOLD_GAP = 12;       /* the content column's own gap */
+  const FOLD_ROW = 22;       /* the Show more row */
+  const FOLD_BUDGET = Math.floor((FOLD_CAP - FOLD_SHELL) / FOLD_LINE);   /* 19 */
+
+  /* Sentence ends only, and only real ones: a full stop counts when what
+     follows it is a space and then a capital, a digit or a dollar sign. That
+     keeps "$341.9M", "1.6T", "U.S. equity" and "fiscal 2028." on the right
+     side of the line, which a naive split on "." does not. */
+  function sentences(text) {
+    const out = [];
+    let start = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] !== '.') continue;
+      const next = text[i + 1];
+      if (next !== undefined && next !== ' ') continue;          /* 341.9 */
+      const prev = text[i - 1];
+      if (prev && /[A-Z]/.test(prev) && !/[a-z]/.test(text[i - 2] || '')) continue;  /* U.S. */
+      const after = text.slice(i + 1).replace(/^\s+/, '')[0];
+      if (after !== undefined && !/[A-Z0-9$"“(]/.test(after)) continue;
+      out.push(text.slice(start, i + 1));
+      start = i + 1;
+      while (text[start] === ' ') start++;
+    }
+    if (start < text.length) out.push(text.slice(start));
+    return out;
+  }
+
+  /* offsetHeight, not getBoundingClientRect: the desktop bezel scales the
+     phone with a transform, and a scaled rect would put every measurement in
+     the wrong unit. */
+  const lines = px => Math.round(px / FOLD_LINE);
+  const spend = px => Math.ceil((px + FOLD_GAP) / FOLD_LINE);
+
+  function foldCard(node) {
+    const fold = node.querySelector('.fold');
+    if (!fold) return;
+    const body = fold.querySelector('.blk-body');
+    const full = body.textContent;
+    fold.dataset.full = full;
+
+    let used = 0;
+    Array.prototype.forEach.call(node.querySelectorAll('.card-body > *'), b => {
+      if (b !== fold) used += spend(b.offsetHeight);
+    });
+    const n = FOLD_BUDGET - used - 1;
+    const bodyLines = lines(body.offsetHeight);
+
+    /* ② — folding would not buy a line */
+    if (bodyLines - n < 2) return;
+
+    /* ① and ③ — how much of the read survives */
+    let kept = '';
+    if (n > 1) {
+      const parts = sentences(full);
+      let take = '';
+      for (let i = 0; i < parts.length; i++) {
+        const probe = (take ? take + ' ' : '') + parts[i];
+        body.textContent = probe;
+        if (body.offsetHeight > n * FOLD_LINE) break;
+        take = probe;
+      }
+      kept = take;
+    }
+
+    body.textContent = kept;
+    body.style.height = kept ? '' : '0px';
+    fold.appendChild(showMoreRow(fold));
+  }
+
+  function showMoreRow(fold) {
+    const row = btn('showmore', 'Show more');
+    row.textContent = 'Show more';
+    row.addEventListener('click', e => { e.stopPropagation(); setFolded(fold, false); });
+    return row;
+  }
+
+  /* One function both ways. The design gives the open card no way back, so
+     only the opening direction has a control — but the closing direction is
+     the same three lines, and the prototype's own reset uses it. */
+  function setFolded(fold, folded) {
+    if (fold.dataset.busy) return;
+    const body = fold.querySelector('.blk-body');
+    const row = fold.querySelector('.showmore');
+    const fromH = body.offsetHeight;
+
+    if (!folded) {
+      if (!row) return;
+      body.textContent = fold.dataset.full;
+    } else {
+      if (row) return;
+      /* Re-derive the fold rather than remembering it: the card may have been
+         re-measured since, and the formula is cheap. */
+      const card = fold.closest('.card');
+      body.style.height = '';
+      foldCard(card);
+      const back = fold.querySelector('.showmore');
+      if (!back) return;                      /* rule ② — nothing to fold */
+      back.style.height = '0px';
+      back.style.opacity = '0';
+    }
+
+    body.style.height = '';
+    const toH = body.offsetHeight;
+    body.style.height = fromH + 'px';
+    const liveRow = fold.querySelector('.showmore');
+    if (liveRow && !folded) { liveRow.style.height = FOLD_ROW + 'px'; liveRow.style.opacity = '1'; }
+
+    /* Commit the start frame before the end frame, or the browser coalesces
+       the two and the card jumps. */
+    void body.offsetHeight;
+    fold.classList.add('anim');
+    fold.dataset.busy = '1';
+    body.style.height = toH + 'px';
+    if (liveRow) {
+      liveRow.style.height = folded ? FOLD_ROW + 'px' : '0px';
+      liveRow.style.opacity = folded ? '1' : '0';
+    }
+
+    const done = () => {
+      fold.classList.remove('anim');
+      delete fold.dataset.busy;
+      body.style.height = toH ? '' : '0px';
+      if (!folded && liveRow) liveRow.remove();
+      if (folded && liveRow) { liveRow.style.height = ''; liveRow.style.opacity = ''; }
+    };
+    let ended = false;
+    const onEnd = ev => {
+      if (ev.target !== body || ev.propertyName !== 'height' || ended) return;
+      ended = true;
+      body.removeEventListener('transitionend', onEnd);
+      done();
+    };
+    body.addEventListener('transitionend', onEnd);
+    /* A height that does not change fires no transitionend. */
+    setTimeout(() => { if (!ended) { ended = true; body.removeEventListener('transitionend', onEnd); done(); } }, 420);
+  }
+
   function render() {
     /* Reset the media turn with the list, so the alternation is a property of
        the feed's order rather than of how many times it has been rebuilt. */
     mediaTurn = 0;
     cardsEl.replaceChildren();
     CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
+    /* The fold is measured, so it runs once the cards are in the document. */
+    foldPass();
+  }
+
+  function foldPass() {
+    Array.prototype.forEach.call(cardsEl.querySelectorAll('.card'), foldCard);
   }
 
   /* There are two cards waiting, and only the first refresh gets them. Every
@@ -1260,6 +1456,8 @@
         const node = cardNode(card);
         node.classList.add('enter');
         cardsEl.insertBefore(node, cardsEl.firstElementChild);
+        /* Measured, so it has to happen after the node is in the document. */
+        foldCard(node);
       });
       spinner.classList.remove('spinning');
       spinner.style.opacity = '0';

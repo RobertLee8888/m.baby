@@ -119,6 +119,7 @@
   --gutter: 16px;
   --refresh-h: 64px;
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-fold: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* ─────────────────────────────────────────────
@@ -610,6 +611,51 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .blk-lead { font-weight: 500; }
 .blk-title { padding-top: 2px; font-size: 16px; font-weight: 500; line-height: 26px; }
+
+/* ── Body + Show more (1796:18622) ──
+   One card has to fit one screen, so the read folds and everything else stays
+   whole. The two rows are a block of their own inside the content's 12, and
+   the frame stacks them at 0 — the Show more row sits directly on the last
+   line of the body, which is why folding to n lines and adding the row costs
+   exactly one line more than n.
+
+   Both rows animate their height, and they animate *together*: the body grows
+   while the row closes, so on a tap the quote and the media below are pushed
+   down by what the body gained and pulled back up by the 22 the row gave up,
+   in one movement. `--ease` decelerates hard, which is what makes it read as
+   quick-then-settled rather than as a slow slide. ── */
+
+.fold { display: flex; width: 100%; flex-direction: column; }
+/* The body is clipped rather than re-flowed: the full text is already in the
+   node when the animation starts, so nothing re-wraps mid-transition. */
+.fold .blk-body { overflow: hidden; }
+/* Not `--ease`. That curve is the pull's, and it puts 78% of the travel in the
+   first fifth of the time — on a 110px height change that reads as a snap
+   followed by a crawl, which is the "instant" the brief rules out. This one is
+   an ease-out quad, solved rather than guessed: 45% of the distance at a
+   quarter of the duration, 77% at half, 94% at three quarters, and no tail.
+   One continuous quick movement. The row's opacity leaves faster than its
+   height, so the label is gone before the gap it held has finished closing. */
+.fold.anim .blk-body { transition: height .3s var(--ease-fold); }
+.fold.anim .showmore { transition: height .3s var(--ease-fold), opacity .16s ease; }
+
+/* Feed Card - Show more (1733:17497): Medium/12 in main/m1, left aligned, no
+   chevron, and no Show less on the way back — 22 tall because the frame's
+   instance is, which is the line the formula reserves. */
+.showmore {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  height: 22px;
+  overflow: hidden;
+  color: var(--m1);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: opacity .16s ease;
+}
+.showmore:active { opacity: .55; }
 
 /* Quote: br03 tile, 12 in from three sides and 8 at the foot, with the
    mark riding the top-right corner (1129:60241) */
