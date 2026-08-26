@@ -64,10 +64,12 @@
 
      Ten of these carry the numbers Alva's own production feed was quoting on
      the morning of 26 August 2026 — last price, day change, and the six-week
-     high and low the Alpha Radar chart labels. `lo`/`hi` are what the feed's
-     sparkline is drawn between, so the picture and the labels cannot drift
-     apart. Five older names (META, BABA, AAOI, AVGO, AMD) belong to the
-     simulated event and anomaly cards and carry plausible numbers instead.
+     high and low the Alpha Radar chart labels. `lo`/`hi` are the range the
+     ticker sheet quotes; the feed's tiles are the design's own two pictures
+     and do not claim to be drawn from them. The remaining names (META, BABA,
+     AAOI, AVGO, AMD, NBIS, PLTR) belong to the simulated event and anomaly
+     cards, or to a batch the page did not price, and carry plausible numbers
+     instead.
      ────────────────────────────── */
 
   const TICKERS = {
@@ -351,11 +353,11 @@
     reuters: A + 'alpha-source-reuters.png',
     cnn: A + 'feed-avatar-src2.png',
     semi: A + 'avatar-semianalysis.png',
-    reddit: A + 'src-reddit.svg',
+    llama: A + 'alpha-ready-avatar-1.png',
     hf: A + 'src-hf.svg',
 
     /* Brands that speak in their own name, in their own mark. */
-    dwarkesh: A + 'alpha-source-podcast.png',
+    dwarkesh: A + 'alpha-podcast-3.png',
     pplx: A + 'src-perplexity.svg',
     openai: A + 'src-openai.svg',
 
@@ -392,10 +394,35 @@
     dilute: A + 'alpha-ready-avatar-3.png',
   };
 
-  /* x() carries the platform badge on the avatar's corner; pic() does not. */
-  const x = (name, handle, time, avatar, quote) =>
-    ({ name, handle, time, badge: 'x', img: avatar, quote });
-  const pic = (name, handle, time, avatar, quote) => ({ name, handle, time, img: avatar, quote });
+  /* A source is either a voice on somebody else's platform or a publisher on
+     its own channel, and that is the whole rule for the badge. An account on
+     X, a show on a podcast feed, a channel on YouTube, a subreddit — each
+     shows the channel's own avatar with the platform's mark on the corner. An
+     outlet publishing on its own site, a company filing, an earnings call: no
+     badge, because there is no third party to name. CNN's X account gets the
+     X mark; cnn.com does not.
+
+     The platform is read off the handle rather than typed in beside it, so a
+     source cannot say "Podcast · Aug 25" and wear the wrong mark. */
+  const PLATFORM = [
+    [/podcast/i,        'podcast'],
+    [/youtube/i,        'youtube'],
+    [/reddit|^r\//i,    'reddit'],
+    [/(^|[\s·])X([\s·]|$)|^@/, 'x'],
+  ];
+  const platformOf = handle => {
+    for (const [re, name] of PLATFORM) if (re.test(handle)) return name;
+    return null;
+  };
+  const BADGE = {
+    x: 'ui-social-x.svg',
+    podcast: 'ui-social-podcast.svg',
+    youtube: 'ui-social-youtube.svg',
+    reddit: 'ui-social-reddit.svg',
+  };
+
+  const src = (name, handle, time, avatar, quote) =>
+    ({ name, handle, time, badge: platformOf(handle), img: avatar, quote });
 
   /* ──────────────────────────────
      Sources
@@ -416,65 +443,65 @@
 
   /* ── The ten Alpha Radar batches, 26 August 2026 ── */
 
-  const S_DWARKESH_GW = pic('Dwarkesh Podcast', 'Podcast · Aug 25', '1h ago', AV.dwarkesh,
+  const S_DWARKESH_GW = src('Dwarkesh Podcast', 'Podcast · Aug 25', '1h ago', AV.dwarkesh,
     "OpenAI and Anthropic are estimated to have grown from roughly 2 gigawatts each or less at the start of the year to above 5 gigawatts by year-end, accounting for about 30% of added compute. Based on signed capacity, they could take 40%-50% of next year's compute and half of incremental compute by the end of next year; if the trend continues, they could control most usable global flops by late 2028, though reaching 100 gigawatts may require paying $25-$50 million per megawatt.");
 
   const SRC_TSM_CUSTOM = [
     S_DWARKESH_GW,
-    x('@jukan05', 'X · Aug 26', '1h ago', AV.jukan,
+    src('@jukan05', 'X · Aug 26', '1h ago', AV.jukan,
       'Even when it comes to the semiconductors that form the foundation of AI. What Jalapeño made me realize is just how much lower the barrier to chip design is going to become. Using Codex with GPT-Astra, the team brought three open-weight models that were not part of Jalapeño’s original production plan to high performance within two months.'),
   ];
 
   const SRC_GOOGL_GEMINI = [
-    x('Sundar Pichai', '@sundarpichai', '1h ago', AV.sundar,
+    src('Sundar Pichai', '@sundarpichai', '1h ago', AV.sundar,
       "Today, we're introducing industry-specific solutions on Gemini Enterprise, starting with Gemini Enterprise for Legal and Financial Services, with more industries to come. Gemini Enterprise for Legal is designed for law firms and in-house legal teams to help find and synthesize information, and navigate complex matters more efficiently. It has four capabilities →"),
   ];
 
   const SRC_SMTC_16T = [
-    x('@aleabitoreddit', 'X · Aug 26', '2h ago', AV.alea,
+    src('@aleabitoreddit', 'X · Aug 26', '2h ago', AV.alea,
       'Availability currently matters more than pricing, with no near-term erosion expected on booked optical orders as cost increases are being passed through. Semtech expects CW-laser transceiver revenue to begin in H1 FY28 and said capacity is limited; management expects 50%+ year-end share for 1.6T FiberEdge, with qualifications finishing early and current capacity potentially insufficient for FY28, especially H2. Revenue and EPS were $341.9M vs. ~$329M expected, $410M vs. ~$360M, and $1.05 vs. $0.73, while unit forecasts have risen from 50M to 80-90M.'),
   ];
 
   const SRC_FRO_VLCC = [
-    x('@marhelmdata', 'X · Aug 26', '2h ago', AV.marhelm,
+    src('@marhelmdata', 'X · Aug 26', '2h ago', AV.marhelm,
       '35) War-risk insurance: $250k → up to $10M per Hormuz transit India’s July crude import bill: +41% YoY. 365 tankers changed hands in Jan–Jul 2026 vs 239 in 2025, up ~half YoY.'),
   ];
 
   const SRC_RVMD_KRAS = [
-    x('@biomaven', 'X · Aug 26', '3h ago', AV.biomaven,
+    src('@biomaven', 'X · Aug 26', '3h ago', AV.biomaven,
       'Note it outperformed adagrasib in a KRAS G12C-amplified model shows preclinical efficacy in switch-II-pocket resistance mutations. So likely will be at least tried in resistance to G12C drugs. In mice models at least it appears to be brain penetrant. Efflux might prove an issue - might need to combine with ABCB1 inhibitor:'),
   ];
 
   const SRC_NVDA_LOCAL = [
-    x('Perplexity', '@perplexity_ai', '3h ago', AV.pplx,
+    src('Perplexity', '@perplexity_ai', '3h ago', AV.pplx,
       'With an on-device 27B model, our harness scores 82.6% on real knowledge work, beating open-source harnesses Pi and Hermes. Big thanks to @nvidia for working together with us and supporting this research on DGX Spark as well as enabling an open ecosystem around cost-effective open-weight models, inference frameworks, and hardware with unified memory. https://t.co/FECFESVgYk'),
   ];
 
   const SRC_EDA_EMULATION = [
-    x('sarah guo', '@saranormous', '5h ago', AV.saranormous,
+    src('sarah guo', '@saranormous', '5h ago', AV.saranormous,
       'people are so excited about alphachip etc. (cool work! ) for ai floorplanning but it’s a relatively small fraction of the full workflow. a lot more to do'),
   ];
 
   const SRC_MSFT_AGENTS = [
-    x('ChatGPT', '@ChatGPTapp', '5h ago', AV.openai,
+    src('ChatGPT', '@ChatGPTapp', '5h ago', AV.openai,
       'ChatGPT Work can now use its computer and browser to sign in to websites on web and mobile without seeing users’ usernames or passwords. It can handle tasks including booking appointments, managing utilities and insurance, finding doctors or apartments, processing reimbursements and invoices, drafting outreach and replies, filling permit applications, and analyzing ad campaigns.'),
   ];
 
   const SRC_TSM_PRICING = [
-    pic('Dwarkesh Podcast', 'Podcast · Aug 25', '7h ago', AV.dwarkesh,
+    src('Dwarkesh Podcast', 'Podcast · Aug 25', '7h ago', AV.dwarkesh,
       "OpenAI and Anthropic's compute grew from roughly 2 gigawatts each or less at the start of the year to above 5 gigawatts by year-end, with the two labs estimated to take 40%-50% of incremental compute next year and half by the end of 2027. If current trends continue, they could control most usable flops by late 2028, but reaching 100 gigawatts may require compute prices of $25 million-$50 million per megawatt and roughly $11 trillion in ecosystem CapEx through 2029, including $5 trillion of debt."),
-    x('@beth_kindig', 'X · Aug 26', '7h ago', AV.kindig,
+    src('@beth_kindig', 'X · Aug 26', '7h ago', AV.kindig,
       "Samsung's 4nm process SF4 reportedly saw prices for Chinese and US customers rise 10-15% in July, while Taiwanese customers saw price hikes of 5-10%, while 5nm prices rose 10-15%. $TSM $NVDA $AMD"),
   ];
 
   const SRC_CBRS_ULTRAFAST = [
-    x('Tibo', 'X · Aug 26', '7h ago', AV.tibo,
+    src('Tibo', 'X · Aug 26', '7h ago', AV.tibo,
       "Tomorrow's fast will feel like today's ultrafast. As I've mentioned before, we’re pushing to bring this to as many people as possible."),
   ];
 
   /* Cheaper adequate models, and where the volume goes — 1 */
   const SRC_INFERENCE_VOLUME = [
-    x('Olivia Moore', 'X · Aug 26', '4m ago', AV.olivia,
+    src('Olivia Moore', 'X · Aug 26', '4m ago', AV.olivia,
       'Many tasks may have reached diminishing returns on intelligence, that products may stop automatically switching to each new frontier model, and that this creates many opportunities for application builders to reduce COGS.'),
   ];
 
@@ -482,65 +509,65 @@
 
   /* Semtech's 5.5% session — 4 */
   const SRC_SMTC_MOVE = [
-    pic('Semtech Corp', 'Q2 FY27 results · press release', '1h ago', AV.smtc,
+    src('Semtech Corp', 'Q2 FY27 results · press release', '1h ago', AV.smtc,
       'Net sales of $341.9 million and non-GAAP earnings per share of $1.05, both above the high end of guidance.'),
-    x('Bloomberg', '@business', '1h ago', AV.bloomberg,
+    src('Bloomberg', '@business', '1h ago', AV.bloomberg,
       'Semtech rose the most in four months after raising its 1.6T transceiver unit forecast.'),
-    pic('Reuters', 'reuters.com', '2h ago', AV.reuters,
+    src('Reuters', 'reuters.com', '2h ago', AV.reuters,
       'Analysts framed the raise as a capacity story rather than a pricing one, with qualifications finishing ahead of schedule.'),
-    pic('SemiAnalysis', 'semianalysis.com', '3h ago', AV.semi,
+    src('SemiAnalysis', 'semianalysis.com', '3h ago', AV.semi,
       'The interesting number is not the beat, it is the unit forecast going from 50M to 80-90M without a matching capacity plan.'),
   ];
 
   /* Alibaba's open-weight downloads — 7 */
   const SRC_DOWNLOADS = [
-    x('Bloomberg', '@business', '2h ago', AV.bloomberg,
+    src('Bloomberg', '@business', '2h ago', AV.bloomberg,
       'Alibaba’s open-weight Qwen family passed 3 billion cumulative downloads over the past six months, ahead of Meta’s Llama.'),
-    pic('Reuters', 'reuters.com', '3h ago', AV.reuters,
+    src('Reuters', 'reuters.com', '3h ago', AV.reuters,
       'Chinese open-source releases are being pulled into Western fine-tuning pipelines at a rate that surprised even their authors.'),
-    pic('Alibaba Group', 'Q1 FY27 earnings call', '1d ago', AV.baba,
+    src('Alibaba Group', 'Q1 FY27 earnings call', '1d ago', AV.baba,
       'Model distribution is now a first-order channel for the cloud business, not a marketing line.'),
-    pic('Hugging Face', 'Trending · August 2026', '6h ago', AV.hf,
+    src('Hugging Face', 'Trending · August 2026', '6h ago', AV.hf,
       'Four of the ten most-downloaded text models this month are Qwen derivatives.'),
-    x('Weights & Moats', '@weightsandmoats', '5h ago', AV.weights,
+    src('Weights & Moats', '@weightsandmoats', '5h ago', AV.weights,
       'Download counts are a proxy for mindshare, not revenue. Worth keeping the two apart.'),
-    pic('SemiAnalysis', 'semianalysis.com', '9h ago', AV.semi,
+    src('SemiAnalysis', 'semianalysis.com', '9h ago', AV.semi,
       'Meta has begun benchmarking its next open release against Qwen rather than against its own previous version.'),
-    pic('r/LocalLLaMA', 'Reddit thread', '11h ago', AV.reddit,
+    src('r/LocalLLaMA', 'Reddit thread', '11h ago', AV.llama,
       'The fine-tune ecosystem picked a favourite about a week in, and it has not moved since.'),
   ];
 
   /* AAOI's $600M at-the-market program — 5 */
   const SRC_AAOI = [
-    pic('Applied Optoelectronics', 'SEC filing · Form 424B5', '3h ago', AV.aaoi,
+    src('Applied Optoelectronics', 'SEC filing · Form 424B5', '3h ago', AV.aaoi,
       'The company may offer and sell shares of common stock having an aggregate offering price of up to $600,000,000.'),
-    x('Bloomberg', '@business', '3h ago', AV.bloomberg,
+    src('Bloomberg', '@business', '3h ago', AV.bloomberg,
       'Optical names gave back most of the AI-datacenter premium in a single session.'),
-    x('CNN Business', '@cnnbusiness', '4h ago', AV.cnn,
+    src('CNN Business', '@cnnbusiness', '4h ago', AV.cnn,
       'The second leg down came without a matching move in the optical peer group.'),
-    pic('Reuters', 'reuters.com', '4h ago', AV.reuters,
+    src('Reuters', 'reuters.com', '4h ago', AV.reuters,
       'The program is roughly a fifth of the company’s market value at current prices.'),
-    x('Dilution Math', '@dilutionmath', '5h ago', AV.dilute,
+    src('Dilution Math', '@dilutionmath', '5h ago', AV.dilute,
       'Roughly 18% dilution at current prices, assuming the full program is used.'),
   ];
 
   /* Broadcom's fourth custom-accelerator customer — 4 */
   const SRC_XPU = [
-    pic('Broadcom', 'Q3 FY26 earnings call', '4h ago', AV.avgo,
+    src('Broadcom', 'Q3 FY26 earnings call', '4h ago', AV.avgo,
       'Our AI accelerator backlog now extends four quarters, and it is customer-committed rather than forecast.'),
-    pic('Reuters', 'reuters.com', '4h ago', AV.reuters,
+    src('Reuters', 'reuters.com', '4h ago', AV.reuters,
       'Two people familiar with the schedule said first silicon is targeted for the second half of next year.'),
-    pic('Microsoft', 'Azure engineering blog', '5h ago', AV.msft,
+    src('Microsoft', 'Azure engineering blog', '5h ago', AV.msft,
       'The next generation of the inference fleet is deliberately dual-sourced.'),
-    pic('AMD', 'Q2 FY26 earnings call', '1d ago', AV.amd,
+    src('AMD', 'Q2 FY26 earnings call', '1d ago', AV.amd,
       'MI-series revenue is now split across more than one hyperscale customer.'),
   ];
 
   /* Refresh · AAOI's first tranche prices — 2 */
   const SRC_AAOI_PRICING = [
-    pic('Applied Optoelectronics', 'SEC filing · 424B5 supplement', 'just now', AV.aaoi,
+    src('Applied Optoelectronics', 'SEC filing · 424B5 supplement', 'just now', AV.aaoi,
       'The shares offered hereby are being sold at a price representing a discount to the last reported sale price.'),
-    x('Dilution Math', '@dilutionmath', '3m ago', AV.dilute,
+    src('Dilution Math', '@dilutionmath', '3m ago', AV.dilute,
       'First tranche is being marketed below last night’s close. That is the whole move this morning.'),
   ];
 
@@ -862,86 +889,22 @@
     return wrap;
   }
 
-  /* Six weeks of closes for the tile under a card: a seeded walk mapped so
-     its low is the low the tile labels, its high is the high, and its last
-     point is the price in the header. Nothing here is fetched, but nothing
-     here disagrees with the numbers printed beside it either — which is the
-     part that was wrong while these tiles were three screenshots of NVDA. */
-  function rangeSeries(seed, lo, hi, last, n) {
-    const r = rng(seed);
-    const w = [];
-    let v = 0;
-    for (let i = 0; i < n; i++) { v += (r() - 0.5) * 2 + (r() - 0.5) * 0.8; w.push(v); }
-    let mn = w[0], mx = w[0];
-    w.forEach(k => { if (k < mn) mn = k; if (k > mx) mx = k; });
-    const span = (mx - mn) || 1;
-    const y = w.map(k => lo + (hi - lo) * ((k - mn) / span));
-    /* Land it on the quoted price without moving the two extremes the labels
-       name: ramp the difference across the last few points. */
-    const tail = Math.min(5, n - 1);
-    const d = last - y[n - 1];
-    for (let i = 0; i < tail; i++) {
-      const j = n - 1 - i;
-      y[j] = Math.max(lo, Math.min(hi, y[j] + d * (1 - i / tail)));
-    }
-    y[n - 1] = last;
-    return y;
-  }
+  /* The tile is one of the design's own two chart pictures, alternating down
+     the feed — the line chart, then the candles, then the line chart again.
+     Alva cannot render a compliant chart image inside a prototype, so these
+     are indicative art rather than this ticker's tape, and pretending
+     otherwise is what the generated sparkline they replace was doing: it drew
+     a curve precise enough to be read as data it did not have.
 
-  const SVGNS = 'http://www.w3.org/2000/svg';
-  const svgEl = (tag, attrs, text) => {
-    const n = document.createElementNS(SVGNS, tag);
-    Object.keys(attrs || {}).forEach(k => n.setAttribute(k, attrs[k]));
-    if (text != null) n.textContent = text;
-    return n;
-  };
-
-  /* The tile the Alpha Radar feed draws: ticker top left, the range's high
-     and low on the right, the two dates along the bottom, and the closes in
-     between. 240 × 135 is the design's media ratio, so the same picture fits
-     the full-width block and the scrolling strip without a second layout. */
-  function sparkNode(t) {
-    const W = 240, H = 135, X0 = 12, X1 = 228, Y0 = 28, Y1 = 101;
-    const n = 30;
-    const y = rangeSeries(t.seed ^ 0x5f3a, t.lo, t.hi, t.price, n);
-    const span = (t.hi - t.lo) || 1;
-    const px = i => X0 + (X1 - X0) * (i / (n - 1));
-    const py = v => Y1 - (Y1 - Y0) * ((v - t.lo) / span);
-
-    /* Catmull-Rom through the closes, converted to cubics: the production
-       tile draws a curve, not a polyline, and a 34-point polyline at this
-       size reads as noise. The control points are clamped to the plot so a
-       curve can never bulge past the high and low the tile labels. */
-    const P = y.map((v, i) => [px(i), py(v)]);
-    const clamp = v => Math.max(Y0, Math.min(Y1, v));
-    let d = 'M' + P[0][0].toFixed(2) + ' ' + P[0][1].toFixed(2);
-    for (let i = 0; i < P.length - 1; i++) {
-      const p0 = P[i > 0 ? i - 1 : 0], p1 = P[i], p2 = P[i + 1];
-      const p3 = P[i + 2 < P.length ? i + 2 : P.length - 1];
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, clamp(p1[1] + (p2[1] - p0[1]) / 6)];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, clamp(p2[1] - (p3[1] - p1[1]) / 6)];
-      d += 'C' + c1[0].toFixed(2) + ' ' + c1[1].toFixed(2) + ',' +
-                 c2[0].toFixed(2) + ' ' + c2[1].toFixed(2) + ',' +
-                 p2[0].toFixed(2) + ' ' + p2[1].toFixed(2);
-    }
-
-    const svg = svgEl('svg', {
-      class: 'spark', viewBox: '0 0 ' + W + ' ' + H,
-      preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false',
-    });
-    svg.appendChild(svgEl('path', { class: 'spark-area', d: d + 'L' + X1 + ' ' + Y1 + 'L' + X0 + ' ' + Y1 + 'Z' }));
-    svg.appendChild(svgEl('path', { class: 'spark-line', d: d }));
-    svg.appendChild(svgEl('text', { class: 'spark-sym', x: X0, y: 20 }, '$' + t.sym));
-    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 20, 'text-anchor': 'end' }, '$' + t.hi.toFixed(2)));
-    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 113, 'text-anchor': 'end' }, '$' + t.lo.toFixed(2)));
-    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X0, y: 125 }, 'Jul 15'));
-    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 125, 'text-anchor': 'end' }, 'Aug 25'));
-    return svg;
-  }
+     The turn is a counter the feed resets on every render, so the same list
+     always alternates the same way. Both pictures are light-ground, which is
+     why they keep `--media-filter` — in dark mode the raster inverts. */
+  const MEDIA = [A + 'feed-media-line.webp', A + 'feed-media-candles.webp'];
+  let mediaTurn = 0;
 
   function chartTile(t, cls) {
     const tile = btn(cls, t.sym + ' chart');
-    tile.appendChild(sparkNode(t));
+    tile.appendChild(img(MEDIA[mediaTurn++ % MEDIA.length]));
     tile.addEventListener('click', e => { e.stopPropagation(); openFullChart(t); });
     return tile;
   }
@@ -1078,6 +1041,9 @@
   let served = false;   /* the feed has one batch to give; after that it is caught up */
 
   function render() {
+    /* Reset the media turn with the list, so the alternation is a property of
+       the feed's order rather than of how many times it has been rebuilt. */
+    mediaTurn = 0;
     cardsEl.replaceChildren();
     CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
   }
@@ -1399,9 +1365,9 @@
     const who = el('span', 'src-who');
     const av = el('span', 'src-av');
     av.appendChild(img(s.img));
-    if (s.badge === 'x') {
+    if (s.badge && BADGE[s.badge]) {
       const badge = el('span', 'src-badge');
-      badge.appendChild(icon('ui-social-x.svg'));
+      badge.appendChild(icon(BADGE[s.badge]));
       av.appendChild(badge);
     }
     who.appendChild(av);

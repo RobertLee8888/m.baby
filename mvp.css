@@ -424,7 +424,12 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
    The refresh gutter hangs off the bottom of that spacer, so at rest it sits
    behind the topbar and a pull brings it out from under it. */
-.lead { position: relative; height: var(--topbar-h); }
+/* Both of these stand on `background/b0` (1710:17910) rather than on the card
+   ground: they are not content, they are the gaps between content — the space
+   a pull opens above the list, and the seam where the new batch meets what you
+   had already read. b0 is the app's floor, and letting the floor show through
+   is what makes both of them read as gaps rather than as rows. */
+.lead { position: relative; height: var(--topbar-h); background: var(--bg-b0); }
 .refresh {
   position: absolute;
   right: 0;
@@ -433,6 +438,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: grid;
   height: var(--refresh-h);
   place-items: center;
+  background: var(--bg-b0);
 }
 /* When the pull comes back with nothing, the gutter says so in the place the
    spinner was standing and then closes a second later. A toast for this is
@@ -615,13 +621,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* Quote: br03 tile, 12 in from three sides and 8 at the foot, with the
    mark riding the top-right corner (1129:60241) */
 
+/* No `overflow: hidden` here. The mark's box sits at y −5 in the frame — it
+   hangs above the tile's top edge on purpose, and Figma renders the component
+   193 tall against its own 188 to prove it. Clipping the tile sheared the top
+   off both bars. Nothing else inside overflows, so there is nothing to clip. */
 .quote {
   position: relative;
   display: flex;
   width: 100%;
   flex-direction: column;
   gap: 8px;
-  overflow: hidden;
   padding: 12px 12px 8px;
   border-radius: 8px;
   background: var(--br03);
@@ -710,22 +719,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .media-tile img { width: 100%; height: 100%; object-fit: cover; filter: var(--media-filter); }
 .media:active,
 .media-tile:active { transform: scale(.985); }
-
-/* The tile is a drawing, not a screenshot: an inline SVG, so it takes the
-   theme's own tokens and needs none of the invert `--media-filter` does to a
-   raster. `.media` is 100% wide and `.media-tile` is a fixed 240 — the same
-   240 × 135 viewBox fits both because the frame's ratio is 240 / 135. */
-.spark { display: block; width: 100%; height: 100%; }
-.spark-area { fill: var(--m3); opacity: .12; }
-.spark-line {
-  fill: none;
-  stroke: var(--m3);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.spark-sym { fill: var(--n9); font-size: 9px; font-weight: 500; }
-.spark-axis { fill: var(--n5); font-size: 8px; font-weight: 400; }
 
 /* Two names, two charts, stacked at the body's own 12. */
 .chart-stack { display: flex; flex-direction: column; gap: 12px; }
@@ -846,7 +839,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: 12px;
   height: 48px;
   padding: 0 var(--gutter);
-  background: var(--b10);
+  background: var(--bg-b0);
   box-shadow: inset 0 var(--hair) 0 var(--l12), inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
 .seen-line i {

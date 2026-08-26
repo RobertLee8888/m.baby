@@ -80,10 +80,10 @@ it.
 | `text` | Markdown/M | Regular 14/22 |
 | `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
-| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
+| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, speaker at 20px, the mark hanging 5 above the top-right corner |
 | `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 16/26, speaker underneath at 16px in `text/n5` |
-| `media` | Media = 1 | gutter to gutter, 240 × 135 |
-| `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
+| `media` | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
+| `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
 
 ### Eleven of the fifteen cards are real
 
@@ -176,6 +176,15 @@ is a move you want measured against what you hold (**What's my impact**), and
 a source is a thesis you want taken further (**Dig Deeper**). The card already
 knows which question is worth asking; saying so out loud is most of the value.
 
+### The mark hangs outside the tile
+
+The `”` is 64px Delight Bold in `main/m3` at 60%, and its box sits at y −5 in
+the frame — it hangs above the tile's top edge on purpose. Figma renders the
+component 193 tall against its own 188 height, which is the proof. The tile
+carried `overflow: hidden` and sheared the top off both bars; nothing else
+inside the tile overflows, so the fix is simply not to clip it. It now hangs 5
+into the 12 of gap above, which is what the frame does.
+
 ### Markdown - Quote has two jobs
 
 `1642:17075` ships two variants and the component's own description says when
@@ -227,11 +236,10 @@ decided who the source is, and at 18px in an overlapping stack it reads as
 placeholder art. Every row carries a real image instead, from one of three
 places:
 
-- **The outlet's own mark** — Bloomberg's B, the Reuters dots, CNN, Apple
-  Podcasts, SemiAnalysis, and Reddit and Hugging Face fetched into
-  `assets/src-*.svg`. Square glyph marks only: a wordmark squeezed into a
-  32px circle is unreadable, which is why the wide ones were thrown away
-  again after being downloaded.
+- **The outlet's own mark** — Bloomberg's B, the Reuters dots, CNN,
+  SemiAnalysis, and Hugging Face fetched into `assets/src-*.svg`. Square glyph
+  marks only: a wordmark squeezed into a 32px circle is unreadable, which is
+  why the wide ones were thrown away again after being downloaded.
 - **The company's own logo, when the company is the one talking.** A
   Form 8-K row shows the company that filed it, an earnings-call row shows
   the company whose call it was — and those are the same seven files the
@@ -239,13 +247,50 @@ places:
   why "SEC EDGAR · AAOI · Form 424B5" became "Applied Optoelectronics ·
   SEC filing · Form 424B5": the filer is the source, and the filer has a
   logo.
-- **The account's avatar**, for the nine handles. Nine faces, nine handles,
-  and a handle keeps its face wherever it turns up — the same account on two
-  stories is the same person.
+- **The channel's own avatar**, for every account. A handle keeps its face
+  wherever it turns up — the same account on two stories is the same person,
+  or the same show.
 
 The press cast is small on purpose: it is the outlets whose marks read at
 32px. Rows that used to be attributed to an outlet with no usable mark were
 re-attributed rather than given a letter tile.
+
+### The avatar is the channel, the badge is the platform
+
+A source is either a voice on somebody else's platform or a publisher on its
+own channel, and that is the whole rule. An account on X, a show on a podcast
+feed, a channel on YouTube, a subreddit: the row shows **the channel's own
+avatar** with the platform's mark on the corner. An outlet publishing on its
+own site, a company filing, an earnings call: **no badge**, because there is no
+third party to name. CNN's X account wears the X mark; cnn.com does not.
+
+Two rows were breaking that rule by showing the *platform* where the channel
+belonged. Dwarkesh Podcast carried the Apple Podcasts app icon as its avatar
+and no badge; r/LocalLLaMA carried Reddit's logo the same way. Both now show a
+channel avatar with a podcast or Reddit badge, exactly as the X rows always
+did — which is what the platform logo was standing in for, badly, all along.
+
+The platform is derived from the handle rather than typed in beside it:
+
+```js
+const PLATFORM = [
+  [/podcast/i,                 'podcast'],
+  [/youtube/i,                 'youtube'],
+  [/reddit|^r\//i,             'reddit'],
+  [/(^|[\s·])X([\s·]|$)|^@/,   'x'],
+];
+```
+
+So a row cannot say "Podcast · Aug 25" and wear the wrong mark, and there is
+one `src()` helper instead of the old `x()` / `pic()` pair that made the badge
+a choice at the call site. Of the four marks, three are in use — 14 X rows, one
+podcast, one subreddit, 13 own-channel rows with no badge. Nothing in this
+build is a YouTube source; the rule covers it when one arrives.
+
+The badges are monochrome masks over `currentColor` on a white disc, like the X
+badge the design draws (`Avatar / X source`), not brand-coloured logos: at 16px
+on the corner of a 32px avatar, four brand colours fight the avatar underneath
+and each other.
 
 ### Where the marks come from
 
@@ -343,27 +388,35 @@ as a line someone forgot to break. What it is is a row that says where you
 stopped, so it is banded like a row. Its bottom rule is the next card's top
 rule — one line, not two.
 
-### The tile is a drawing, not a screenshot
+It stands on `background/b0` (1710:17910), and so does the gutter a pull opens
+above the list. Both are gaps between content rather than content, and letting
+the app's own floor show through is what makes them read that way: on the card
+ground they were two more white rows in a stack of white rows, and the seam
+between "what just arrived" and "what you had already read" is exactly the
+thing that has to *not* look like a card.
 
-For eight rounds the chart under a card was one of three Figma exports of an
-NVDA chart, which meant a card about AVGO showed a tile labelled NVDA. It is
-an inline SVG now: thirty closes from a seeded walk, mapped so the low is the
-low the tile prints, the high is the high, and the last point is the price in
-the header — then drawn as a Catmull-Rom curve with the control points clamped
-to the plot so the line can never bulge past the two numbers beside it.
+### The tile is indicative art, and says so
 
-Three things fall out of that. There is one tile per ticker, so a card about
-two names draws two and nobody has to wonder which tape a tile belongs to. The
-tile takes the theme's own tokens, so Dark needs none of the `--media-filter`
-inversion a raster does. And the labels are the Alpha Radar tile's labels —
-`$SYM`, the high, the low, `Jul 15`, `Aug 25` — at the design's own 240 × 135
-media ratio, which is why the same viewBox fits both the full-width block and
-the 240-wide strip.
+The chart under a card is one of the design's own two pictures — the line
+chart, then the candles, alternating down the feed. That is a deliberate step
+back from the generated SVG sparkline that stood here for a round.
 
-The fullscreen chart is the same idea one level down: it generates the
-ticker's own session rather than scaling one fixed crash shape to everything,
-because that shape put "Previous close" outside the visible range on any name
-that rose.
+The sparkline was drawn from the ticker's own low, high and last price, and
+that was the problem: it was precise enough to be *read* as this name's tape
+while being a seeded walk. A prototype cannot render a compliant Alva chart
+image, so the honest move is a picture that is visibly a placeholder rather
+than a drawing accurate enough to be mistaken for data. Two pictures
+alternating say "indicative" the way one perfect curve per ticker does not.
+
+The turn is a counter the feed resets on every render, so the alternation is a
+property of the list's order and the same feed always looks the same. Both
+pictures are light-ground, so they keep `--media-filter` and invert in Dark.
+There is still one tile per ticker, and it still opens the fullscreen chart —
+which is generated, per ticker, and is where an actual tape belongs.
+
+The fullscreen chart generates the ticker's own session rather than scaling one
+fixed crash shape to everything, because that shape put "Previous close"
+outside the visible range on any name that rose.
 
 ### The media frame is a pseudo-element
 
