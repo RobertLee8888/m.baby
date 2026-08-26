@@ -184,6 +184,15 @@ in the refresh gutter to the sentence — "You're all caught up" — the sentenc
 is readable for a second, and then the gutter closes. Same gesture, same
 place, one less floating object.
 
+The sentence is green and carries the library's `check-f2` to its left, at 20
+with an 8 gap and 14/22 text — the Toast component's own success layout,
+because that is exactly what this is: a success message that happens to be
+rendered in a gutter instead of a floating box. `check-f2` is a circle with the
+tick *subtracted* from it, so as a mask it paints a green disc and lets the
+ground show through the tick. That is why it works in both modes without a
+second asset: in Light the tick is white because the gutter is white, and in
+Dark it is near-black because the gutter is.
+
 ### The read boundary
 
 Two rules with the label between them and a real 12px gap either side — not
@@ -464,6 +473,34 @@ the readout and nothing else, which reads as broken. It measures the largest
 device in `DEVICES` now, so all three share one scale — the big phone just
 fits, the smaller ones are visibly smaller, and the switcher does something
 you can see.
+
+### The Me screen is measured, not eyeballed
+
+Everything on `360:37134` was first laid out from a screenshot, and it showed:
+Usage sat hard against the profile header, the credits card was ten pixels too
+tall, the icon-to-label gap was 12 where the component says 8. The frame has
+real numbers and they are all multiples of the spacing scale, so the second
+pass took them off the file instead:
+
+| what | where it comes from |
+| --- | --- |
+| 16 between the header and the menu | `Menu` starts at y 92, the header ends at 76 |
+| 54 per row | `List Item/L` is 22 tall with 16 above and below |
+| 8 icon → label, 4 count → chevron | the `List Item` component's own gaps |
+| 64 credits card, 8/12 in | `Credits Card` and the `Available` frame inside it |
+| 2 between "Available" and the number | 16-tall label at y 8, 34-tall value at y 26 |
+| 16 after the card | `Usage Entry` has 16 of bottom padding under it |
+| 12 / 4 around a group label | the `Group ·` frame is 32 with a 16 label at y 12 |
+| 16 above *and* below the social row | `Social` is 64 with 32-tall buttons at y 16 |
+
+Two things that look like exceptions are not. Usage takes the same top hairline
+as every other row — it just looks like the only one without a line under it,
+because the credits card belongs to the same `Usage Entry` and so takes none of
+its own. And the appearance row is 54 like the rest even though the switch in
+it is 24 in a 22 line: the extra pixel either side comes out of the switch's
+margin rather than the row's height, because a settings list where one row is
+two pixels taller than its neighbours is a list you can feel is wrong without
+being able to say why.
 
 ### What is not built yet
 

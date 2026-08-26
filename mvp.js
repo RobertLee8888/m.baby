@@ -691,6 +691,8 @@
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
   const spinner = document.getElementById('spinner');
+  const refreshNote = document.getElementById('refreshNote');
+  const refreshNoteText = document.getElementById('refreshNoteText');
   const pill = document.getElementById('newPill');
   const pillText = document.getElementById('newPillText');
   const toastEl = document.getElementById('toast');
@@ -786,12 +788,12 @@
          the screen would be answering somewhere else entirely. */
       spinner.classList.remove('spinning');
       spinner.style.opacity = '0';
-      refreshNote.textContent = 'You’re all caught up';
+      refreshNoteText.textContent = 'You’re all caught up';
       refreshNote.classList.add('show');
       await wait(1000);
       await springTo(0);
       refreshNote.classList.remove('show');
-      refreshNote.textContent = '';
+      refreshNoteText.textContent = '';
     }
 
     track.classList.remove('pulled');

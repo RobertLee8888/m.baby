@@ -433,14 +433,17 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .refresh-note {
   position: absolute;
   inset: 0;
-  display: grid;
-  color: var(--n5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--m3);
   font-size: 14px;
   line-height: 22px;
   opacity: 0;
-  place-items: center;
   transition: opacity .2s ease;
 }
+.refresh-note .ic { width: 20px; height: 20px; }
 .refresh-note.show { opacity: 1; }
 
 .spinner {
@@ -1005,7 +1008,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   overscroll-behavior-y: contain;
   padding: var(--gutter) var(--gutter) 24px;
 }
-.me-head { display: flex; align-items: center; gap: 24px; height: 60px; }
+.me-head { display: flex; align-items: center; gap: 24px; height: 60px; margin-bottom: 16px; }
 .me-av { position: relative; flex: 0 0 auto; width: 60px; height: 60px; }
 .me-av > img { width: 60px; height: 60px; border-radius: 960px; object-fit: cover; }
 .me-badge {
@@ -1022,8 +1025,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   color: var(--n5);
 }
 .me-badge .ic { width: 14px; height: 14px; }
-.me-id { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-width: 0; }
+.me-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
 .me-name-row { display: flex; align-items: center; gap: 8px; }
+.me-name-row .tag + .tag { margin-left: -4px; }
 .me-name { color: var(--n9); font-size: 20px; font-weight: 400; line-height: 30px; }
 .tag {
   flex: 0 0 auto;
@@ -1038,7 +1042,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .tag-pro { background: var(--m1); color: var(--white); box-shadow: inset 0 0 0 var(--hair) var(--l12); }
 .tag-annual { padding: 0 6px; border-radius: 960px; background: var(--m1-10); color: var(--m1); }
 .me-meta { display: flex; align-items: center; gap: 8px; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
-.me-div { flex: 0 0 auto; width: var(--hair); height: 12px; background: var(--l12); }
+.me-div { flex: 0 0 auto; width: var(--hair); height: 17px; background: var(--l12); }
 
 /* Rows. The hairline is on the top of a row for the same reason it is on
    the top of a card: a group of rows then reads as a list with a lid, and
@@ -1047,7 +1051,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   width: 100%;
   padding: 16px 0;
   box-shadow: inset 0 var(--hair) 0 var(--l12);
@@ -1056,9 +1060,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .row:active { opacity: .55; }
 .row-open { box-shadow: none; }
+.row-entry { box-shadow: inset 0 var(--hair) 0 var(--l12); }
 .row .ic-lead { width: 20px; height: 20px; color: var(--n9); }
 .row-label { flex: 1 1 auto; color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
-.row-count { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.row-count { flex: 0 0 auto; margin-right: -4px; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
 .row .ic-chev { width: 12px; height: 12px; color: var(--n5); }
 
 .me-group {
@@ -1076,18 +1081,20 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .credits {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--gutter);
-  padding: 12px;
+  height: 64px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
   border-radius: 6px;
   background: var(--br03);
 }
-.credits-left { display: flex; flex-direction: column; }
+.credits-left { display: flex; flex-direction: column; gap: 2px; }
 .credits-cap { color: var(--n5); font-size: 10px; font-weight: 400; line-height: 16px; }
 .credits-num { color: var(--n9); font-size: 24px; font-weight: 400; line-height: 34px; font-variant-numeric: tabular-nums; }
 .credits-right { display: flex; flex-direction: column; align-items: flex-end; }
-.credits-line { display: flex; gap: 8px; font-size: 10px; line-height: 16px; }
+.credits-line { display: flex; gap: 4px; font-size: 10px; line-height: 16px; }
 .credits-line b { color: var(--n9); font-weight: 400; font-variant-numeric: tabular-nums; }
 .credits-line span { color: var(--n5); }
 
@@ -1099,6 +1106,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .switch {
   position: relative;
   flex: 0 0 auto;
+  /* 24 tall inside a 22 line: the extra pixel either side comes out of the
+     margin so the appearance row is the same 54 as every row beside it. */
+  margin: -1px 0;
   width: 40px;
   height: 24px;
   border-radius: 960px;
@@ -1121,18 +1131,19 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .switch[aria-checked="true"] { background: var(--m1); }
 .switch[aria-checked="true"]::after { transform: translateX(16px); }
 
-.me-social { display: flex; gap: 8px; padding: 16px 0 0; box-shadow: inset 0 var(--hair) 0 var(--l12); }
+.me-social { display: flex; gap: 8px; padding: 16px 0; box-shadow: inset 0 var(--hair) 0 var(--l12); }
 .me-social button {
   display: grid;
   flex: 1 1 0;
   place-items: center;
   height: 32px;
   border-radius: 4px;
+  background: var(--br05);
   box-shadow: inset 0 0 0 var(--hair) var(--l3);
   color: var(--n9);
   transition: background .16s ease;
 }
-.me-social button:active { background: var(--br03); }
+.me-social button:active { background: var(--br07); }
 .me-social .ic { width: 16px; height: 16px; }
 
 /* ═══════════════════════════════════════════════════════════

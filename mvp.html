@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=7">
+<link rel="stylesheet" href="mvp.css?v=8">
 </head>
 <body>
 
@@ -51,7 +51,10 @@
                 <div class="lead" aria-hidden="true">
                   <div class="refresh">
                     <span class="spinner" id="spinner"></span>
-                    <span class="refresh-note" id="refreshNote"></span>
+                    <span class="refresh-note" id="refreshNote" aria-live="polite">
+                      <span class="ic" style="--ic:url(assets/ui-check-f2.svg)" aria-hidden="true"></span>
+                      <span id="refreshNoteText"></span>
+                    </span>
                   </div>
                 </div>
                 <div class="cards" id="cards"></div>
@@ -146,7 +149,7 @@
                 </span>
               </div>
 
-              <button class="row row-open" type="button" data-hint="Usage history is a later screen">
+              <button class="row row-entry" type="button" data-hint="Usage history is a later screen">
                 <span class="ic ic-lead" style="--ic:url(assets/ui-credit-l.svg)" aria-hidden="true"></span>
                 <span class="row-label">Usage</span>
                 <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
@@ -306,6 +309,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=7"></script>
+<script src="mvp.js?v=8"></script>
 </body>
 </html>
