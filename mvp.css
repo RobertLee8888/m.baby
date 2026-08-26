@@ -119,7 +119,7 @@
   --gutter: 16px;
   --refresh-h: 64px;
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
-  --ease-fold: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-fold: cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
 /* ─────────────────────────────────────────────
@@ -629,19 +629,25 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* The body is clipped rather than re-flowed: the full text is already in the
    node when the animation starts, so nothing re-wraps mid-transition. */
 .fold .blk-body { overflow: hidden; }
-/* Not `--ease`. That curve is the pull's, and it puts 78% of the travel in the
-   first fifth of the time — on a 110px height change that reads as a snap
-   followed by a crawl, which is the "instant" the brief rules out. This one is
-   an ease-out quad, solved rather than guessed: 45% of the distance at a
-   quarter of the duration, 77% at half, 94% at three quarters, and no tail.
-   One continuous quick movement. The row's opacity leaves faster than its
-   height, so the label is gone before the gap it held has finished closing. */
-.fold.anim .blk-body { transition: height .3s var(--ease-fold); }
-.fold.anim .showmore { transition: height .3s var(--ease-fold), opacity .16s ease; }
+/* An ease-out quad at 300ms was the first attempt and it was too soft: a quad
+   leaves the start slowly (45% of the travel by the quarter mark) and 300ms is
+   a long time to spend on 110px, so the whole thing read as mushy rather than
+   as a movement. Two changes, both of them: **200ms**, and a curve with real
+   velocity out of the gate — 58% of the distance in the first 30ms, 92% by 80,
+   and a short landing rather than the flat crawl `--ease` would give (that one
+   spends 78% in the first fifth and then 240ms arriving, which is the other
+   failure). The row's opacity is quicker still, so the label is gone almost at
+   once and what you watch is the gap it held closing. */
+.fold.anim .blk-body { transition: height .2s var(--ease-fold); }
+.fold.anim .showmore { transition: height .2s var(--ease-fold), opacity .09s ease; }
 
-/* Feed Card - Show more (1733:17497): Medium/12 in main/m1, left aligned, no
-   chevron, and no Show less on the way back — 22 tall because the frame's
-   instance is, which is the line the formula reserves. */
+/* Feed Card - Show more (1733:17497). The master is Medium/12, and every
+   instance in the frames overrides it to **Medium/14** — text style Medium/14,
+   which is also why the row is 22 and not 20. Reading the master and not the
+   instances is what made this label a size too small: at 14/22 the row is
+   exactly one body line, which is what makes the formula's −1 exact rather
+   than approximate, and the label sits at the body's own size directly under
+   it rather than shrinking away from it. main/m1, left aligned, no chevron. */
 .showmore {
   display: flex;
   flex: 0 0 auto;
@@ -649,9 +655,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: 22px;
   overflow: hidden;
   color: var(--m1);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 22px;
   white-space: nowrap;
   transition: opacity .16s ease;
 }

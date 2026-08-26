@@ -1372,7 +1372,7 @@
     };
     body.addEventListener('transitionend', onEnd);
     /* A height that does not change fires no transitionend. */
-    setTimeout(() => { if (!ended) { ended = true; body.removeEventListener('transitionend', onEnd); done(); } }, 420);
+    setTimeout(() => { if (!ended) { ended = true; body.removeEventListener('transitionend', onEnd); done(); } }, 300);
   }
 
   function render() {

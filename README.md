@@ -489,27 +489,56 @@ it sits between digits or after a lone capital. That keeps `$341.9M`, `1.6T`,
 `U.S. equity` and `fiscal 2028.` on the right side of the line, which a split
 on `.` does not. 0 of 20 cards fold mid-sentence.
 
+### Read the instances, not the master
+
+`Feed Card - Show more`'s master is `Medium/12`. Every instance of it in the
+frames overrides that to **`Medium/14`** — and that is the value, which is also
+why the row is 22 tall and not 20. Building from the master put this label a
+size too small.
+
+At 14/22 the row is exactly one body line, which is what makes the formula's
+`−1` exact rather than approximate, and the label sits at the body's own size
+directly under it instead of shrinking away from it. `main/m1`, Medium, left
+aligned, no chevron, 1% tracking — the rendered label measures 73.45px against
+the frame's 74.
+
+This is the second time an instance override has been the real value and the
+master has not (the header's and footer's padding were the first). The rule
+that falls out: **on this file, the frame is the specification and the
+component is a starting point.**
+
 ### Expanding is one movement, not a jump
 
 Tapping Show more expands in place: no navigation, no scroll change, and **no
 Show less** on the way back — the row is not rendered once the card is open.
 That is X's behaviour on mobile, and it is what the board specifies.
 
-The motion is the part worth building carefully. Two things animate together
-over 300ms: the body's height grows to the full paragraph, and the Show more
-row's height closes from 22 to 0. So the quote and the media below are pushed
-down by what the body gained *and* pulled back up by the 22 the row gave up, in
-one continuous movement rather than two. The body already holds the full text
-when the transition starts, so nothing re-wraps mid-animation — it is a clip
+The motion is the part worth building carefully. Two things animate together:
+the body's height grows to the full paragraph, and the Show more row's height
+closes from 22 to 0. So the quote and the media below are pushed down by what
+the body gained *and* pulled back up by the 22 the row gave up, in one
+continuous movement rather than two. The body already holds the full text when
+the transition starts, so nothing re-wraps mid-animation — it is a clip
 opening, not a reflow.
 
-The curve is not `--ease`. That one is the pull's, and it puts 78% of the travel
-in the first fifth of the time; on a 110px height change that reads as a snap
-followed by a crawl, which is the "instant" the brief rules out. The fold uses
-an ease-out quad, solved rather than guessed — `cubic-bezier(0.25, 0.46, 0.45,
-0.94)`, which lands 45% of the distance at a quarter of the duration, 77% at
-half and 94% at three quarters, with no tail. Measured on the running build:
-50% / 77% / 95% / 100%, across 15 to 18 distinct frames.
+Getting the curve right took two passes, and the two failures bracket it.
+
+The first attempt was an ease-out **quad at 300ms**. It was too soft. A quad
+leaves the start slowly — 45% of the travel by the quarter mark — and 300ms is
+a long time to spend on 110px, so the whole thing read as mushy rather than as
+a movement.
+
+The other failure is `--ease`, the pull's own curve: it spends 78% of the
+travel in the first fifth of the time and then 240ms arriving, which is a snap
+followed by a crawl.
+
+What works is **200ms** on `cubic-bezier(0.2, 0.9, 0.25, 1)`: real velocity out
+of the gate, and a short landing rather than a flat tail — the `x2 = 0.25`
+matters, because `--ease` has `x2 = 0` and that is exactly what flattens its
+ending into a creep. Measured on the running build: 63% of the distance at
+30ms, 78% at 50, 93% at 80, and settled by 126–179ms depending on how far the
+card had to travel. The row's opacity is quicker still at 90ms, so the label is
+gone almost at once and what you watch is the gap it held closing.
 
 `setFolded` takes the direction as an argument rather than existing twice, so
 closing is the same three lines as opening and animates the same way — verified
