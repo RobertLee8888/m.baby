@@ -374,6 +374,9 @@
 
     nbis: A + 'feed-logo-nbis.png',
     pltr: A + 'feed-logo-pltr.png',
+    nvda: A + 'feed-logo-nvda.png',
+    fro: A + 'feed-logo-fro.png',
+    rvmd: A + 'feed-logo-rvmd.png',
 
     /* The ten people the batches quote. */
     jukan: A + 'alpha-fintwit-3.png',
@@ -389,9 +392,15 @@
        the one wrong kind of placeholder. */
     olivia: A + 'alpha-podcast-2.png',
 
-    /* The two simulated handles. */
+    /* The simulated handles. Clearly fictional accounts, because the event and
+       anomaly cards are written for this prototype and a made-up sentence
+       cannot go in a real person's mouth. */
     weights: A + 'alpha-fintwit-5.png',
     dilute: A + 'alpha-ready-avatar-3.png',
+    tanker: A + 'alpha-ready-avatar-2.png',
+    flowdesk: A + 'alpha-fintwit-4.png',
+    edabench: A + 'alpha-podcast-4.png',
+    trialdesk: A + 'alpha-podcast-5.png',
   };
 
   /* A source is either a voice on somebody else's platform or a publisher on
@@ -571,14 +580,77 @@
       'First tranche is being marketed below last night’s close. That is the whole move this morning.'),
   ];
 
+  /* NVIDIA's session with nothing on the tape — 3 */
+  const SRC_NVDA_MOVE = [
+    src('Flow Desk', '@flowdeskdaily', '2h ago', AV.flowdesk,
+      'Closing imbalance to buy, 1.8× the twenty-day median, and not one headline to hang it on.'),
+    src('Bloomberg', '@business', '2h ago', AV.bloomberg,
+      'NVIDIA finished higher without a company filing or a published revision behind the move.'),
+    src('Reuters', 'reuters.com', '3h ago', AV.reuters,
+      'Desks described the flow as positioning rather than a response to new information.'),
+  ];
+
+  /* TSMC's N2 kit going to the EDA vendors — 6 */
+  const SRC_N2_KIT = [
+    src('TSMC', 'Technology Symposium · session note', '4h ago', AV.tsm,
+      'The N2 design-enablement kit is being made available to certified third-party flows ahead of the reference release.'),
+    src('Reuters', 'reuters.com', '4h ago', AV.reuters,
+      'The foundry is opening signoff enablement earlier in the node than it did for N3.'),
+    src('SemiAnalysis', 'semianalysis.com', '4h ago', AV.semi,
+      'Earlier enablement moves the certification work — and the revenue that follows it — a quarter to the left.'),
+    src('Cadence', 'Newsroom', '5h ago', AV.cdns,
+      'Certification of place-and-route and timing signoff against the kit is under way.'),
+    src('Synopsys', 'Newsroom', '5h ago', AV.snps,
+      'Extraction and signoff decks are being qualified against the released kit.'),
+    src('EDA Bench', '@edabench', '5h ago', AV.edabench,
+      'Whoever certifies first gets the tapeouts. That is the entire game at a new node.'),
+  ];
+
+  /* Frontline against its own rate — 4 */
+  const SRC_FRO_DIVERGE = [
+    src('Tanker Tracker', '@tankertracker', '4h ago', AV.tanker,
+      'Highest VLCC fixture of the six-week window this morning, and the equity closed red.'),
+    src('Reuters', 'reuters.com', '4h ago', AV.reuters,
+      'Spot earnings on the benchmark route printed above the recent range.'),
+    src('Bloomberg', '@business', '5h ago', AV.bloomberg,
+      'Tanker equities lagged the rate move for a second session.'),
+    src('Frontline', 'Fleet status · monthly', '5h ago', AV.fro,
+      'The fleet remains fully employed on the spot market for the current quarter.'),
+  ];
+
+  /* Revolution Medicines putting a date on the readout — 5 */
+  const SRC_RVMD_READOUT = [
+    src('Revolution Medicines', 'Corporate presentation', '6h ago', AV.rvmd,
+      'Enrolment in the Phase 3 arm is complete and the readout is guided to the first half of next year.'),
+    src('Reuters', 'reuters.com', '6h ago', AV.reuters,
+      'The company named a readout window for the first time since the trial opened.'),
+    src('Bloomberg', '@business', '6h ago', AV.bloomberg,
+      'The CNS cohort will report on its own timeline rather than with the main arm.'),
+    src('CNN Business', '@cnnbusiness', '7h ago', AV.cnn,
+      'A dated readout replaces the open-ended guidance the programme has carried for a year.'),
+    src('Trial Desk', '@trialdesk', '7h ago', AV.trialdesk,
+      'Completed enrolment plus a named half is the pair that usually moves the borrow.'),
+  ];
+
+  /* The two EDA names taking the same story differently — 2 */
+  const SRC_EDA_SPREAD = [
+    src('Flow Desk', '@flowdeskdaily', '6h ago', AV.flowdesk,
+      'Same note, both names bid, and the spread between them widened every hour of the session.'),
+    src('Bloomberg', '@business', '6h ago', AV.bloomberg,
+      'The emulation note lifted both vendors, with the hardware-heavier name taking more of it.'),
+  ];
+
   /* ──────────────────────────────
      The feed
 
-     Twelve cards at rest and two more behind the pill. Ten of the fourteen
-     are the hourly Alpha Radar batches Alva published on the morning of
-     26 August 2026, quoted as they ran; the other four are the simulated
-     company-event and unusual-move cards, interleaved so the three types
-     alternate the way they do in a live list rather than arriving in blocks.
+     Seventeen cards at rest and three more behind the pill. Eleven of the
+     twenty are the hourly Alpha Radar batches Alva published on the morning of
+     26 August 2026, quoted as they ran. The production playbook only produces
+     that one type, so the other nine — five unusual-move cards and four
+     company events — are written for this prototype, and the list is ordered
+     so no more than two cards of a kind ever run together. A feed that is
+     eight source cards deep is not a feed, it is a digest: the three types
+     have to interleave the way they do in a live list.
 
      A source card is: the thesis, the passage it stands on, the read, the
      chart. That is the shape of every batch on the production feed, and it
@@ -626,6 +698,20 @@
           text: "Alibaba Group Holding's open-weight AI models accumulated more than 3 billion global downloads during the past six months, according to Bloomberg and other reports. The figure surpassed reported downloads for models from Meta Platforms, Alphabet, and domestic peers, making Alibaba's models the world's most downloaded AI models.",
         },
         { type: 'chartRow' },
+      ],
+    },
+    {
+      type: 'anomaly',
+      tickers: [NVDA],
+      age: '2h ago',
+      sources: SRC_NVDA_MOVE,
+      blocks: [
+        { type: 'lead', text: 'NVDA closed 2.2% higher on 1.8× median volume with nothing on the tape' },
+        {
+          type: 'text',
+          text: 'No filing, no guidance, no published revision. The move started twenty minutes after the open and never gave back more than a third of any leg, volume ran at 1.8× the twenty-day median, and the close printed on an imbalance to buy. A session this wide with nothing to point at is usually positioning ahead of something rather than a re-rating of anything.',
+        },
+        { type: 'chart' },
       ],
     },
     {
@@ -701,6 +787,33 @@
       ],
     },
     {
+      type: 'anomaly',
+      tickers: [FRO],
+      age: '4h ago',
+      sources: SRC_FRO_DIVERGE,
+      blocks: [
+        { type: 'lead', text: 'FRO fell 1.3% on a day VLCC spot rates set a six-week high' },
+        {
+          type: 'text',
+          text: 'The tape and the rate did opposite things. The benchmark VLCC fixture printed the highest earnings of the six-week window before lunch, and the equity closed 1.3% down within a point of its own six-week high. Nothing was filed and no broker moved. A divergence this clean between a rate and the equity that earns it usually resolves inside a week; the only question is which of the two is wrong.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'event',
+      tickers: [TSM, CDNS, SNPS],
+      age: '4h ago',
+      sources: SRC_N2_KIT,
+      blocks: [
+        {
+          type: 'text',
+          text: "Taiwan Semiconductor opened its N2 design-enablement kit to certified third-party flows, according to Reuters and SemiAnalysis, letting Cadence and Synopsys qualify place-and-route, extraction and timing signoff against the node before the foundry's own reference flow ships. Both vendors said certification work is already under way — a quarter earlier in the node than N3 allowed.",
+        },
+        { type: 'chartRow' },
+      ],
+    },
+    {
       type: 'source',
       tickers: [CDNS, SNPS],
       age: '5h ago',
@@ -726,6 +839,33 @@
         {
           type: 'text',
           text: 'Secure authenticated agents can move AI from answers into delegated enterprise workflows such as reimbursements, invoices, permits, recruiting, and vendor actions. MSFT is the strongest available expression through productivity, identity, and cloud distribution; the adverse case is OpenAI or rivals owning the workflow economics without Microsoft integration.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'anomaly',
+      tickers: [SNPS],
+      age: '6h ago',
+      sources: SRC_EDA_SPREAD,
+      blocks: [
+        { type: 'lead', text: 'SNPS rose 3.6% while CDNS took 5.1% out of the same note' },
+        {
+          type: 'text',
+          text: 'Both names traded one story and the gap between them widened every hour. Synopsys closed 3.6% up on 1.4× median volume, Cadence 5.1% up on 1.2×. The spread is the market putting the emulation share where the hardware is rather than where the licence base is — which is a view, and one worth checking against the next two quarters of hardware revenue.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'event',
+      tickers: [RVMD],
+      age: '6h ago',
+      sources: SRC_RVMD_READOUT,
+      blocks: [
+        {
+          type: 'text',
+          text: 'Revolution Medicines put a date on the Phase 3 arm of its KRAS G12C programme, naming the first half of next year and confirming enrolment is complete, according to a corporate presentation and Reuters. The CNS cohort will report on its own timeline rather than alongside the main arm.',
         },
         { type: 'chart' },
       ],
@@ -872,7 +1012,12 @@
     const wrap = el('span', 'stance ' + k);
     const dial = el('span', 'stance-dial');
     /* No arrow on `none`: there is no direction to point. */
-    if (k !== 'none') dial.appendChild(icon('ui-arrow-up-l1.svg'));
+    /* Its own arrow, not the 20px library glyph scaled to 8: at that scale the
+       library outline's 1-unit line lands at 0.4px and its fill sits at 90%
+       alpha, which is why the dial read thin against the frame. This one is
+       authored for the size it is drawn at — a 12 viewBox at 8px, so a stroke
+       of 1 renders 0.67, and the arrow spans 7 of 12 rather than 15 of 20. */
+    if (k !== 'none') dial.appendChild(icon('ui-arrow-stance.svg'));
     wrap.appendChild(dial);
     wrap.appendChild(el('span', 'stance-txt', STANCE[k]));
     return wrap;

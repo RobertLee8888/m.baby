@@ -38,16 +38,23 @@ rather than a toast:
 
 ### The card is one object
 
-8 of padding top and bottom, 8 between its four parts, and a single 0.5px
-`line/l12` hairline along the bottom edge — no top hairline, no card radius,
-no shadow. Four parts, each with its own gutter rule:
+8 of padding top and bottom, a 0.5px `line/l12` hairline along the **top**
+edge, no card radius, no shadow — and **no gap between its four parts**. Every
+seam inside the card is 12, and each part owns its own half of that 12:
 
-| | Padding | Contents |
-| --- | --- | --- |
-| Meta | `0 16`, 20 tall | 14px status dot + the automation in `main/m1`, the age right-aligned in `text/n3` |
-| Header | `8 16` | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
-| Content | `0 16` | markdown blocks, 12 apart |
-| Footer | `0 16` | source stack + name + `+N`, and one 32-tall labelled button |
+| | Padding | Height | Contents |
+| --- | --- | --- | --- |
+| Meta | `4 16 0` | 24 | 14px status dot + the automation in `main/m1`, the age right-aligned in `text/n3` |
+| Header | `12 16` | 62 | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
+| Content | `0 16` | hugs | markdown blocks, 12 apart |
+| Footer | `12 16 4` | 48 | source stack + name + `+N`, and one 32-tall labelled button |
+
+8 of card + 4 of meta = 12 above the automation line; 0 + 12 = 12 to the ticker
+row; 12 + 0 = 12 to the first block; 0 + 12 = 12 to the footer; 4 + 8 = 12
+below it. A uniform 12 the whole way down, and because the spacing is padding
+rather than a flex `gap`, a part that grows or is switched off takes its own
+spacing with it instead of leaving a hole behind. The three cards the frame
+draws measure 451 / 553.06 / 609 here, against its 451 / 553.06 / 609.
 
 ### Three cards, three data types
 
@@ -85,7 +92,7 @@ it.
 | `media` | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
 | `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
 
-### Eleven of the fifteen cards are real
+### Eleven of the twenty cards are real
 
 The source-type cards are not written for this prototype. They are the hourly
 Alpha Radar batches Alva's own production playbook published on the morning of
@@ -113,9 +120,12 @@ invented to have something to arrive. The pill counts them rather than naming
 a number: `NEW_CARDS.length + ' new feeds'`, so the label cannot outlive the
 batch it describes.
 
-What is *not* real: the four event and anomaly cards interleaved between them.
-The production feed only produces the third type, so the other two are written
-here, and they are written on the same names and the same numbers wherever
+What is *not* real: the nine event and anomaly cards interleaved between them.
+The production playbook only produces the source type — which is why an early
+draft of this feed was eight source cards deep and read like a digest rather
+than a list — so five unusual-move cards and four company events are written
+here, and the order is set so **no more than two cards of a kind ever run
+together**. They are written on the same names and the same numbers wherever
 they can be — the SMTC anomaly is that ticker's real +5.47% session and the
 real revenue and unit figures behind it. The names the page did not
 price for me (META, BABA, AAOI, AVGO, AMD, and now NBIS and PLTR) carry
@@ -185,6 +195,22 @@ carried `overflow: hidden` and sheared the top off both bars; nothing else
 inside the tile overflows, so the fix is simply not to clip it. It now hangs 5
 into the 12 of gap above, which is what the frame does.
 
+### The stance arrow is drawn for the size it is drawn at
+
+The dial's arrow was the 20px library `arrow-up-l1` scaled into an 8px box, and
+at 0.4 scale its 1-unit outline lands at 0.4px with the fill sitting at 90%
+alpha — a hairline, and visibly thinner than the frame's. The frame's arrow is
+the same glyph but redrawn small inside the instance *and* given a 0.45 stroke
+on top, which is a combination a mask cannot reproduce by scaling.
+
+So the arrow is authored for the size it renders at: a 12-unit viewBox drawn at
+8px, stroke 1.17 units, shaft 9.09 units. `absoluteRenderBounds` on the frame's
+own vector says its ink is a 5.132px square with a 0.61px line, and this one
+measures 5.00px and 0.62px — arrived at by rendering at DPR 16, masking to the
+dial's disc and measuring the ink, because the arithmetic from the exported
+path and the arithmetic from the component tree disagreed with each other and
+with what the browser drew.
+
 ### Markdown - Quote has two jobs
 
 `1642:17075` ships two variants and the component's own description says when
@@ -222,9 +248,11 @@ edit, so the footer cannot disagree with what opens when you tap it — which
 it did, before this: every card said "5 sources" and showed the same three
 faces while the sheet held seven rows.
 
-No two cards carry the same number — 11, 9, 8, 7, 6, 5, 4, 3, 2, 1 — because a
-feed where every story has the same number of sources is a feed nobody
-counted. The ones the pill brings in carry the *fewest*, often just one: a
+The counts run the whole way from 11 down to 1, because a feed where every
+story has the same number of sources is a feed nobody counted. The real
+batches cluster at the bottom of that range — a production batch usually
+stands on one quoted passage — and the written event and anomaly cards, which
+are reporting rather than quoting, carry the longer lists. The ones the pill brings in carry the *fewest*, often just one: a
 story that broke four minutes ago has not been picked up yet, and that
 asymmetry is most of
 what makes "just now" believable.
@@ -308,13 +336,16 @@ Alva design assets rather than the accounts' own photographs, which is the one
 place the sheet is dressed rather than quoted — X's image host is not
 reachable from here.
 
-### The line under the topbar is its own element
+### The topbar has no line of its own
 
-The bar's bottom hairline used to be an inset shadow on the bar, and an inset
-shadow has nothing to paint on once the bar's height reaches 0 — so the line
-disappeared at exactly the moment the list most needed a floor under the
-status bar. It is a separate 0.5 rule pinned to `status + bar-h` now: it rides
-down with the bar and stays after the bar is gone.
+The frame switches the bar's bottom stroke off (1496:32179), and it is right
+to: the line you see under the bar at rest **is the first card's top rule**,
+sitting exactly at the bar's bottom edge by construction. One line, owned by
+the thing that scrolls. Two rounds of this build drew a second rule pinned to
+`status + bar-h` and suppressed the first card's — which looked identical at
+rest and wrong everywhere else, because a pull opened a gap with a line
+floating above it. When the bar closes there is now no line at all, which is
+the same answer as "no bar".
 
 ### The topbar leaves with the list
 

@@ -365,22 +365,11 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: 0 0 0 var(--gutter);
   background: var(--b10);
 }
-/* The hairline is its own element pinned to the bar's bottom edge, not an
-   inset shadow on the bar: an inset shadow has nothing to paint on once the
-   bar's height reaches 0, so the line vanished exactly when the list needed
-   a floor most. This one rides down with the bar and stays. */
-.bar-rule {
-  position: absolute;
-  z-index: 13;
-  top: calc(var(--status-h) + var(--bar-h));
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: var(--l12);
-  pointer-events: none;
-  transform: scaleY(.5);
-  transform-origin: top;
-}
+/* The bar carries no hairline of its own: the frame switches its bottom
+   stroke off (1496:32179), because the line you see under it at rest *is* the
+   first card's top rule, sitting exactly at the bar's bottom edge. One line,
+   owned by the thing that scrolls. When the bar closes there is no line, which
+   is the same answer as "no bar". */
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
@@ -486,13 +475,17 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  /* The card gaps nothing. Every seam inside it is 12, and each of the four
+     parts owns its own half of that 12 as padding: 8 of card + 4 of meta at
+     the top, 0 + 12 between meta and header, 12 + 0 between header and body,
+     0 + 12 between body and footer, 4 + 8 at the bottom. Uniform 12 the whole
+     way down, and a part that grows or is hidden takes its spacing with it
+     instead of leaving a gap behind. */
+  gap: 0;
   padding: 8px 0;
   background: var(--b10);
   box-shadow: inset 0 var(--hair) 0 var(--l12);
 }
-.cards > :first-child { box-shadow: none; }
-.feed-track.pulled .cards > :first-child { box-shadow: inset 0 var(--hair) 0 var(--l12); }
 .card.enter { animation: card-in .44s var(--ease) both; }
 @keyframes card-in {
   from { opacity: 0; transform: translate3d(0, -10px, 0); }
@@ -509,8 +502,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 20px;
-  padding: 0 var(--gutter);
+  height: 24px;
+  padding: 4px var(--gutter) 0;
 }
 .card-auto { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; }
 .card-auto img { flex: 0 0 auto; width: 14px; height: 14px; }
@@ -537,7 +530,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: flex;
   align-items: center;
   gap: var(--gutter);
-  padding: 8px var(--gutter);
+  padding: 12px var(--gutter);
 }
 .ticker {
   display: flex;
@@ -759,7 +752,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 var(--gutter);
+  padding: 12px var(--gutter) 4px;
 }
 .foot-lead {
   display: flex;
@@ -774,13 +767,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .foot-lead:active { opacity: .55; }
 .sources { display: flex; flex: 0 0 auto; align-items: center; }
+/* A real 1 outside the circle, not a hairline: the frame strokes each avatar
+   1 OUTSIDE in the card's own ground, which is what keeps three faces
+   overlapping by 6 legible as three faces. */
 .sources img {
   width: 18px;
   height: 18px;
   margin-right: -6px;
   border-radius: 100px;
   background: var(--b10);
-  box-shadow: 0 0 0 var(--hair) var(--b10);
+  box-shadow: 0 0 0 1px var(--b10);
   object-fit: cover;
 }
 .sources img:last-child { margin-right: 0; }
