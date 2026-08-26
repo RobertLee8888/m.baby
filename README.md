@@ -31,21 +31,23 @@ rather than a toast:
 | Tap | Opens | Figma |
 | --- | --- | --- |
 | a ticker chip | the ticker sheet, with its own follow star | 957:18126 |
+| a quote block | the sources sheet — the quote *is* one of the sources | 1642:17075 |
 | the sources row in the footer | the sources sheet for *that* card | 545:62549 |
 | any chart, wide or a tile in a row | the chart, fullscreen | 1076:48248 |
-| Ask Alva in the footer | the Chat screen | 545:62465 |
+| the footer's button — Track This / What's my impact / Dig Deeper | the Chat screen | 906:86629 |
 
 ### The card is one object
 
-8 of padding top and bottom, 8 between its three parts, and a single 0.5px
+8 of padding top and bottom, 8 between its four parts, and a single 0.5px
 `line/l12` hairline along the bottom edge — no top hairline, no card radius,
-no shadow. Three parts, each with its own gutter rule:
+no shadow. Four parts, each with its own gutter rule:
 
 | | Padding | Contents |
 | --- | --- | --- |
-| Header | `8 16` | one to three tickers, 16 apart, divided by a 24-tall hairline |
+| Meta | `0 16`, 20 tall | 14px status dot + the automation in `main/m1`, the age right-aligned in `text/n3` |
+| Header | `8 16` | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
 | Content | `0 16` | markdown blocks, 12 apart |
-| Footer | `0 8 0 16`, 36 tall | source stack + count, the automation that found the card, Ask Alva |
+| Footer | `0 16` | source stack + name + `+N`, and one 32-tall labelled button |
 
 ### Three cards, three data types
 
@@ -53,11 +55,11 @@ The three cards in the Figma frame are not three layouts. They are three
 kinds of thing Alva found, and each one has its own grammar of blocks — which
 is what makes them tell apart at a glance in a list you are thumbing through:
 
-| Type | What it is | Blocks | Tickers | Playbook |
-| --- | --- | --- | --- | --- |
-| `event` | a company event, read and analysed | `text` → media | one or several | `company-events` |
-| `anomaly` | one name moving in a way that needs explaining | `lead` → `text` → `media` | **exactly one** | `unusual-moves` |
-| `source` | something a source published, tracked and analysed | `title` → `quote` → `text` → `mediaRow` | one or several | `investor-roundtable` |
+| Type | What it is | Blocks | Tickers | Playbook | Action |
+| --- | --- | --- | --- | --- | --- |
+| `event` | a company event, read and analysed | `text` → media | one or several | `company-events` | Track This |
+| `anomaly` | one name moving in a way that needs explaining | `lead` → `text` → `media` | **exactly one** | `unusual-moves` | What's my impact |
+| `source` | something a source published, tracked and analysed | `title` → `quote` → `text` → `mediaRow` | one or several | `investor-roundtable` | Dig Deeper |
 
 An anomaly gets exactly one ticker because an anomaly belongs to a single
 tape: two names cannot share one unusual move. The other two can carry a
@@ -78,11 +80,12 @@ it.
 | `text` | Markdown/M | Regular 14/22 |
 | `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
-| `quote` | Markdown - Quote | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
+| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, speaker at 20px, the mark riding the top-right corner |
+| `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 16/26, speaker underneath at 16px in `text/n5` |
 | `media` | Media = 1 | gutter to gutter, 240 × 135 |
 | `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
 
-### Ten of the fourteen cards are real
+### Eleven of the fifteen cards are real
 
 The source-type cards are not written for this prototype. They are the hourly
 Alpha Radar batches Alva's own production playbook published on the morning of
@@ -101,23 +104,94 @@ day change and six-week range, taken as they ran:
 | 8 | MSFT | Authenticated Agents Open a Workflow Control Plane |
 | 9 | TSM | TSMC Captures Frontier Compute Pricing |
 | 10 | CBRS | Cerebras Converts Ultrafast Demand Into Capacity |
+| 11 | NBIS · PLTR | Cheaper Models Expand Inference Volume |
 
-The two 10:58 batches are held back behind the pill, because that is what the
-production playbook does — new batches at the top, full history below — so the
-refresh brings in the hour that has actually just landed rather than two cards
-invented to have something to arrive.
+The three newest batches are held back behind the pill, because that is what
+the production playbook does — new batches at the top, full history below — so
+the refresh brings in the hour that has actually just landed rather than cards
+invented to have something to arrive. The pill counts them rather than naming
+a number: `NEW_CARDS.length + ' new feeds'`, so the label cannot outlive the
+batch it describes.
 
 What is *not* real: the four event and anomaly cards interleaved between them.
 The production feed only produces the third type, so the other two are written
 here, and they are written on the same names and the same numbers wherever
 they can be — the SMTC anomaly is that ticker's real +5.47% session and the
-real revenue and unit figures behind it. The five older names they also use
-(META, BABA, AAOI, AVGO, AMD) carry plausible prices rather than quoted ones.
+real revenue and unit figures behind it. The names the page did not
+price for me (META, BABA, AAOI, AVGO, AMD, and now NBIS and PLTR) carry
+plausible prices rather than quoted ones.
 
 And a rule that follows from this: **no invented words in a real person's
 mouth.** Every quote attributed to a named account is the passage the batch
 quoted. The simulated cards cite outlets, filings and two clearly fictional
 handles, and never a real person.
+
+### The card is a byline, a header, a body and one action
+
+The 2026-08-26 frame (`1496:32177`) rebuilds the card around four rows, and
+each of the four moved for a reason:
+
+**Feed Card - Meta** (`1629:17047`) is new, and it takes two things that used
+to live in the footer: the automation that produced the card, and how old the
+card is. That is the right place for both. The automation is a byline — it says
+which playbook was watching when this happened — and a byline belongs above
+the thing it signs, not down among the actions. The name is `main/m1` beside a
+14px status dot; the age is right-aligned in `text/n3`, which is the instance's
+own override of the component's `text/n5`, and the quieter grey is right,
+because the age is the one thing on the card nobody came for.
+
+**Ticker / Stance** (`1664:17174`) replaces the price and change that used to
+sit under the symbol. This is the biggest change in the round and the most
+opinionated: the header no longer reports the tape, it reports *Alva's call*.
+A filled dial and a white arrow whose bearing is the conclusion — up-right
+bullish (`main/m3`), down-right bearish (`main/m4`), horizontal flat
+(`grey/g3`) — so one glyph rotated three ways carries what three colours of
+number used to. The fourth state earns its place by being a different kind of
+claim: a dashed empty ring and "No call" says Alva has not formed a view,
+which is not the same statement as having looked and found it flat.
+
+Two things about building it. The rotations in the frame are **−45 / −135 /
+−90** and in CSS they are **+45 / +135 / +90**: Figma measures rotation
+counter-clockwise-positive, the web measures it clockwise, and copying the
+sign across pointed every call at the wrong quadrant — a bullish arrow aiming
+up and to the *left*. It renders; it is just wrong, which is the worst kind of
+wrong. And the dashed ring is the one stroke in this build that is a real 1px
+rather than a hairline, because the frame draws 1 dashed 2/2 and a 0.5 dash at
+12px across renders as grey fuzz instead of four dashes.
+
+Because a stance is a view on a name rather than on a session, it lives on the
+ticker and not on the card — one call per symbol, the same wherever the symbol
+appears. Which also meant it could no longer be Bullish fifteen times: MSFT
+and AMD and PLTR are Flat, CBRS is No call, META and AAOI are Bearish. A
+header that is unanimously bullish is not a header, it is a decoration.
+
+**Feed Card - Footer** loses the automation and gains a label. The left half is
+now the faces, the name of the source that carries the card, and `+N` for the
+rest — the name capped at the frame's own 145px so it truncates rather than
+pushing the count off the row, because the count is the part that says there
+is more. The right half is the Library's `Button · Secondary · S 32`
+(`906:86629`) with a label instead of a bare icon, and the label follows the
+card's type: an event is a name to start watching (**Track This**), an anomaly
+is a move you want measured against what you hold (**What's my impact**), and
+a source is a thesis you want taken further (**Dig Deeper**). The card already
+knows which question is worth asking; saying so out loud is most of the value.
+
+### Markdown - Quote has two jobs
+
+`1642:17075` ships two variants and the component's own description says when
+each applies: `Type=正文` when the card already carries a title, and
+`Type=标题` when it does not — there, the quote *is* the title, so it drops the
+tile, takes the title's `Medium/16`, and moves the speaker underneath as a
+byline in `text/n5`.
+
+The renderer reads which one to use off the card's own blocks
+(`!card.blocks.some(b => b.type === 'title' || b.type === 'lead')`) rather
+than off a flag, so a card and its quote can never disagree about whether the
+card has a headline. **No card in this build triggers the H2 variant** — all
+eleven real batches came with a headline of their own — so it is capability
+rather than something you can see by scrolling; the verification pass builds
+one by hand to prove the branch and its CSS, instead of assuming an unrendered
+path works.
 
 ### The quote is a way in
 
@@ -132,16 +206,18 @@ different things.
 ### The source list is the only source of truth
 
 A card carries its own `sources` array, and everything about sources is read
-off it. The count in the footer is `sources.length`, the faces are the first
-three of them, and the sheet is the whole list. There is no second place to
+off it. The name in the footer is `sources[0].name`, the count beside it is
+`sources.length - 1` written as `+N`, the faces are the first three, and the
+sheet is the whole list. There is no second place to
 edit, so the footer cannot disagree with what opens when you tap it — which
 it did, before this: every card said "5 sources" and showed the same three
 faces while the sheet held seven rows.
 
-Ten items, ten different counts — 11, 9, 8, 7, 6, 5, 4, 3, 2, 1 — because a
+No two cards carry the same number — 11, 9, 8, 7, 6, 5, 4, 3, 2, 1 — because a
 feed where every story has the same number of sources is a feed nobody
-counted. The two the pill brings in carry the *fewest*: a story that broke
-two minutes ago has not been picked up yet, and that asymmetry is most of
+counted. The ones the pill brings in carry the *fewest*, often just one: a
+story that broke four minutes ago has not been picked up yet, and that
+asymmetry is most of
 what makes "just now" believable.
 
 ### Every source has a face

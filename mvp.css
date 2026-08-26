@@ -71,6 +71,11 @@
   --n10: #000000;
   --nr10: #ffffff;
 
+  /* grey/* — the ramp that is a colour rather than an ink opacity, so it
+     holds on any ground: the stance dial for a name Alva has looked at and
+     found flat, and the dashed ring for one it has no call on. */
+  --g3: #acacac;
+
   /* main/* — the accents, identical in both modes */
   --m1: #49a3a6;
   --m1-10: rgba(73, 163, 166, .1);
@@ -138,6 +143,8 @@
   --l12: rgba(255, 255, 255, .12);
   --l2: rgba(255, 255, 255, .2);
   --l3: rgba(255, 255, 255, .3);
+
+  --g3: #5b5c5f;
 
   --n2: rgba(255, 255, 255, .2);
   --n3: rgba(255, 255, 255, .3);
@@ -486,6 +493,35 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   to { opacity: 1; transform: none; }
 }
 
+/* ── Feed Card - Meta (1629:17047) ──
+   The automation that produced the card on the left, how old the card is on
+   the right. Both used to live in the footer; the frame moves them to the
+   top, and that is the better reading — provenance is a byline, and a byline
+   belongs above the thing it signs, not down among the actions. ── */
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 20px;
+  padding: 0 var(--gutter);
+}
+.card-auto { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; }
+.card-auto img { flex: 0 0 auto; width: 14px; height: 14px; }
+.card-auto span {
+  overflow: hidden;
+  color: var(--m1);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* n3, not the master's n5: the instance in the frame overrides it, and the
+   quieter grey is right — the age is the one thing on the card nobody came
+   for. */
+.card-age { flex: 0 0 auto; color: var(--n3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+
 /* Header: one ticker, or up to three divided by a hairline (1496:32409).
    Every one of them is an entry point now, so each is a button — which is
    also why the divider is a sibling and not a border on the ticker: a
@@ -508,9 +544,47 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .ticker:active { transform: scale(.96); }
 .ticker-logo { width: 36px; height: 36px; border-radius: 100px; }
 .ticker-text { display: flex; flex-direction: column; justify-content: center; }
-.ticker-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
-.ticker-tone { color: var(--m3); font-size: 10px; font-weight: 400; line-height: 16px; white-space: nowrap; }
-.ticker-tone.down { color: var(--m4); }
+/* The two lines overlap by 4 in the frame — 22 + 20 − 4 is the 38 the header
+   measures, and the pair reads as one two-line block rather than two rows. */
+.ticker-name { margin-bottom: -4px; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+
+/* ── Ticker / Stance (1664:17174) ──
+   Alva's call on the name, not the tape's direction. A filled dial and a
+   white arrow whose bearing *is* the conclusion: up-right bullish, down-right
+   bearish, flat horizontal. The fourth state is not a fourth direction — a
+   dashed empty ring says Alva has not formed a view, which is a different
+   claim from "looked at it, it is flat", so it gets no arrow at all. ── */
+
+.stance { display: flex; align-items: center; gap: 4px; height: 20px; }
+.stance-dial {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  border-radius: 960px;
+  background: var(--m3);
+}
+/* Figma's rotation is counter-clockwise-positive and CSS's is clockwise, so
+   the frame's −45 / −135 / −90 are +45 / +135 / +90 here. Same three
+   bearings, opposite sign — and getting the sign wrong points every call at
+   the wrong quadrant, which is the one mistake this component cannot survive. */
+.stance-dial .ic { width: 8px; height: 8px; color: var(--white); transform: rotate(45deg); }
+.stance-txt { color: var(--m3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+
+.stance.bear .stance-dial { background: var(--m4); }
+.stance.bear .stance-dial .ic { transform: rotate(135deg); }
+.stance.bear .stance-txt { color: var(--m4); }
+
+.stance.flat .stance-dial { background: var(--g3); }
+.stance.flat .stance-dial .ic { transform: rotate(90deg); }
+.stance.flat .stance-txt { color: var(--n5); }
+
+/* The one stroke in this build that is a real 1px rather than a hairline:
+   the frame draws 1 dashed 2/2, and a 0.5 dash at 12px across renders as
+   grey fuzz instead of four dashes. */
+.stance.none .stance-dial { background: none; border: 1px dashed var(--g3); }
+.stance.none .stance-txt { color: var(--n3); }
 .head-rule { flex: 0 0 auto; align-self: center; width: var(--hair); height: 24px; background: var(--l12); }
 
 /* Content: markdown blocks, 12 apart */
@@ -579,6 +653,25 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   opacity: .6;
   pointer-events: none;
 }
+
+/* Type=标题 (1642:17067). When the card carries no title of its own the
+   quote *is* the title, so it drops the tile and takes the title's type, and
+   the speaker moves underneath as a byline. Same block, same source object —
+   only its job in the card has changed, which is exactly what the component
+   description says the variant is for. */
+.quote-h2 {
+  gap: 8px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.quote-h2 .quote-body { color: var(--n9); font-size: 16px; font-weight: 500; line-height: 26px; }
+/* The byline follows the quote here, and flex order says so without the
+   markup having to be built twice. */
+.quote-h2 .quote-head { order: 2; }
+.quote-h2 .quote-avatar { width: 16px; height: 16px; }
+.quote-h2 .quote-name { color: var(--n5); }
+.quote-h2 .quote-mark { display: none; }
 
 /* Media. One tile fills the gutter-to-gutter width; two or more become a
    scroller of 240 × 135 tiles that runs off the right edge of the card.
@@ -661,15 +754,19 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .media-row.dragging { cursor: grabbing; }
 .media-row::-webkit-scrollbar { display: none; }
 
-/* Footer: sources on the left, the automation that found the card in the
-   middle, Ask Alva on the right (1437:31419) */
+/* ── Feed Card - Footer (1437:31419) ──
+   Sources on the left, one action on the right. The automation moved up to
+   the meta row, so the left half is now what it should always have been: the
+   faces, the name of the source that carries the card, and a count for the
+   rest. The count is "+N", not "N sources" — the faces already say what they
+   are, and the name beside them is the one you would give if asked where
+   this came from. ── */
 
 .card-foot {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
-  padding: 0 8px 0 var(--gutter);
+  padding: 0 var(--gutter);
 }
 .foot-lead {
   display: flex;
@@ -677,7 +774,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   gap: 4px;
   min-width: 0;
-  height: 36px;
+  height: 32px;
   overflow: hidden;
   border-radius: 8px;
   transition: opacity .18s ease;
@@ -694,22 +791,44 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   object-fit: cover;
 }
 .sources img:last-child { margin-right: 0; }
-.foot-meta { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
-.automation { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
-.automation img { width: 12px; height: 12px; }
-.automation span { color: var(--m1); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
-.ask {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  color: var(--n9);
-  transition: background .18s ease, transform .18s var(--ease);
+/* 145 is the frame's own cap on the name. Past it the name truncates rather
+   than pushing the count off the row — the count is the part that has to
+   survive, because it is the only thing that says there is more. */
+.foot-src {
+  max-width: 145px;
+  overflow: hidden;
+  color: var(--n5);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.ask .ic { width: 18px; height: 18px; }
-.ask:active { background: var(--br03); transform: scale(.94); }
+.foot-more { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+
+/* Button · Secondary · S 32 out of the Library (906:86629): the hairline
+   outline, the 4 radius, 12 of side padding and a 6 gap to a 14 icon. It
+   carries a label now instead of being an icon on its own — the card knows
+   which question it is worth asking, and saying so is most of the value. */
+.ask {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 var(--hair) var(--l3);
+  color: var(--n9);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: background .16s ease, transform .18s var(--ease);
+}
+.ask .ic { width: 14px; height: 14px; }
+.ask:active { background: var(--br05); transform: scale(.96); }
 
 /* ── Where you left off ──
    Twitter's rule: after a refresh, the boundary between what just arrived

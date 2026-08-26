@@ -72,7 +72,7 @@
 
   const TICKERS = {
     TSM: {
-      sym: 'TSM', logo: A + 'feed-logo-tsm.png', tone: '▲ Bullish',
+      sym: 'TSM', logo: A + 'feed-logo-tsm.png', stance: 'bull',
       co: 'Taiwan Semiconductor', mkt: 'NYSE', price: 417.41, chg: 7.3, pct: 1.78,
       lo: 383.93, hi: 429.39,
       pre: { price: 418.9, chg: 1.49, pct: 0.36, when: 'Aug 25, 20:45 GMT+8' },
@@ -84,7 +84,7 @@
       },
     },
     GOOGL: {
-      sym: 'GOOGL', logo: A + 'feed-logo-goog.svg', tone: '▲ Bullish',
+      sym: 'GOOGL', logo: A + 'feed-logo-goog.svg', stance: 'bull',
       co: 'Alphabet Inc', mkt: 'NASDAQ', price: 346.96, chg: -1.11, pct: -0.32,
       lo: 320.69, hi: 373.78,
       pre: { price: 347.6, chg: 0.64, pct: 0.18, when: 'Aug 25, 20:45 GMT+8' },
@@ -96,7 +96,7 @@
       },
     },
     SMTC: {
-      sym: 'SMTC', logo: A + 'feed-logo-smtc.png', tone: '▲ Bullish',
+      sym: 'SMTC', logo: A + 'feed-logo-smtc.png', stance: 'bull',
       co: 'Semtech Corp', mkt: 'NASDAQ', price: 127.52, chg: 6.61, pct: 5.47,
       lo: 107.31, hi: 147.65,
       pre: { price: 128.4, chg: 0.88, pct: 0.69, when: 'Aug 25, 20:45 GMT+8' },
@@ -108,7 +108,7 @@
       },
     },
     FRO: {
-      sym: 'FRO', logo: A + 'feed-logo-fro.png', tone: '▲ Bullish',
+      sym: 'FRO', logo: A + 'feed-logo-fro.png', stance: 'bull',
       co: 'Frontline plc', mkt: 'NYSE', price: 43.46, chg: -0.59, pct: -1.34,
       lo: 36.71, hi: 44.08,
       pre: { price: 43.6, chg: 0.14, pct: 0.32, when: 'Aug 25, 20:45 GMT+8' },
@@ -120,7 +120,7 @@
       },
     },
     RVMD: {
-      sym: 'RVMD', logo: A + 'feed-logo-rvmd.png', tone: '▲ Bullish',
+      sym: 'RVMD', logo: A + 'feed-logo-rvmd.png', stance: 'bull',
       co: 'Revolution Medicines', mkt: 'NASDAQ', price: 211.38, chg: -0.19, pct: -0.09,
       lo: 181.63, hi: 214.93,
       pre: { price: 212.1, chg: 0.72, pct: 0.34, when: 'Aug 25, 20:45 GMT+8' },
@@ -132,7 +132,7 @@
       },
     },
     NVDA: {
-      sym: 'NVDA', logo: A + 'feed-logo-nvda.png', tone: '▲ Bullish',
+      sym: 'NVDA', logo: A + 'feed-logo-nvda.png', stance: 'bull',
       co: 'NVIDIA Corp', mkt: 'NASDAQ', price: 213.05, chg: 4.57, pct: 2.19,
       lo: 192.42, hi: 225.16,
       pre: { price: 214.2, chg: 1.15, pct: 0.54, when: 'Aug 25, 20:45 GMT+8' },
@@ -144,7 +144,7 @@
       },
     },
     CDNS: {
-      sym: 'CDNS', logo: A + 'feed-logo-cdns.png', tone: '▲ Bullish',
+      sym: 'CDNS', logo: A + 'feed-logo-cdns.png', stance: 'bull',
       co: 'Cadence Design Systems', mkt: 'NASDAQ', price: 331.9, chg: 15.98, pct: 5.06,
       lo: 314.95, hi: 371.5,
       pre: { price: 333.4, chg: 1.5, pct: 0.45, when: 'Aug 25, 20:45 GMT+8' },
@@ -156,7 +156,7 @@
       },
     },
     SNPS: {
-      sym: 'SNPS', logo: A + 'feed-logo-snps.png', tone: '▲ Bullish',
+      sym: 'SNPS', logo: A + 'feed-logo-snps.png', stance: 'bull',
       co: 'Synopsys Inc', mkt: 'NASDAQ', price: 408.79, chg: 14.28, pct: 3.62,
       lo: 374.33, hi: 425.28,
       pre: { price: 410.2, chg: 1.41, pct: 0.34, when: 'Aug 25, 20:45 GMT+8' },
@@ -168,7 +168,7 @@
       },
     },
     MSFT: {
-      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', tone: '▲ Bullish',
+      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', stance: 'flat',
       co: 'Microsoft Corp', mkt: 'NASDAQ', price: 491.71, chg: 4.39, pct: 0.9,
       lo: 383.16, hi: 504.4,
       pre: { price: 492.6, chg: 0.89, pct: 0.18, when: 'Aug 25, 20:45 GMT+8' },
@@ -180,7 +180,7 @@
       },
     },
     CBRS: {
-      sym: 'CBRS', logo: A + 'feed-logo-cbrs.svg', tone: '▲ Bullish',
+      sym: 'CBRS', logo: A + 'feed-logo-cbrs.svg', stance: 'none',
       co: 'Cerebras Systems', mkt: 'NASDAQ', price: 183.92, chg: -1.52, pct: -0.82,
       lo: 175.18, hi: 250.39,
       pre: { price: 184.7, chg: 0.78, pct: 0.42, when: 'Aug 25, 20:45 GMT+8' },
@@ -192,7 +192,7 @@
       },
     },
     META: {
-      sym: 'META', logo: A + 'feed-logo-meta.svg', tone: '▼ Bearish',
+      sym: 'META', logo: A + 'feed-logo-meta.svg', stance: 'bear',
       co: 'Meta Platforms', mkt: 'NASDAQ', price: 742.18, chg: -6.02, pct: -0.8,
       lo: 688.4, hi: 781.6,
       pre: { price: 739.6, chg: -2.58, pct: -0.35, when: 'Aug 25, 20:45 GMT+8' },
@@ -204,7 +204,7 @@
       },
     },
     BABA: {
-      sym: 'BABA', logo: A + 'feed-logo-baba.svg', tone: '▲ Bullish',
+      sym: 'BABA', logo: A + 'feed-logo-baba.svg', stance: 'bull',
       co: 'Alibaba Group', mkt: 'NYSE', price: 148.92, chg: 3.41, pct: 2.34,
       lo: 121.05, hi: 152.7,
       pre: { price: 149.75, chg: 0.83, pct: 0.56, when: 'Aug 25, 20:45 GMT+8' },
@@ -216,7 +216,7 @@
       },
     },
     AAOI: {
-      sym: 'AAOI', logo: A + 'feed-logo-aaoi.svg', tone: '▼ Bearish',
+      sym: 'AAOI', logo: A + 'feed-logo-aaoi.svg', stance: 'bear',
       co: 'Applied Optoelectronics', mkt: 'NASDAQ', price: 32.17, chg: -4.06, pct: -11.21,
       lo: 30.94, hi: 48.3,
       pre: { price: 31.84, chg: -0.33, pct: -1.03, when: 'Aug 25, 20:45 GMT+8' },
@@ -228,7 +228,7 @@
       },
     },
     AVGO: {
-      sym: 'AVGO', logo: A + 'feed-logo-avgo.svg', tone: '▲ Bullish',
+      sym: 'AVGO', logo: A + 'feed-logo-avgo.svg', stance: 'bull',
       co: 'Broadcom Inc', mkt: 'NASDAQ', price: 412.66, chg: 9.84, pct: 2.45,
       lo: 356.2, hi: 428.9,
       pre: { price: 414.2, chg: 1.54, pct: 0.37, when: 'Aug 25, 20:45 GMT+8' },
@@ -240,7 +240,7 @@
       },
     },
     AMD: {
-      sym: 'AMD', logo: A + 'feed-logo-amd.svg', tone: '▲ Bullish',
+      sym: 'AMD', logo: A + 'feed-logo-amd.svg', stance: 'flat',
       co: 'Advanced Micro Devices', mkt: 'NASDAQ', price: 187.3, chg: -3.12, pct: -1.64,
       lo: 162.4, hi: 199.8,
       pre: { price: 188.05, chg: 0.75, pct: 0.4, when: 'Aug 25, 20:45 GMT+8' },
@@ -251,6 +251,30 @@
         when: 'Aug 25, 2026 · 21:33 GMT+8',
       },
     },
+    NBIS: {
+      sym: 'NBIS', logo: A + 'feed-logo-nbis.png', stance: 'bull',
+      co: 'Nebius Group', mkt: 'NASDAQ', price: 96.44, chg: 4.18, pct: 4.53,
+      lo: 61.7, hi: 103.85,
+      pre: { price: 97.2, chg: 0.76, pct: 0.79, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 51903, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'A GPU-cloud name taking the whole of an inference-volume story: up on no filing of its own, on volume that ran through the close. The range is the widest in the group, which is what a capacity bet looks like before the capacity is booked.',
+        when: 'Aug 25, 2026 · 21:26 GMT+8',
+      },
+    },
+    PLTR: {
+      sym: 'PLTR', logo: A + 'feed-logo-pltr.png', stance: 'flat',
+      co: 'Palantir Technologies', mkt: 'NASDAQ', price: 214.07, chg: -1.36, pct: -0.63,
+      lo: 168.9, hi: 236.4,
+      pre: { price: 213.4, chg: -0.67, pct: -0.31, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 66214, anomaly: {
+        label: 'Unusual Options Activity',
+        body: 'Front-expiry calls at twice the twenty-day average into a flat close: the application-margin route to the same story, priced by people who want the option rather than the exposure.',
+        when: 'Aug 25, 2026 · 22:18 GMT+8',
+      },
+    },
   };
 
   const TSM = TICKERS.TSM, GOOGL = TICKERS.GOOGL, SMTC = TICKERS.SMTC, FRO = TICKERS.FRO;
@@ -258,6 +282,7 @@
   const MSFT = TICKERS.MSFT, CBRS = TICKERS.CBRS;
   const META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
   const AVGO = TICKERS.AVGO, AMD = TICKERS.AMD;
+  const NBIS = TICKERS.NBIS, PLTR = TICKERS.PLTR;
 
   /* ──────────────────────────────
      What kind of thing a card is
@@ -275,14 +300,28 @@
                 thesis, the passage itself, the read, then media. One or
                 several tickers.
 
-     The automation in the footer is the playbook that found the card, so it
-     follows from the type rather than being decoration.
+     The automation in the meta row is the playbook that found the card, so it
+     follows from the type rather than being decoration — except where the card
+     came from a named playbook of its own, which the real Alpha Radar batches
+     did, and those carry their own name.
+
+     The action in the footer follows from the type too, and this is the part
+     the new frame gets right: an event is a name to start watching, an anomaly
+     is a move you want measured against what you hold, and a source is a
+     thesis you want taken further. One label each, because the card already
+     knows which question is worth asking.
      ────────────────────────────── */
 
   const AUTOMATION = {
     event: 'company-events',
     anomaly: 'unusual-moves',
     source: 'investor-roundtable',
+  };
+
+  const ASK = {
+    event: 'Track This',
+    anomaly: "What's my impact",
+    source: 'Dig Deeper',
   };
 
   /* ──────────────────────────────
@@ -331,7 +370,10 @@
     amd: A + 'feed-logo-amd.svg',
     msft: A + 'feed-logo-msft.svg',
 
-    /* The nine people the batches quote. */
+    nbis: A + 'feed-logo-nbis.png',
+    pltr: A + 'feed-logo-pltr.png',
+
+    /* The ten people the batches quote. */
     jukan: A + 'alpha-fintwit-3.png',
     sundar: A + 'alpha-podcast-8.png',
     alea: A + 'alpha-fintwit-1.png',
@@ -340,6 +382,10 @@
     saranormous: A + 'alpha-ready-avatar-4.png',
     kindig: A + 'feed-avatar-quote.png',
     tibo: A + 'alpha-fintwit-7.png',
+    /* An illustrated face, not a photograph: the batch quotes a real person by
+       name, and a stock portrait of somebody else beside that name would be
+       the one wrong kind of placeholder. */
+    olivia: A + 'alpha-podcast-2.png',
 
     /* The two simulated handles. */
     weights: A + 'alpha-fintwit-5.png',
@@ -424,6 +470,12 @@
   const SRC_CBRS_ULTRAFAST = [
     x('Tibo', 'X · Aug 26', '7h ago', AV.tibo,
       "Tomorrow's fast will feel like today's ultrafast. As I've mentioned before, we’re pushing to bring this to as many people as possible."),
+  ];
+
+  /* Cheaper adequate models, and where the volume goes — 1 */
+  const SRC_INFERENCE_VOLUME = [
+    x('Olivia Moore', 'X · Aug 26', '4m ago', AV.olivia,
+      'Many tasks may have reached diminishing returns on intelligence, that products may stop automatically switching to each new frontier model, and that this creates many opportunities for application builders to reduce COGS.'),
   ];
 
   /* ── The simulated event and anomaly cards ── */
@@ -719,6 +771,21 @@
         { type: 'chart' },
       ],
     },
+    {
+      type: 'source',
+      tickers: [NBIS, PLTR],
+      age: '4m ago',
+      sources: SRC_INFERENCE_VOLUME,
+      blocks: [
+        { type: 'title', text: 'Cheaper Models Expand Inference Volume' },
+        { type: 'quote', src: SRC_INFERENCE_VOLUME[0] },
+        {
+          type: 'text',
+          text: 'Cheaper adequate models can convert lower application COGS into more production inference rather than merely lower customer bills. NBIS is the strongest infrastructure expression because it directly captures the resulting model-serving utilization, while PLTR offers a distinct application-margin route but weaker direct exposure.',
+        },
+        { type: 'chartRow' },
+      ],
+    },
   ];
 
   /* ──────────────────────────────
@@ -760,15 +827,36 @@
   const signed = n => (n > 0 ? '+' : '−') + money(Math.abs(n));
   const pct = n => '(' + (n > 0 ? '+' : '−') + Math.abs(n).toFixed(2) + '%)';
 
+  /* Ticker / Stance (1664:17174). Alva's call on the name, not the tape's
+     direction — which is why the same card can carry a bullish name and a
+     bearish one, and why the arrow's bearing is the whole message: the dial
+     is one glyph rotated, not four icons. `none` is the state that earns its
+     keep: a dashed ring and no arrow says Alva has not formed a view, which
+     is a different claim from having looked and found it flat. */
+  const STANCE = {
+    bull: 'Bullish',
+    bear: 'Bearish',
+    flat: 'Flat',
+    none: 'No call',
+  };
+
+  function stanceNode(key) {
+    const k = STANCE[key] ? key : 'bull';
+    const wrap = el('span', 'stance ' + k);
+    const dial = el('span', 'stance-dial');
+    /* No arrow on `none`: there is no direction to point. */
+    if (k !== 'none') dial.appendChild(icon('ui-arrow-up-l1.svg'));
+    wrap.appendChild(dial);
+    wrap.appendChild(el('span', 'stance-txt', STANCE[k]));
+    return wrap;
+  }
+
   function tickerChip(t) {
-    const wrap = btn('ticker', t.sym + ' detail');
+    const wrap = btn('ticker', t.sym + ' · ' + STANCE[t.stance || 'bull']);
     wrap.appendChild(img(t.logo, 'ticker-logo'));
     const text = el('div', 'ticker-text');
     text.appendChild(el('span', 'ticker-name', t.sym));
-    /* The tone is Alva's stance on the name, not today's direction — the
-       design puts ▲ Bullish on three tickers at once — so the colour follows
-       the arrow rather than the tape. */
-    text.appendChild(el('span', 'ticker-tone' + (t.tone.indexOf('\u25bc') === 0 ? ' down' : ''), t.tone));
+    text.appendChild(stanceNode(t.stance));
     wrap.appendChild(text);
     wrap.addEventListener('click', e => { e.stopPropagation(); openTicker(t); });
     return wrap;
@@ -870,13 +958,22 @@
        show you the source. */
     if (b.type === 'quote') {
       const src = b.src;
-      const q = btn('quote', 'Sources');
+      /* Markdown - Quote has two variants and the card decides which:
+         a card that already carries a title of its own gets the tile with the
+         passage at Regular/12, and a card that does not gets the passage *as*
+         the title — Medium/16, no tile, speaker underneath. Reading it off the
+         card's own blocks rather than off a flag means the two can never
+         disagree about whether the card has a title. */
+      const h2 = !card.blocks.some(o => o.type === 'title' || o.type === 'lead');
+      const q = btn('quote' + (h2 ? ' quote-h2' : ''), 'Sources');
       const head = el('div', 'quote-head');
       head.appendChild(img(src.img, 'quote-avatar'));
       head.appendChild(el('span', 'quote-name', src.name));
       q.appendChild(head);
-      q.appendChild(el('p', 'quote-body', src.quote));
-      q.appendChild(el('span', 'quote-mark', '”'));
+      /* The typographic pair belongs to the H2 variant only: in the tile the
+         mark in the corner is already doing that job. */
+      q.appendChild(el('p', 'quote-body', h2 ? '\u201c' + src.quote + '\u201d' : src.quote));
+      q.appendChild(el('span', 'quote-mark', '\u201d'));
       q.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
       return q;
     }
@@ -901,6 +998,15 @@
   function cardNode(card) {
     const node = el('article', 'card');
 
+    /* Feed Card - Meta (1629:17047): who made this and how old it is. */
+    const meta = el('div', 'card-meta');
+    const auto = el('div', 'card-auto');
+    auto.appendChild(img(A + 'feed-dot-green.svg'));
+    auto.appendChild(el('span', null, card.automation || AUTOMATION[card.type] || AUTOMATION.event));
+    meta.appendChild(auto);
+    meta.appendChild(el('span', 'card-age', card.age));
+    node.appendChild(meta);
+
     const head = el('div', 'card-head');
     card.tickers.forEach((t, i) => {
       if (i) head.appendChild(el('span', 'head-rule'));
@@ -914,29 +1020,29 @@
 
     const footEl = el('div', 'card-foot');
 
-    /* Both halves of the footer come off card.sources, so the count and the
-       faces can never drift from the sheet the row opens. Three faces is what
-       the design shows; the rest are behind the number. */
+    /* Every part of the left half comes off card.sources, so the faces, the
+       name and the count can never drift from the sheet the row opens. Three
+       faces is what the frame shows; the rest are behind the number, and the
+       name is the first source's — the one you would give if asked where the
+       card came from. */
     const lead = btn('foot-lead', 'Sources');
     const stack = el('div', 'sources');
     card.sources.slice(0, 3).forEach(src => stack.appendChild(img(src.img)));
     lead.appendChild(stack);
-    const n = card.sources.length;
-    lead.appendChild(el('span', 'foot-meta', n + (n === 1 ? ' source · ' : ' sources · ') + card.age));
+    lead.appendChild(el('span', 'foot-src', card.sources[0].name));
+    const rest = card.sources.length - 1;
+    if (rest > 0) lead.appendChild(el('span', 'foot-more', '+' + rest));
     lead.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
     footEl.appendChild(lead);
 
-    const auto = el('div', 'automation');
-    auto.appendChild(img(A + 'feed-dot-green.svg'));
-    auto.appendChild(el('span', null, AUTOMATION[card.type] || AUTOMATION.event));
-    footEl.appendChild(auto);
-
-    const ask = btn('ask', 'Ask Alva');
+    const label = ASK[card.type] || ASK.event;
+    const ask = btn('ask', label);
     ask.appendChild(icon('ui-chat-ai-l.svg'));
+    ask.appendChild(el('span', null, label));
     ask.addEventListener('click', e => {
       e.stopPropagation();
       showTab('chat');
-      toast('Ask Alva picks the thread up in Chat');
+      toast('Alva picks the thread up in Chat');
     });
     footEl.appendChild(ask);
 
@@ -1946,7 +2052,7 @@
     if (count) count.textContent = String(followed.size);
     render();
     wireRowDrag(cardsEl);
-    pillText.textContent = '2 new feeds';
+    pillText.textContent = NEW_CARDS.length + ' new feeds';
     setPill(true);
     feed.scrollTop = 0;
     paintBar();
