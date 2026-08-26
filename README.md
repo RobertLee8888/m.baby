@@ -64,9 +64,9 @@ is what makes them tell apart at a glance in a list you are thumbing through:
 
 | Type | What it is | Blocks | Tickers | Playbook | Action |
 | --- | --- | --- | --- | --- | --- |
-| `event` | a company event, read and analysed | `text` → media | one or several | `company-events` | Track This |
+| `event` | a company event, read and analysed | `text` → `media` | one or several | `company-events` | Track This |
 | `anomaly` | one name moving in a way that needs explaining | `lead` → `text` → `media` | **exactly one** | `unusual-moves` | What's my impact |
-| `source` | something a source published, tracked and analysed | `title` → `quote` → `text` → `mediaRow` | one or several | `investor-roundtable` | Dig Deeper |
+| `source` | something a source published, tracked and analysed | `title` → `quote` → `text` → `media` | one or several | `investor-roundtable` | Dig Deeper |
 
 An anomaly gets exactly one ticker because an anomaly belongs to a single
 tape: two names cannot share one unusual move. The other two can carry a
@@ -89,8 +89,8 @@ it.
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
 | `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, speaker at 20px, the mark hanging 5 above the top-right corner |
 | `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 16/26, speaker underneath at 16px in `text/n5` |
-| `media` | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
-| `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
+| `media` (one ticker) | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
+| `media` (two or three) | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
 
 ### Eleven of the twenty cards are real
 
@@ -425,6 +425,20 @@ the app's own floor show through is what makes them read that way: on the card
 ground they were two more white rows in a stack of white rows, and the seam
 between "what just arrived" and "what you had already read" is exactly the
 thing that has to *not* look like a card.
+
+### The count picks the media layout, not the card
+
+There is one media block, and how many tickers the card carries decides what it
+draws — which is exactly what the frame's own component names say: `Media = 1`
+is the wide tile, `Media > 1` is the scrolling strip of 240 × 135 ones. One
+name gets the wide tile, two or three get the strip. No third option, and
+nothing to choose per card.
+
+It used to be two block types, `chart` and `chartRow`, and a card could ask for
+the wrong one. One did: the CDNS · SNPS card asked for `chart` with two tickers
+and stacked two full-width tiles down the card, which is a layout the design
+does not have. Deriving it from the ticker count means that particular mistake
+cannot be made again.
 
 ### The tile is indicative art, and says so
 

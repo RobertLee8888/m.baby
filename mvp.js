@@ -669,7 +669,7 @@
           type: 'text',
           text: 'The beat itself was ordinary — $341.9M against roughly $329M expected — and the tape ignored it. What it did not ignore was the unit forecast almost doubling while management said current capacity may be insufficient for fiscal 2028. A quantity raise without a capacity raise prices as scarcity, and that is the shape this session had: two legs up, no closing imbalance, nothing given back.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -684,7 +684,7 @@
           type: 'text',
           text: "Semtech's booked 1.6T demand, cost pass-through, early qualification and constrained capacity can lift mix, utilization and earnings into fiscal 2028. SMTC is the strongest expression because it owns the cited components and backlog; execution, capacity expansion or competitor share gains are the adverse case.",
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -697,7 +697,7 @@
           type: 'text',
           text: "Alibaba Group Holding's open-weight AI models accumulated more than 3 billion global downloads during the past six months, according to Bloomberg and other reports. The figure surpassed reported downloads for models from Meta Platforms, Alphabet, and domestic peers, making Alibaba's models the world's most downloaded AI models.",
         },
-        { type: 'chartRow' },
+        { type: 'media' },
       ],
     },
     {
@@ -711,7 +711,7 @@
           type: 'text',
           text: 'No filing, no guidance, no published revision. The move started twenty minutes after the open and never gave back more than a third of any leg, volume ran at 1.8× the twenty-day median, and the close printed on an imbalance to buy. A session this wide with nothing to point at is usually positioning ahead of something rather than a re-rating of anything.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -726,7 +726,7 @@
           type: 'text',
           text: 'Concentrated VLCC buying can withdraw independently available tonnage just as India-bound freight and Hormuz insurance reprice risk, creating a distinct effective-supply squeeze. FRO is strongest through direct VLCC earnings and asset values; fixed charters, insurance costs, fleet inaccessibility or normalization are the adverse case.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -741,7 +741,7 @@
           type: 'text',
           text: 'Post-resistance activity plus possible brain penetration could give RVMD a differentiated next-line KRAS G12C treatment pool beyond current inhibitors. RVMD is the direct pipeline owner; the adverse case is failed clinical translation, inadequate CNS exposure, efflux requiring combinations, toxicity, or faster competing programs.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -755,7 +755,7 @@
           type: 'text',
           text: "A second sharp move today followed an earlier AAOI decline tied to the company's new equity-sale program. Applied Optoelectronics announced an agreement permitting up to $600 million in common-stock sales, raising dilution and share-supply concerns. A weaker U.S. equity market added pressure at the margin.",
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -770,7 +770,7 @@
           type: 'text',
           text: 'Capable 27B local agents can shift part of knowledge-work inference from cloud calls into compact private systems. NVDA is strongest because the demonstrated workload uses DGX Spark and its unified-memory software stack; the adverse case is cloud superiority, cheaper rival appliances, weak adoption, or low incremental margins.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -783,7 +783,7 @@
           type: 'text',
           text: 'Broadcom said on its Q3 call that a fourth custom-accelerator customer has committed to volume, taking the AI backlog out four quarters on customer commitments rather than forecasts. Neither the customer nor the part was named, and the schedule two people described puts first silicon in the second half of next year — which makes this a booking, not a shipment.',
         },
-        { type: 'chartRow' },
+        { type: 'media' },
       ],
     },
     {
@@ -797,7 +797,7 @@
           type: 'text',
           text: 'The tape and the rate did opposite things. The benchmark VLCC fixture printed the highest earnings of the six-week window before lunch, and the equity closed 1.3% down within a point of its own six-week high. Nothing was filed and no broker moved. A divergence this clean between a rate and the equity that earns it usually resolves inside a week; the only question is which of the two is wrong.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -810,7 +810,7 @@
           type: 'text',
           text: "Taiwan Semiconductor opened its N2 design-enablement kit to certified third-party flows, according to Reuters and SemiAnalysis, letting Cadence and Synopsys qualify place-and-route, extraction and timing signoff against the node before the foundry's own reference flow ships. Both vendors said certification work is already under way — a quarter earlier in the node than N3 allowed.",
         },
-        { type: 'chartRow' },
+        { type: 'media' },
       ],
     },
     {
@@ -825,7 +825,7 @@
           type: 'text',
           text: 'Hardware emulation is becoming a verification control plane as chip and software complexity make late bugs and respins costlier. CDNS and SNPS are the strongest joint expression through Palladium and ZeBu plus attached licenses and support; cloud simulation, delayed purchases, or share shifts are the adverse case.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -840,7 +840,7 @@
           type: 'text',
           text: 'Secure authenticated agents can move AI from answers into delegated enterprise workflows such as reimbursements, invoices, permits, recruiting, and vendor actions. MSFT is the strongest available expression through productivity, identity, and cloud distribution; the adverse case is OpenAI or rivals owning the workflow economics without Microsoft integration.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -854,7 +854,7 @@
           type: 'text',
           text: 'Both names traded one story and the gap between them widened every hour. Synopsys closed 3.6% up on 1.4× median volume, Cadence 5.1% up on 1.2×. The spread is the market putting the emulation share where the hardware is rather than where the licence base is — which is a view, and one worth checking against the next two quarters of hardware revenue.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -867,7 +867,7 @@
           type: 'text',
           text: 'Revolution Medicines put a date on the Phase 3 arm of its KRAS G12C programme, naming the first half of next year and confirming enrolment is complete, according to a corporate presentation and Reuters. The CNS cohort will report on its own timeline rather than alongside the main arm.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -883,7 +883,7 @@
           type: 'text',
           text: 'TSMC can monetize a demand-to-contract-pricing loop: frontier labs with strong inference economics may keep bidding for scarce compute, with reported 5-15% advanced-node price increases showing scarcity reaching contracts. TSM is best positioned through qualified leading-edge capacity; key risks are non-transferable Samsung constraints, alternative foundries, customer-owned chips, and geopolitical disruption.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -898,7 +898,7 @@
           type: 'text',
           text: "Cerebras's unique hardware is explicitly tied to strong OpenAI demand for ultrafast inference, creating a potential specialized-capacity expansion and utilization loop. CBRS is the direct hardware collaborator; OpenAI could internalize silicon, diversify suppliers, or retain economics, and production scale remains unquantified.",
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
   ];
@@ -920,7 +920,7 @@
           type: 'text',
           text: "AI-assisted chip design can broaden the custom-silicon project funnel while frontier labs' profitable inference supports aggressive compute bids. TSM is the strongest expression because scarce leading-edge manufacturing captures utilization and pricing; the adverse case is alternative foundries, customer-owned chips, non-transferable demand, or weaker AI economics.",
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -935,7 +935,7 @@
           type: 'text',
           text: 'Vertical legal and financial-services modules can turn Gemini from a general assistant into repeatable regulated workflows, improving paid-seat conversion and cloud consumption. GOOGL owns the model, product and distribution; Microsoft competition, services intensity or weak adoption could absorb the benefit.',
         },
-        { type: 'chart' },
+        { type: 'media' },
       ],
     },
     {
@@ -950,7 +950,7 @@
           type: 'text',
           text: 'Cheaper adequate models can convert lower application COGS into more production inference rather than merely lower customer bills. NBIS is the strongest infrastructure expression because it directly captures the resulting model-serving utilization, while PLTR offers a distinct application-margin route but weaker direct exposure.',
         },
-        { type: 'chartRow' },
+        { type: 'media' },
       ],
     },
   ];
@@ -1086,15 +1086,15 @@
       return q;
     }
 
-    /* One chart per ticker, always: a card about two names draws two, and
-       nobody has to wonder which tape a tile belongs to. */
-    if (b.type === 'chart') {
-      const stack = el('div', 'chart-stack');
-      card.tickers.forEach(t => stack.appendChild(chartTile(t, 'media')));
-      return stack;
-    }
-
-    if (b.type === 'chartRow') {
+    /* One tile per ticker, and the *count* picks the layout — which is what
+       the frame's own two component names say: `Media = 1` is the full-width
+       tile, `Media > 1` is the scrolling strip of 240 × 135 ones. So a card
+       about one name gets the wide tile and a card about two or three gets the
+       strip, with no third option and nothing to choose per card. It used to
+       be two block types and a card could ask for the wrong one — the CDNS ·
+       SNPS card did, and stacked two full-width tiles down the card. */
+    if (b.type === 'media') {
+      if (card.tickers.length === 1) return chartTile(card.tickers[0], 'media');
       const row = el('div', 'media-row');
       card.tickers.forEach(t => row.appendChild(chartTile(t, 'media-tile')));
       return row;

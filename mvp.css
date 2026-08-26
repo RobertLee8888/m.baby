@@ -713,9 +713,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .media:active,
 .media-tile:active { transform: scale(.985); }
 
-/* Two names, two charts, stacked at the body's own 12. */
-.chart-stack { display: flex; flex-direction: column; gap: 12px; }
-
 /* The row bleeds through both gutters, so a tile leaving the row is cut off
    by the edge of the screen — the only place a cut reads as "there is more
    over there". Clipped at the 16 gutter instead, it looked severed in mid
