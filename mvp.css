@@ -544,13 +544,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .quote {
   position: relative;
   display: flex;
+  width: 100%;
   flex-direction: column;
   gap: 8px;
   overflow: hidden;
   padding: 12px 12px 8px;
   border-radius: 8px;
   background: var(--br03);
+  transition: transform .2s var(--ease);
 }
+.quote:active { transform: scale(.99); }
 .quote-head { display: flex; align-items: center; gap: 8px; }
 .quote-avatar {
   flex: 0 0 auto;
@@ -614,6 +617,25 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .media-tile img { width: 100%; height: 100%; object-fit: cover; filter: var(--media-filter); }
 .media:active,
 .media-tile:active { transform: scale(.985); }
+
+/* The tile is a drawing, not a screenshot: an inline SVG, so it takes the
+   theme's own tokens and needs none of the invert `--media-filter` does to a
+   raster. `.media` is 100% wide and `.media-tile` is a fixed 240 — the same
+   240 × 135 viewBox fits both because the frame's ratio is 240 / 135. */
+.spark { display: block; width: 100%; height: 100%; }
+.spark-area { fill: var(--m3); opacity: .12; }
+.spark-line {
+  fill: none;
+  stroke: var(--m3);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.spark-sym { fill: var(--n9); font-size: 9px; font-weight: 500; }
+.spark-axis { fill: var(--n5); font-size: 8px; font-weight: 400; }
+
+/* Two names, two charts, stacked at the body's own 12. */
+.chart-stack { display: flex; flex-direction: column; gap: 12px; }
 
 /* The row bleeds through both gutters, so a tile leaving the row is cut off
    by the edge of the screen — the only place a cut reads as "there is more
@@ -1059,8 +1081,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transition: opacity .16s ease;
 }
 .row:active { opacity: .55; }
+/* Usage opens the menu, and the frame gives the Usage Entry no rule of
+   its own — the profile header above it is separated by 16 of space. */
 .row-open { box-shadow: none; }
-.row-entry { box-shadow: inset 0 var(--hair) 0 var(--l12); }
 .row .ic-lead { width: 20px; height: 20px; color: var(--n9); }
 .row-label { flex: 1 1 auto; color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
 .row-count { flex: 0 0 auto; margin-right: -4px; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
@@ -1131,19 +1154,21 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .switch[aria-checked="true"] { background: var(--m1); }
 .switch[aria-checked="true"]::after { transform: translateX(16px); }
 
-.me-social { display: flex; gap: 8px; padding: 16px 0; box-shadow: inset 0 var(--hair) 0 var(--l12); }
+/* The Social frame's top stroke and the buttons' 5% fill are both
+   switched off in the frame — the buttons are a hairline outline on the
+   card's own ground, and the row is separated by space, not a rule. */
+.me-social { display: flex; gap: 8px; padding: 16px 0; }
 .me-social button {
   display: grid;
   flex: 1 1 0;
   place-items: center;
   height: 32px;
   border-radius: 4px;
-  background: var(--br05);
   box-shadow: inset 0 0 0 var(--hair) var(--l3);
   color: var(--n9);
   transition: background .16s ease;
 }
-.me-social button:active { background: var(--br07); }
+.me-social button:active { background: var(--br05); }
 .me-social .ic { width: 16px; height: 16px; }
 
 /* ═══════════════════════════════════════════════════════════

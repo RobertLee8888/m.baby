@@ -82,6 +82,53 @@ it.
 | `media` | Media = 1 | gutter to gutter, 240 × 135 |
 | `mediaRow` | Media > 1 | 240 × 135 tiles, 8 apart |
 
+### Ten of the fourteen cards are real
+
+The source-type cards are not written for this prototype. They are the hourly
+Alpha Radar batches Alva's own production playbook published on the morning of
+26 August 2026 — headline, quoted passage, read, and the ticker's last price,
+day change and six-week range, taken as they ran:
+
+| # | ticker | batch |
+| --- | --- | --- |
+| 1 | TSM | TSMC Captures The Custom-Chip Bottleneck |
+| 2 | GOOGL | Gemini Verticalizes Regulated Workflows |
+| 3 | SMTC | Semtech Monetizes Scarce 1.6T Capacity |
+| 4 | FRO | VLCC Consolidation Tightens Frontline's Market |
+| 5 | RVMD | RVMD Targets Post-Resistance KRAS and CNS Disease |
+| 6 | NVDA | Local Agents Create an NVIDIA Appliance Market |
+| 7 | CDNS · SNPS | Emulation Becomes Chip Verification Control Plane |
+| 8 | MSFT | Authenticated Agents Open a Workflow Control Plane |
+| 9 | TSM | TSMC Captures Frontier Compute Pricing |
+| 10 | CBRS | Cerebras Converts Ultrafast Demand Into Capacity |
+
+The two 10:58 batches are held back behind the pill, because that is what the
+production playbook does — new batches at the top, full history below — so the
+refresh brings in the hour that has actually just landed rather than two cards
+invented to have something to arrive.
+
+What is *not* real: the four event and anomaly cards interleaved between them.
+The production feed only produces the third type, so the other two are written
+here, and they are written on the same names and the same numbers wherever
+they can be — the SMTC anomaly is that ticker's real +5.47% session and the
+real revenue and unit figures behind it. The five older names they also use
+(META, BABA, AAOI, AVGO, AMD) carry plausible prices rather than quoted ones.
+
+And a rule that follows from this: **no invented words in a real person's
+mouth.** Every quote attributed to a named account is the passage the batch
+quoted. The simulated cards cite outlets, filings and two clearly fictional
+handles, and never a real person.
+
+### The quote is a way in
+
+Tapping a quote opens the same sources sheet the footer opens, because the
+quote *is* one of the card's sources rendered in place. That is how the
+production feed behaves, and it is the only reading that makes the block mean
+anything: you are looking at a source, so tapping it should show you the
+source. The block takes its avatar, its name and its text off the source
+object rather than carrying its own copy, which is why the two can never say
+different things.
+
 ### The source list is the only source of truth
 
 A card carries its own `sources` array, and everything about sources is read
@@ -123,6 +170,22 @@ places:
 The press cast is small on purpose: it is the outlets whose marks read at
 32px. Rows that used to be attributed to an outlet with no usable mark were
 re-attributed rather than given a letter tile.
+
+### Where the marks come from
+
+Ticker logos are the real ones, fetched as PNGs and set on the `#F0F3FA` plate
+the design's own Figma exports use, so a 36px circle reads the same whichever
+mode it is in. One name has no mark anywhere reachable: Cerebras. It gets the
+dark disc with the symbol on it that Alva's own feed shows for CBRS — the
+product's real fallback, not a letter tile invented here.
+
+Brand accounts get their own marks (Perplexity, OpenAI). The nine people the
+batches quote get the nine portrait avatars, bound one-to-one, and the two
+simulated handles that survive on the event and anomaly cards take the two
+that are left, so nobody wears somebody else's face. Those portraits are the
+Alva design assets rather than the accounts' own photographs, which is the one
+place the sheet is dressed rather than quoted — X's image host is not
+reachable from here.
 
 ### The line under the topbar is its own element
 
@@ -203,6 +266,28 @@ own, 48 tall. It is the shape every messaging app converged on: Slack's
 as a line someone forgot to break. What it is is a row that says where you
 stopped, so it is banded like a row. Its bottom rule is the next card's top
 rule — one line, not two.
+
+### The tile is a drawing, not a screenshot
+
+For eight rounds the chart under a card was one of three Figma exports of an
+NVDA chart, which meant a card about AVGO showed a tile labelled NVDA. It is
+an inline SVG now: thirty closes from a seeded walk, mapped so the low is the
+low the tile prints, the high is the high, and the last point is the price in
+the header — then drawn as a Catmull-Rom curve with the control points clamped
+to the plot so the line can never bulge past the two numbers beside it.
+
+Three things fall out of that. There is one tile per ticker, so a card about
+two names draws two and nobody has to wonder which tape a tile belongs to. The
+tile takes the theme's own tokens, so Dark needs none of the `--media-filter`
+inversion a raster does. And the labels are the Alpha Radar tile's labels —
+`$SYM`, the high, the low, `Jul 15`, `Aug 25` — at the design's own 240 × 135
+media ratio, which is why the same viewBox fits both the full-width block and
+the 240-wide strip.
+
+The fullscreen chart is the same idea one level down: it generates the
+ticker's own session rather than scaling one fixed crash shape to everything,
+because that shape put "Previous close" outside the visible range on any name
+that rose.
 
 ### The media frame is a pseudo-element
 
@@ -493,21 +578,22 @@ pass took them off the file instead:
 | 12 / 4 around a group label | the `Group ·` frame is 32 with a 16 label at y 12 |
 | 16 above *and* below the social row | `Social` is 64 with 32-tall buttons at y 16 |
 
-Two things that look like exceptions are not. Usage takes the same top hairline
-as every other row — it just looks like the only one without a line under it,
-because the credits card belongs to the same `Usage Entry` and so takes none of
-its own. And the appearance row is 54 like the rest even though the switch in
+A stroke or a fill that exists in the file is not the same as one that is
+painted, and reading `strokes` and `fills` without checking each paint's
+`visible` cost a round here: the Social frame's top rule, its buttons' 5% fill
+and the `Usage Entry`'s top rule are all switched off in the frame, and all
+three got built. The buttons are a hairline outline on the card's own ground,
+the social row is separated by space rather than a rule, and nothing draws a
+line above Usage — the profile header is held off it by 16 of space instead.
+The row hairlines that *are* on are the ones on the seven menu rows.
+
+And the appearance row is 54 like the rest even though the switch in
 it is 24 in a 22 line: the extra pixel either side comes out of the switch's
 margin rather than the row's height, because a settings list where one row is
 two pixels taller than its neighbours is a list you can feel is wrong without
 being able to say why.
 
 ### What is not built yet
-
-The three chart images in the media rows are Figma exports of an NVDA chart,
-so a card about AVGO shows a tile labelled NVDA. Real per-ticker thumbnails
-would come from the same generator the ticker sheet already uses — that is the
-next obvious thing to do here.
 
 The buy mark on the ticker sheet's chart is a plain circle. The design draws a
 circle with a **B** inside it, and Lightweight Charts puts marker text outside

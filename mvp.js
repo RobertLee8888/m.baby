@@ -25,10 +25,6 @@
   'use strict';
 
   const A = 'assets/';
-  const CHART_WIDE = A + 'feed-media-chart.png';
-  const CHART_TILE = A + 'feed-media-chart-narrow.png';
-  const CHART_CANDLES = A + 'feed-media-chart-candles.png';
-
   /* ──────────────────────────────
      Mode
 
@@ -64,17 +60,34 @@
   }
 
   /* ──────────────────────────────
-     Tickers
+     The names
 
-     A ticker is the same object everywhere it appears: the chip in a card
-     header, the header of its own sheet, and the series its chart draws.
+     Ten of these carry the numbers Alva's own production feed was quoting on
+     the morning of 26 August 2026 — last price, day change, and the six-week
+     high and low the Alpha Radar chart labels. `lo`/`hi` are what the feed's
+     sparkline is drawn between, so the picture and the labels cannot drift
+     apart. Five older names (META, BABA, AAOI, AVGO, AMD) belong to the
+     simulated event and anomaly cards and carry plausible numbers instead.
      ────────────────────────────── */
 
   const TICKERS = {
-    GOOG: {
-      sym: 'GOOG', logo: A + 'feed-logo-goog.svg', tone: '▲ Bullish',
-      co: 'Alphabet Inc', mkt: 'NASDAQ', price: 208.44, chg: 1.86, pct: 0.9,
-      pre: { price: 209.1, chg: 0.66, pct: 0.32, when: 'Aug 25, 20:45 GMT+8' },
+    TSM: {
+      sym: 'TSM', logo: A + 'feed-logo-tsm.png', tone: '▲ Bullish',
+      co: 'Taiwan Semiconductor', mkt: 'NYSE', price: 417.41, chg: 7.3, pct: 1.78,
+      lo: 383.93, hi: 429.39,
+      pre: { price: 418.9, chg: 1.49, pct: 0.36, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 51217, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'Two separate advanced-node pricing reports landed inside the same session and the bid never faded, which is what a scarcity story looks like on the tape rather than a headline being faded.',
+        when: 'Aug 26, 2026 · 10:58 GMT+8',
+      },
+    },
+    GOOGL: {
+      sym: 'GOOGL', logo: A + 'feed-logo-goog.svg', tone: '▲ Bullish',
+      co: 'Alphabet Inc', mkt: 'NASDAQ', price: 346.96, chg: -1.11, pct: -0.32,
+      lo: 320.69, hi: 373.78,
+      pre: { price: 347.6, chg: 0.64, pct: 0.18, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
       seed: 91021, anomaly: {
         label: 'Unusual Volume Concentration',
@@ -82,9 +95,106 @@
         when: 'Aug 25, 2026 · 21:47 GMT+8',
       },
     },
+    SMTC: {
+      sym: 'SMTC', logo: A + 'feed-logo-smtc.png', tone: '▲ Bullish',
+      co: 'Semtech Corp', mkt: 'NASDAQ', price: 127.52, chg: 6.61, pct: 5.47,
+      lo: 107.31, hi: 147.65,
+      pre: { price: 128.4, chg: 0.88, pct: 0.69, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 24408, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'A 5.5% session on a beat that was mostly guidance: revenue $341.9M against roughly $329M expected, and unit forecasts raised from 50M to 80–90M. The move came in two legs with no closing imbalance, which is a re-rate rather than a squeeze.',
+        when: 'Aug 26, 2026 · 09:59 GMT+8',
+      },
+    },
+    FRO: {
+      sym: 'FRO', logo: A + 'feed-logo-fro.png', tone: '▲ Bullish',
+      co: 'Frontline plc', mkt: 'NYSE', price: 43.46, chg: -0.59, pct: -1.34,
+      lo: 36.71, hi: 44.08,
+      pre: { price: 43.6, chg: 0.14, pct: 0.32, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 66190, anomaly: {
+        label: 'Unusual Volume Concentration',
+        body: 'The tape gave back 1.3% on volume a third above the twenty-day median, into a week where 365 VLCCs have changed hands year to date against 239 in the whole of last year. Secondhand buying that heavy usually shows up in rates before it shows up in the quote.',
+        when: 'Aug 26, 2026 · 09:59 GMT+8',
+      },
+    },
+    RVMD: {
+      sym: 'RVMD', logo: A + 'feed-logo-rvmd.png', tone: '▲ Bullish',
+      co: 'Revolution Medicines', mkt: 'NASDAQ', price: 211.38, chg: -0.19, pct: -0.09,
+      lo: 181.63, hi: 214.93,
+      pre: { price: 212.1, chg: 0.72, pct: 0.34, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 38471, anomaly: {
+        label: 'Unusual Options Activity',
+        body: 'Call open interest three months out doubled on a flat session, concentrated in strikes a quarter above spot. Preclinical readouts do not usually move a tape, but they do move the options that pay if a readout lands.',
+        when: 'Aug 26, 2026 · 08:58 GMT+8',
+      },
+    },
+    NVDA: {
+      sym: 'NVDA', logo: A + 'feed-logo-nvda.png', tone: '▲ Bullish',
+      co: 'NVIDIA Corp', mkt: 'NASDAQ', price: 213.05, chg: 4.57, pct: 2.19,
+      lo: 192.42, hi: 225.16,
+      pre: { price: 214.2, chg: 1.15, pct: 0.54, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 70335, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'A 2.2% session with no product news, tracking a research post about a 27-billion-parameter model running on a desktop appliance. The bid arrived in the last two hours and held into the close.',
+        when: 'Aug 26, 2026 · 08:58 GMT+8',
+      },
+    },
+    CDNS: {
+      sym: 'CDNS', logo: A + 'feed-logo-cdns.png', tone: '▲ Bullish',
+      co: 'Cadence Design Systems', mkt: 'NASDAQ', price: 331.9, chg: 15.98, pct: 5.06,
+      lo: 314.95, hi: 371.5,
+      pre: { price: 333.4, chg: 1.5, pct: 0.45, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 12984, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'Five percent off a six-week base, and its closest peer moved with it rather than against it. When two names in a duopoly re-rate together the market is pricing the category, not the share split.',
+        when: 'Aug 26, 2026 · 06:58 GMT+8',
+      },
+    },
+    SNPS: {
+      sym: 'SNPS', logo: A + 'feed-logo-snps.png', tone: '▲ Bullish',
+      co: 'Synopsys Inc', mkt: 'NASDAQ', price: 408.79, chg: 14.28, pct: 3.62,
+      lo: 374.33, hi: 425.28,
+      pre: { price: 410.2, chg: 1.41, pct: 0.34, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 85520, anomaly: {
+        label: 'Unusual Volume Concentration',
+        body: 'Volume ran 1.8× the twenty-day median with the move front-loaded into the first hour, alongside a matching move in the other emulation vendor. Paired flow like this is usually a basket, not a stock picker.',
+        when: 'Aug 26, 2026 · 06:58 GMT+8',
+      },
+    },
+    MSFT: {
+      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', tone: '▲ Bullish',
+      co: 'Microsoft Corp', mkt: 'NASDAQ', price: 491.71, chg: 4.39, pct: 0.9,
+      lo: 383.16, hi: 504.4,
+      pre: { price: 492.6, chg: 0.89, pct: 0.18, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 15493, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'A quiet session in the shares while the names it buys silicon from moved several percent. When the buyer does not move and the suppliers do, the market is pricing the cost line rather than the demand line.',
+        when: 'Aug 25, 2026 · 21:05 GMT+8',
+      },
+    },
+    CBRS: {
+      sym: 'CBRS', logo: A + 'feed-logo-cbrs.svg', tone: '▲ Bullish',
+      co: 'Cerebras Systems', mkt: 'NASDAQ', price: 183.92, chg: -1.52, pct: -0.82,
+      lo: 175.18, hi: 250.39,
+      pre: { price: 184.7, chg: 0.78, pct: 0.42, when: 'Aug 25, 20:45 GMT+8' },
+      when: 'At Close · Aug 25, 04:00 GMT+8',
+      seed: 47762, anomaly: {
+        label: 'Unusual Price Movement',
+        body: 'Down a quarter from the six-week high and still 5% above the low, on a session where the customer everyone is watching said the demand was there but not how much of it. A range this wide is the market disagreeing with itself about scale.',
+        when: 'Aug 26, 2026 · 04:57 GMT+8',
+      },
+    },
     META: {
       sym: 'META', logo: A + 'feed-logo-meta.svg', tone: '▼ Bearish',
       co: 'Meta Platforms', mkt: 'NASDAQ', price: 742.18, chg: -6.02, pct: -0.8,
+      lo: 688.4, hi: 781.6,
       pre: { price: 739.6, chg: -2.58, pct: -0.35, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
       seed: 41773, anomaly: {
@@ -96,6 +206,7 @@
     BABA: {
       sym: 'BABA', logo: A + 'feed-logo-baba.svg', tone: '▲ Bullish',
       co: 'Alibaba Group', mkt: 'NYSE', price: 148.92, chg: 3.41, pct: 2.34,
+      lo: 121.05, hi: 152.7,
       pre: { price: 149.75, chg: 0.83, pct: 0.56, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
       seed: 30559, anomaly: {
@@ -107,6 +218,7 @@
     AAOI: {
       sym: 'AAOI', logo: A + 'feed-logo-aaoi.svg', tone: '▼ Bearish',
       co: 'Applied Optoelectronics', mkt: 'NASDAQ', price: 32.17, chg: -4.06, pct: -11.21,
+      lo: 30.94, hi: 48.3,
       pre: { price: 31.84, chg: -0.33, pct: -1.03, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
       seed: 77213, anomaly: {
@@ -118,6 +230,7 @@
     AVGO: {
       sym: 'AVGO', logo: A + 'feed-logo-avgo.svg', tone: '▲ Bullish',
       co: 'Broadcom Inc', mkt: 'NASDAQ', price: 412.66, chg: 9.84, pct: 2.45,
+      lo: 356.2, hi: 428.9,
       pre: { price: 414.2, chg: 1.54, pct: 0.37, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
       seed: 60817, anomaly: {
@@ -129,29 +242,22 @@
     AMD: {
       sym: 'AMD', logo: A + 'feed-logo-amd.svg', tone: '▲ Bullish',
       co: 'Advanced Micro Devices', mkt: 'NASDAQ', price: 187.3, chg: -3.12, pct: -1.64,
+      lo: 162.4, hi: 199.8,
       pre: { price: 188.05, chg: 0.75, pct: 0.4, when: 'Aug 25, 20:45 GMT+8' },
       when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 22409, anomaly: {
+      seed: 88431, anomaly: {
         label: 'Unusual Options Activity',
-        body: 'Call volume in the front two expiries ran at three times open interest while the shares finished lower, which is the shape of a position being built into weakness rather than sold into strength.',
+        body: 'Call volume in the front two expiries ran at three times the twenty-day average while the shares finished lower, which is a positioning trade around the second-source story rather than a view on the print.',
         when: 'Aug 25, 2026 · 21:33 GMT+8',
-      },
-    },
-    MSFT: {
-      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', tone: '▲ Bullish',
-      co: 'Microsoft Corp', mkt: 'NASDAQ', price: 521.44, chg: 1.98, pct: 0.38,
-      pre: { price: 522.1, chg: 0.66, pct: 0.13, when: 'Aug 25, 20:45 GMT+8' },
-      when: 'At Close · Aug 25, 04:00 GMT+8',
-      seed: 15493, anomaly: {
-        label: 'Unusual Price Movement',
-        body: 'A quiet session in the shares while the names it buys silicon from moved several percent. When the buyer does not move and the suppliers do, the market is pricing the cost line rather than the demand line.',
-        when: 'Aug 25, 2026 · 21:05 GMT+8',
       },
     },
   };
 
-  const GOOG = TICKERS.GOOG, META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
-  const AVGO = TICKERS.AVGO, AMD = TICKERS.AMD, MSFT = TICKERS.MSFT;
+  const TSM = TICKERS.TSM, GOOGL = TICKERS.GOOGL, SMTC = TICKERS.SMTC, FRO = TICKERS.FRO;
+  const RVMD = TICKERS.RVMD, NVDA = TICKERS.NVDA, CDNS = TICKERS.CDNS, SNPS = TICKERS.SNPS;
+  const MSFT = TICKERS.MSFT, CBRS = TICKERS.CBRS;
+  const META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
+  const AVGO = TICKERS.AVGO, AMD = TICKERS.AMD;
 
   /* ──────────────────────────────
      What kind of thing a card is
@@ -195,35 +301,48 @@
      account's avatar. No monograms — a letter in a circle is what you put
      there when you have not decided who the source is. The company logos are
      the same files the ticker chips use, which is also the right answer: a
-     Form 8-K row should look like the company that filed it. */
+     Form 8-K row should look like the company that filed it.
+
+     One face, one account, everywhere: the nine portrait avatars are bound to
+     the nine people the Alpha Radar batches actually quote, and the two
+     simulated handles that survive on the event and anomaly cards get the two
+     that are left. Nobody wears somebody else's face. */
   const AV = {
     bloomberg: A + 'alpha-source-bloomberg.png',
     reuters: A + 'alpha-source-reuters.png',
     cnn: A + 'feed-avatar-src2.png',
     semi: A + 'avatar-semianalysis.png',
-    podcast: A + 'alpha-source-podcast.png',
     reddit: A + 'src-reddit.svg',
     hf: A + 'src-hf.svg',
-    moore: A + 'feed-avatar-quote.png',
 
-    goog: A + 'feed-logo-goog.svg',
-    meta: A + 'feed-logo-meta.svg',
+    /* Brands that speak in their own name, in their own mark. */
+    dwarkesh: A + 'alpha-source-podcast.png',
+    pplx: A + 'src-perplexity.svg',
+    openai: A + 'src-openai.svg',
+
+    tsm: A + 'feed-logo-tsm.png',
+    googl: A + 'feed-logo-goog.svg',
+    smtc: A + 'feed-logo-smtc.png',
+    cdns: A + 'feed-logo-cdns.png',
+    snps: A + 'feed-logo-snps.png',
     baba: A + 'feed-logo-baba.svg',
     aaoi: A + 'feed-logo-aaoi.svg',
     avgo: A + 'feed-logo-avgo.svg',
     amd: A + 'feed-logo-amd.svg',
     msft: A + 'feed-logo-msft.svg',
 
-    /* Nine accounts, nine faces, and each handle keeps its face wherever it
-       turns up — the same account on two stories is the same person. */
-    weights: A + 'alpha-fintwit-1.png',
-    optical: A + 'alpha-fintwit-2.png',
-    token: A + 'alpha-fintwit-3.png',
-    silicon: A + 'alpha-fintwit-5.png',
-    hbm: A + 'alpha-fintwit-6.png',
-    carry: A + 'alpha-fintwit-7.png',
-    longrun: A + 'alpha-ready-avatar-4.png',
-    tape: A + 'alpha-podcast-8.png',
+    /* The nine people the batches quote. */
+    jukan: A + 'alpha-fintwit-3.png',
+    sundar: A + 'alpha-podcast-8.png',
+    alea: A + 'alpha-fintwit-1.png',
+    marhelm: A + 'alpha-fintwit-6.png',
+    biomaven: A + 'alpha-fintwit-2.png',
+    saranormous: A + 'alpha-ready-avatar-4.png',
+    kindig: A + 'feed-avatar-quote.png',
+    tibo: A + 'alpha-fintwit-7.png',
+
+    /* The two simulated handles. */
+    weights: A + 'alpha-fintwit-5.png',
     dilute: A + 'alpha-ready-avatar-3.png',
   };
 
@@ -232,7 +351,96 @@
     ({ name, handle, time, badge: 'x', img: avatar, quote });
   const pic = (name, handle, time, avatar, quote) => ({ name, handle, time, img: avatar, quote });
 
-  /* 1 · Alibaba's open-weight downloads — 7 */
+  /* ──────────────────────────────
+     Sources
+
+     For the ten Alpha Radar cards these are not simulated: they are the
+     passages Alva's own hourly batches were standing on, quoted as they were
+     published, and they are the same objects the card's quote blocks render.
+     One list per card, and the list is the single source of truth — the count
+     and the avatars in the footer, the blocks in the body, and the rows in
+     the sheet are all read off it, so none of the three can drift.
+
+     Which is also why the counts here are 1 and 2 rather than 7 and 11: an
+     hourly batch stands on the one or two passages it found, and inflating
+     that with invented corroboration would be the opposite of what the sheet
+     is for. The event and anomaly cards are simulated, and those do carry the
+     wider lists a worked-up story would have.
+     ────────────────────────────── */
+
+  /* ── The ten Alpha Radar batches, 26 August 2026 ── */
+
+  const S_DWARKESH_GW = pic('Dwarkesh Podcast', 'Podcast · Aug 25', '1h ago', AV.dwarkesh,
+    "OpenAI and Anthropic are estimated to have grown from roughly 2 gigawatts each or less at the start of the year to above 5 gigawatts by year-end, accounting for about 30% of added compute. Based on signed capacity, they could take 40%-50% of next year's compute and half of incremental compute by the end of next year; if the trend continues, they could control most usable global flops by late 2028, though reaching 100 gigawatts may require paying $25-$50 million per megawatt.");
+
+  const SRC_TSM_CUSTOM = [
+    S_DWARKESH_GW,
+    x('@jukan05', 'X · Aug 26', '1h ago', AV.jukan,
+      'Even when it comes to the semiconductors that form the foundation of AI. What Jalapeño made me realize is just how much lower the barrier to chip design is going to become. Using Codex with GPT-Astra, the team brought three open-weight models that were not part of Jalapeño’s original production plan to high performance within two months.'),
+  ];
+
+  const SRC_GOOGL_GEMINI = [
+    x('Sundar Pichai', '@sundarpichai', '1h ago', AV.sundar,
+      "Today, we're introducing industry-specific solutions on Gemini Enterprise, starting with Gemini Enterprise for Legal and Financial Services, with more industries to come. Gemini Enterprise for Legal is designed for law firms and in-house legal teams to help find and synthesize information, and navigate complex matters more efficiently. It has four capabilities →"),
+  ];
+
+  const SRC_SMTC_16T = [
+    x('@aleabitoreddit', 'X · Aug 26', '2h ago', AV.alea,
+      'Availability currently matters more than pricing, with no near-term erosion expected on booked optical orders as cost increases are being passed through. Semtech expects CW-laser transceiver revenue to begin in H1 FY28 and said capacity is limited; management expects 50%+ year-end share for 1.6T FiberEdge, with qualifications finishing early and current capacity potentially insufficient for FY28, especially H2. Revenue and EPS were $341.9M vs. ~$329M expected, $410M vs. ~$360M, and $1.05 vs. $0.73, while unit forecasts have risen from 50M to 80-90M.'),
+  ];
+
+  const SRC_FRO_VLCC = [
+    x('@marhelmdata', 'X · Aug 26', '2h ago', AV.marhelm,
+      '35) War-risk insurance: $250k → up to $10M per Hormuz transit India’s July crude import bill: +41% YoY. 365 tankers changed hands in Jan–Jul 2026 vs 239 in 2025, up ~half YoY.'),
+  ];
+
+  const SRC_RVMD_KRAS = [
+    x('@biomaven', 'X · Aug 26', '3h ago', AV.biomaven,
+      'Note it outperformed adagrasib in a KRAS G12C-amplified model shows preclinical efficacy in switch-II-pocket resistance mutations. So likely will be at least tried in resistance to G12C drugs. In mice models at least it appears to be brain penetrant. Efflux might prove an issue - might need to combine with ABCB1 inhibitor:'),
+  ];
+
+  const SRC_NVDA_LOCAL = [
+    x('Perplexity', '@perplexity_ai', '3h ago', AV.pplx,
+      'With an on-device 27B model, our harness scores 82.6% on real knowledge work, beating open-source harnesses Pi and Hermes. Big thanks to @nvidia for working together with us and supporting this research on DGX Spark as well as enabling an open ecosystem around cost-effective open-weight models, inference frameworks, and hardware with unified memory. https://t.co/FECFESVgYk'),
+  ];
+
+  const SRC_EDA_EMULATION = [
+    x('sarah guo', '@saranormous', '5h ago', AV.saranormous,
+      'people are so excited about alphachip etc. (cool work! ) for ai floorplanning but it’s a relatively small fraction of the full workflow. a lot more to do'),
+  ];
+
+  const SRC_MSFT_AGENTS = [
+    x('ChatGPT', '@ChatGPTapp', '5h ago', AV.openai,
+      'ChatGPT Work can now use its computer and browser to sign in to websites on web and mobile without seeing users’ usernames or passwords. It can handle tasks including booking appointments, managing utilities and insurance, finding doctors or apartments, processing reimbursements and invoices, drafting outreach and replies, filling permit applications, and analyzing ad campaigns.'),
+  ];
+
+  const SRC_TSM_PRICING = [
+    pic('Dwarkesh Podcast', 'Podcast · Aug 25', '7h ago', AV.dwarkesh,
+      "OpenAI and Anthropic's compute grew from roughly 2 gigawatts each or less at the start of the year to above 5 gigawatts by year-end, with the two labs estimated to take 40%-50% of incremental compute next year and half by the end of 2027. If current trends continue, they could control most usable flops by late 2028, but reaching 100 gigawatts may require compute prices of $25 million-$50 million per megawatt and roughly $11 trillion in ecosystem CapEx through 2029, including $5 trillion of debt."),
+    x('@beth_kindig', 'X · Aug 26', '7h ago', AV.kindig,
+      "Samsung's 4nm process SF4 reportedly saw prices for Chinese and US customers rise 10-15% in July, while Taiwanese customers saw price hikes of 5-10%, while 5nm prices rose 10-15%. $TSM $NVDA $AMD"),
+  ];
+
+  const SRC_CBRS_ULTRAFAST = [
+    x('Tibo', 'X · Aug 26', '7h ago', AV.tibo,
+      "Tomorrow's fast will feel like today's ultrafast. As I've mentioned before, we’re pushing to bring this to as many people as possible."),
+  ];
+
+  /* ── The simulated event and anomaly cards ── */
+
+  /* Semtech's 5.5% session — 4 */
+  const SRC_SMTC_MOVE = [
+    pic('Semtech Corp', 'Q2 FY27 results · press release', '1h ago', AV.smtc,
+      'Net sales of $341.9 million and non-GAAP earnings per share of $1.05, both above the high end of guidance.'),
+    x('Bloomberg', '@business', '1h ago', AV.bloomberg,
+      'Semtech rose the most in four months after raising its 1.6T transceiver unit forecast.'),
+    pic('Reuters', 'reuters.com', '2h ago', AV.reuters,
+      'Analysts framed the raise as a capacity story rather than a pricing one, with qualifications finishing ahead of schedule.'),
+    pic('SemiAnalysis', 'semianalysis.com', '3h ago', AV.semi,
+      'The interesting number is not the beat, it is the unit forecast going from 50M to 80-90M without a matching capacity plan.'),
+  ];
+
+  /* Alibaba's open-weight downloads — 7 */
   const SRC_DOWNLOADS = [
     x('Bloomberg', '@business', '2h ago', AV.bloomberg,
       'Alibaba’s open-weight Qwen family passed 3 billion cumulative downloads over the past six months, ahead of Meta’s Llama.'),
@@ -250,297 +458,265 @@
       'The fine-tune ecosystem picked a favourite about a week in, and it has not moved since.'),
   ];
 
-  /* 2 · AAOI's $600M at-the-market program — 5 */
+  /* AAOI's $600M at-the-market program — 5 */
   const SRC_AAOI = [
-    pic('Applied Optoelectronics', 'SEC filing · Form 424B5', '2h ago', AV.aaoi,
+    pic('Applied Optoelectronics', 'SEC filing · Form 424B5', '3h ago', AV.aaoi,
       'The company may offer and sell shares of common stock having an aggregate offering price of up to $600,000,000.'),
-    x('Optical Floor', '@opticalfloor', '1h ago', AV.optical,
-      'A $600M ATM into this tape is a statement about capex, not about the quarter.'),
     x('Bloomberg', '@business', '3h ago', AV.bloomberg,
       'Optical names gave back most of the AI-datacenter premium in a single session.'),
-    x('CNN Business', '@cnnbusiness', '3h ago', AV.cnn,
+    x('CNN Business', '@cnnbusiness', '4h ago', AV.cnn,
       'The second leg down came without a matching move in the optical peer group.'),
-    x('Dilution Math', '@dilutionmath', '4h ago', AV.dilute,
+    pic('Reuters', 'reuters.com', '4h ago', AV.reuters,
+      'The program is roughly a fifth of the company’s market value at current prices.'),
+    x('Dilution Math', '@dilutionmath', '5h ago', AV.dilute,
       'Roughly 18% dilution at current prices, assuming the full program is used.'),
   ];
 
-  /* 3 · Cheaper models, more inference — 6 */
-  const SRC_INFERENCE = [
-    x('Olivia Moore', '@omooretweets', '4h ago', AV.moore,
-      'Many tasks may have reached diminishing returns on intelligence, and that is where the margin opportunity is.'),
-    pic('Acquired', 'Podcast · ep. 214', '1d ago', AV.podcast,
-      'The interesting story this year is COGS, not list price.'),
-    pic('Microsoft', 'Azure Q2 FY26 earnings call', '2d ago', AV.msft,
-      'Utilisation, not list price, is what shows up in the revenue line.'),
-    x('Carry & Roll', '@carryandroll', '2d ago', AV.carry,
-      'Lower inference cost lands in gross margin before it lands in price.'),
-    pic('r/LocalLLaMA', 'Reddit thread', '8h ago', AV.reddit,
-      'Everyone I know swapped to the cheap model and then tripled their call volume.'),
-    x('Token Ledger', '@tokenledger', '10h ago', AV.token,
-      'Serving revenue per model is up even though the headline price per million tokens is down.'),
-  ];
-
-  /* 4 · Broadcom's fourth custom-accelerator customer — 4 */
+  /* Broadcom's fourth custom-accelerator customer — 4 */
   const SRC_XPU = [
-    pic('Broadcom', 'Q3 FY26 earnings call', '3h ago', AV.avgo,
+    pic('Broadcom', 'Q3 FY26 earnings call', '4h ago', AV.avgo,
       'Our AI accelerator backlog now extends four quarters, and it is customer-committed rather than forecast.'),
-    pic('Reuters', 'reuters.com', '2h ago', AV.reuters,
+    pic('Reuters', 'reuters.com', '4h ago', AV.reuters,
       'Two people familiar with the schedule said first silicon is targeted for the second half of next year.'),
-    pic('Microsoft', 'Azure engineering blog', '4h ago', AV.msft,
+    pic('Microsoft', 'Azure engineering blog', '5h ago', AV.msft,
       'The next generation of the inference fleet is deliberately dual-sourced.'),
-    x('Silicon Ledger', '@siliconledger', '4h ago', AV.silicon,
-      'Four committed XPU customers is the number that turns this from a project business into a product line.'),
-  ];
-
-  /* 5 · The AVGO gap that half-closed — 3 */
-  const SRC_AVGO_POP = [
-    x('HBM Watch', '@hbmwatch', '5h ago', AV.hbm,
-      'The note everyone traded was a restatement of the March allocation figures, not new guidance.'),
-    x('Bloomberg', '@business', '4h ago', AV.bloomberg,
-      'Broadcom shares gave back half an early gain after the supply-chain note was clarified.'),
-    x('Tape Reader', '@tapereader', '3h ago', AV.tape,
-      'Volume finished at 1.6× the twenty-day median with no closing imbalance.'),
-  ];
-
-  /* 6 · AMD's second customer for the same part — 9 */
-  const SRC_SECOND_SOURCE = [
-    x('Silicon Ledger', '@siliconledger', '6h ago', AV.silicon,
-      'A second source does not need to win the benchmark. It needs to exist at contract time.'),
     pic('AMD', 'Q2 FY26 earnings call', '1d ago', AV.amd,
       'MI-series revenue is now split across more than one hyperscale customer.'),
-    pic('Microsoft', 'Azure engineering blog', '2d ago', AV.msft,
-      'The inference fleet is deliberately dual-sourced for the next generation.'),
-    pic('SemiAnalysis', 'semianalysis.com', '8h ago', AV.semi,
-      'The second-source order is smaller than the headline suggests but runs multi-year.'),
-    pic('Reuters', 'reuters.com', '10h ago', AV.reuters,
-      'Analysts read the deal as a validation of the software stack rather than of the silicon.'),
-    x('Carry & Roll', '@carryandroll', '7h ago', AV.carry,
-      'A second source is worth more to the buyer than to the seller. Price it from the buyer’s side.'),
-    pic('r/hardware', 'Reddit thread', '12h ago', AV.reddit,
-      'The ROCm complaints in this thread are noticeably milder than a year ago.'),
-    pic('Acquired', 'Podcast · ep. 191', '2d ago', AV.podcast,
-      'The whole second-source playbook is about removing a single point of failure from a supply chain.'),
-    x('Token Ledger', '@tokenledger', '1d ago', AV.token,
-      'Gross-margin guidance implies the second-source pricing is not a giveaway.'),
-  ];
-
-  /* 7 · Alibaba's third consecutive cloud raise — 11 */
-  const SRC_BABA_CLOUD = [
-    pic('Alibaba Group', 'Q1 FY27 earnings call', '5h ago', AV.baba,
-      'For the first time the raise is attributable to external model serving rather than to internal workloads.'),
-    x('Bloomberg', '@business', '6h ago', AV.bloomberg,
-      'Third straight quarterly raise, and the first one management pinned on outside customers.'),
-    pic('Reuters', 'reuters.com', '6h ago', AV.reuters,
-      'Cloud growth outpaced the wider Chinese market for the fourth consecutive quarter.'),
-    x('Weights & Moats', '@weightsandmoats', '8h ago', AV.weights,
-      'Open weights are the acquisition channel. The cloud line is the revenue.'),
-    x('The Long Run', '@thelongrun', '11h ago', AV.longrun,
-      'Twenty percent of segment revenue from AI serving is the first number here that is hard to argue with.'),
-    x('CNN Business', '@cnnbusiness', '10h ago', AV.cnn,
-      'The guidance raise, not the print, is what the desk traded this morning.'),
-    pic('r/investing', 'Reddit thread', '14h ago', AV.reddit,
-      'Everyone was watching the commerce line and the cloud line is what moved.'),
-    pic('Invest Like the Best', 'Podcast · ep. 402', '2d ago', AV.podcast,
-      'Distribution first, monetisation second, is a strategy Western vendors abandoned too early.'),
-    pic('SemiAnalysis', 'semianalysis.com', '9h ago', AV.semi,
-      'Capacity additions in Zhangjiakou and Nantong were brought forward two quarters.'),
-    x('Token Ledger', '@tokenledger', '12h ago', AV.token,
-      'AI-related cloud revenue went past a fifth of the segment, against roughly a tenth a year ago.'),
-    x('Tape Reader', '@tapereader', '13h ago', AV.tape,
-      'The pre-open gap never filled, and volume ran at 2.1× the twenty-day median through the close.'),
-  ];
-
-  /* 8 · META's newsless drift — 8 */
-  const SRC_META_DRIFT = [
-    x('Bloomberg', '@business', '6h ago', AV.bloomberg,
-      'Meta shares drifted lower through the session with no company-specific catalyst on the tape.'),
-    x('Tape Reader', '@tapereader', '6h ago', AV.tape,
-      'No block prints and no closing imbalance; the decline was spread evenly across the session.'),
-    x('Token Ledger', '@tokenledger', '7h ago', AV.token,
-      'This is the download story being priced, one basis point at a time.'),
-    pic('SemiAnalysis', 'semianalysis.com', '8h ago', AV.semi,
-      'The next open release has slipped a quarter, according to two people involved.'),
-    pic('Reuters', 'reuters.com', '9h ago', AV.reuters,
-      'Sell-side notes published into the close reframed rather than downgraded.'),
-    x('Weights & Moats', '@weightsandmoats', '10h ago', AV.weights,
-      'Llama derivatives are still the biggest family on the hub. Downloads are not the same as deployments.'),
-    pic('r/LocalLLaMA', 'Reddit thread', '11h ago', AV.reddit,
-      'Half this thread has already moved to Qwen for fine-tuning and stayed on Llama for serving.'),
-    x('Carry & Roll', '@carryandroll', '12h ago', AV.carry,
-      'Options skew is unchanged on the week, which argues against a re-rate.'),
   ];
 
   /* Refresh · AAOI's first tranche prices — 2 */
   const SRC_AAOI_PRICING = [
     pic('Applied Optoelectronics', 'SEC filing · 424B5 supplement', 'just now', AV.aaoi,
       'The shares offered hereby are being sold at a price representing a discount to the last reported sale price.'),
-    x('Optical Floor', '@opticalfloor', '3m ago', AV.optical,
+    x('Dilution Math', '@dilutionmath', '3m ago', AV.dilute,
       'First tranche is being marketed below last night’s close. That is the whole move this morning.'),
-  ];
-
-  /* Refresh · the fourth XPU customer gets a name — 1 */
-  const SRC_AVGO_NAMED = [
-    pic('Broadcom', 'Press release', '2m ago', AV.avgo,
-      'Broadcom and Google have extended their custom accelerator collaboration by two further generations.'),
   ];
 
   /* ──────────────────────────────
      The feed
+
+     Twelve cards at rest and two more behind the pill. Ten of the fourteen
+     are the hourly Alpha Radar batches Alva published on the morning of
+     26 August 2026, quoted as they ran; the other four are the simulated
+     company-event and unusual-move cards, interleaved so the three types
+     alternate the way they do in a live list rather than arriving in blocks.
+
+     A source card is: the thesis, the passage it stands on, the read, the
+     chart. That is the shape of every batch on the production feed, and it
+     is the shape here.
      ────────────────────────────── */
 
   const CARDS = [
     {
-      type: 'event',
-      tickers: [GOOG, META, BABA],
+      type: 'anomaly',
+      tickers: [SMTC],
       age: '1h ago',
+      sources: SRC_SMTC_MOVE,
+      blocks: [
+        { type: 'lead', text: 'SMTC rose 5.5% after raising its 1.6T unit forecast from 50M to 80–90M' },
+        {
+          type: 'text',
+          text: 'The beat itself was ordinary — $341.9M against roughly $329M expected — and the tape ignored it. What it did not ignore was the unit forecast almost doubling while management said current capacity may be insufficient for fiscal 2028. A quantity raise without a capacity raise prices as scarcity, and that is the shape this session had: two legs up, no closing imbalance, nothing given back.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'source',
+      tickers: [SMTC],
+      age: '2h ago',
+      sources: SRC_SMTC_16T,
+      blocks: [
+        { type: 'title', text: 'Semtech Monetizes Scarce 1.6T Capacity' },
+        { type: 'quote', src: SRC_SMTC_16T[0] },
+        {
+          type: 'text',
+          text: "Semtech's booked 1.6T demand, cost pass-through, early qualification and constrained capacity can lift mix, utilization and earnings into fiscal 2028. SMTC is the strongest expression because it owns the cited components and backlog; execution, capacity expansion or competitor share gains are the adverse case.",
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'event',
+      tickers: [GOOGL, META, BABA],
+      age: '2h ago',
       sources: SRC_DOWNLOADS,
       blocks: [
         {
           type: 'text',
           text: "Alibaba Group Holding's open-weight AI models accumulated more than 3 billion global downloads during the past six months, according to Bloomberg and other reports. The figure surpassed reported downloads for models from Meta Platforms, Alphabet, and domestic peers, making Alibaba's models the world's most downloaded AI models.",
         },
-        { type: 'mediaRow', items: [CHART_TILE, CHART_TILE, CHART_TILE] },
+        { type: 'chartRow' },
+      ],
+    },
+    {
+      type: 'source',
+      tickers: [FRO],
+      age: '2h ago',
+      sources: SRC_FRO_VLCC,
+      blocks: [
+        { type: 'title', text: "VLCC Consolidation Tightens Frontline's Market" },
+        { type: 'quote', src: SRC_FRO_VLCC[0] },
+        {
+          type: 'text',
+          text: 'Concentrated VLCC buying can withdraw independently available tonnage just as India-bound freight and Hormuz insurance reprice risk, creating a distinct effective-supply squeeze. FRO is strongest through direct VLCC earnings and asset values; fixed charters, insurance costs, fleet inaccessibility or normalization are the adverse case.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'source',
+      tickers: [RVMD],
+      age: '3h ago',
+      sources: SRC_RVMD_KRAS,
+      blocks: [
+        { type: 'title', text: 'RVMD Targets Post-Resistance KRAS and CNS Disease' },
+        { type: 'quote', src: SRC_RVMD_KRAS[0] },
+        {
+          type: 'text',
+          text: 'Post-resistance activity plus possible brain penetration could give RVMD a differentiated next-line KRAS G12C treatment pool beyond current inhibitors. RVMD is the direct pipeline owner; the adverse case is failed clinical translation, inadequate CNS exposure, efflux requiring combinations, toxicity, or faster competing programs.',
+        },
+        { type: 'chart' },
       ],
     },
     {
       type: 'anomaly',
       tickers: [AAOI],
-      age: '1h ago',
+      age: '3h ago',
       sources: SRC_AAOI,
       blocks: [
         { type: 'lead', text: 'AAOI fell again after announcing a $600 million at-the-market equity-sale program' },
         {
           type: 'text',
-          text: "A second sharp move today followed an earlier AAOI decline tied to the company's new equity-sale program. Applied Optoelectronics announced an agreement permitting up to $600 million in common-stock sales, raising dilution and share-supply concerns.  A weaker U.S. equity market added pressure at the margin.",
+          text: "A second sharp move today followed an earlier AAOI decline tied to the company's new equity-sale program. Applied Optoelectronics announced an agreement permitting up to $600 million in common-stock sales, raising dilution and share-supply concerns. A weaker U.S. equity market added pressure at the margin.",
         },
-        { type: 'media', src: CHART_WIDE },
+        { type: 'chart' },
       ],
     },
     {
       type: 'source',
-      tickers: [GOOG, META, BABA],
-      age: '2h ago',
-      sources: SRC_INFERENCE,
+      tickers: [NVDA],
+      age: '3h ago',
+      sources: SRC_NVDA_LOCAL,
       blocks: [
-        { type: 'title', text: 'Cheaper Models Expand Inference Volume' },
-        {
-          type: 'quote',
-          avatar: AV.moore,
-          name: 'Olivia Moore',
-          text: 'Many tasks may have reached diminishing returns on intelligence, that products may stop automatically switching to each new frontier model, and that this creates many opportunities for application builders to reduce COGS.',
-        },
+        { type: 'title', text: 'Local Agents Create an NVIDIA Appliance Market' },
+        { type: 'quote', src: SRC_NVDA_LOCAL[0] },
         {
           type: 'text',
-          text: 'Cheaper adequate models can convert lower application COGS into more production inference rather than merely lower customer bills. NBIS is the strongest infrastructure expression because it directly captures the resulting model-serving utilization, while PLTR offers a distinct application-margin route but weaker direct exposure.',
+          text: 'Capable 27B local agents can shift part of knowledge-work inference from cloud calls into compact private systems. NVDA is strongest because the demonstrated workload uses DGX Spark and its unified-memory software stack; the adverse case is cloud superiority, cheaper rival appliances, weak adoption, or low incremental margins.',
         },
-        { type: 'mediaRow', items: [CHART_CANDLES, CHART_CANDLES, CHART_CANDLES] },
+        { type: 'chart' },
       ],
     },
     {
       type: 'event',
-      tickers: [AVGO, MSFT],
-      age: '2h ago',
+      tickers: [AVGO, AMD, MSFT],
+      age: '4h ago',
       sources: SRC_XPU,
       blocks: [
         {
           type: 'text',
-          text: 'Broadcom told analysts its AI-accelerator backlog now extends four quarters out and is customer-committed rather than forecast, after a fourth hyperscaler signed a multi-generation custom-XPU program. The 8-K does not name the buyer, but the delivery window lines up with the next Fairwater build-out, and Azure has said its inference fleet is deliberately dual-sourced.',
+          text: 'Broadcom said on its Q3 call that a fourth custom-accelerator customer has committed to volume, taking the AI backlog out four quarters on customer commitments rather than forecasts. Neither the customer nor the part was named, and the schedule two people described puts first silicon in the second half of next year — which makes this a booking, not a shipment.',
         },
-        { type: 'mediaRow', items: [CHART_CANDLES, CHART_TILE, CHART_CANDLES] },
-      ],
-    },
-    {
-      type: 'anomaly',
-      tickers: [AVGO],
-      age: '3h ago',
-      sources: SRC_AVGO_POP,
-      blocks: [
-        { type: 'lead', text: 'AVGO gapped up 4% at the open and gave half of it back before lunch' },
-        {
-          type: 'text',
-          text: 'The move started pre-market on a supply-chain note about HBM allocation, and faded once the sell-side clarified that the note restated March figures rather than adding guidance. What does not fit a pure headline pop is the volume: it finished at 1.6× the twenty-day median with no closing imbalance, which reads as positioning rather than one desk chasing a print.',
-        },
-        { type: 'media', src: CHART_WIDE },
+        { type: 'chartRow' },
       ],
     },
     {
       type: 'source',
-      tickers: [AMD, MSFT],
-      age: '4h ago',
-      sources: SRC_SECOND_SOURCE,
-      blocks: [
-        { type: 'title', text: 'A Second Source Only Has To Exist' },
-        {
-          type: 'quote',
-          avatar: AV.silicon,
-          name: '@siliconledger',
-          text: 'A second source does not need to win the benchmark. It needs to exist at contract time — that is the whole trade, and it is worth more to the buyer than it is to the seller.',
-        },
-        {
-          type: 'text',
-          text: 'MI-series revenue is now split across more than one hyperscale customer, which moves the argument off benchmarks and onto contract structure. The Azure order is smaller than the headline suggests but runs multi-year, and gross-margin guidance implies the pricing is not a giveaway. AMD is the direct expression; MSFT is the buyer whose cost curve bends, which is the slower and less visible half of the same trade.',
-        },
-        { type: 'mediaRow', items: [CHART_TILE, CHART_CANDLES, CHART_TILE] },
-      ],
-    },
-    {
-      type: 'event',
-      tickers: [BABA],
+      tickers: [CDNS, SNPS],
       age: '5h ago',
-      sources: SRC_BABA_CLOUD,
+      sources: SRC_EDA_EMULATION,
       blocks: [
+        { type: 'title', text: 'Emulation Becomes Chip Verification Control Plane' },
+        { type: 'quote', src: SRC_EDA_EMULATION[0] },
         {
           type: 'text',
-          text: 'Alibaba raised its cloud-revenue guidance for the third consecutive quarter and, for the first time, attributed the raise to external model serving rather than to internal workloads. The 6-K puts AI-related cloud revenue past a fifth of segment revenue, against roughly a tenth a year ago, and management framed open-weight distribution as the acquisition channel that feeds it — the same story the download figures have been telling from the outside.',
+          text: 'Hardware emulation is becoming a verification control plane as chip and software complexity make late bugs and respins costlier. CDNS and SNPS are the strongest joint expression through Palladium and ZeBu plus attached licenses and support; cloud simulation, delayed purchases, or share shifts are the adverse case.',
         },
-        { type: 'mediaRow', items: [CHART_TILE, CHART_CANDLES, CHART_TILE] },
+        { type: 'chart' },
       ],
     },
     {
-      type: 'anomaly',
-      tickers: [META],
-      age: '6h ago',
-      sources: SRC_META_DRIFT,
+      type: 'source',
+      tickers: [MSFT],
+      age: '5h ago',
+      sources: SRC_MSFT_AGENTS,
       blocks: [
-        { type: 'lead', text: 'META drifted 1.4% lower all session with no company news to point at' },
+        { type: 'title', text: 'Authenticated Agents Open a Workflow Control Plane' },
+        { type: 'quote', src: SRC_MSFT_AGENTS[0] },
         {
           type: 'text',
-          text: 'No filing, no guidance change, and options skew unchanged on the week — the drift tracked the open-weight download story rather than anything Meta said. Sell-side notes published into the close reframed rather than downgraded. A session shaped like this one is usually positioning ahead of a narrative, not a re-rate of the business.',
+          text: 'Secure authenticated agents can move AI from answers into delegated enterprise workflows such as reimbursements, invoices, permits, recruiting, and vendor actions. MSFT is the strongest available expression through productivity, identity, and cloud distribution; the adverse case is OpenAI or rivals owning the workflow economics without Microsoft integration.',
         },
-        { type: 'media', src: CHART_WIDE },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'source',
+      tickers: [TSM],
+      age: '7h ago',
+      sources: SRC_TSM_PRICING,
+      blocks: [
+        { type: 'title', text: 'TSMC Captures Frontier Compute Pricing' },
+        { type: 'quote', src: SRC_TSM_PRICING[0] },
+        { type: 'quote', src: SRC_TSM_PRICING[1] },
+        {
+          type: 'text',
+          text: 'TSMC can monetize a demand-to-contract-pricing loop: frontier labs with strong inference economics may keep bidding for scarce compute, with reported 5-15% advanced-node price increases showing scarcity reaching contracts. TSM is best positioned through qualified leading-edge capacity; key risks are non-transferable Samsung constraints, alternative foundries, customer-owned chips, and geopolitical disruption.',
+        },
+        { type: 'chart' },
+      ],
+    },
+    {
+      type: 'source',
+      tickers: [CBRS],
+      age: '7h ago',
+      sources: SRC_CBRS_ULTRAFAST,
+      blocks: [
+        { type: 'title', text: 'Cerebras Converts Ultrafast Demand Into Capacity' },
+        { type: 'quote', src: SRC_CBRS_ULTRAFAST[0] },
+        {
+          type: 'text',
+          text: "Cerebras's unique hardware is explicitly tied to strong OpenAI demand for ultrafast inference, creating a potential specialized-capacity expansion and utilization loop. CBRS is the direct hardware collaborator; OpenAI could internalize silicon, diversify suppliers, or retain economics, and production scale remains unquantified.",
+        },
+        { type: 'chart' },
       ],
     },
   ];
 
-  /* What the pill brings in. Same three types, same grammar, only fresher —
-     and the newest items carry the fewest sources, because that is what new
-     means: the story has not been picked up yet. */
+  /* What the pill brings in: the 10:58 batch, which is exactly how the
+     production playbook behaves — new batches at the top, full history
+     below. Two cards, one and two sources, because that is what new means. */
   const NEW_CARDS = [
     {
-      type: 'anomaly',
-      tickers: [AAOI],
+      type: 'source',
+      tickers: [TSM],
       age: 'just now',
-      sources: SRC_AAOI_PRICING,
+      sources: SRC_TSM_CUSTOM,
       blocks: [
-        { type: 'lead', text: 'AAOI opens 4% lower as the equity-sale program starts pricing' },
+        { type: 'title', text: 'TSMC Captures The Custom-Chip Bottleneck' },
+        { type: 'quote', src: SRC_TSM_CUSTOM[0] },
+        { type: 'quote', src: SRC_TSM_CUSTOM[1] },
         {
           type: 'text',
-          text: 'The prospectus supplement went out overnight and the first tranche is being marketed at a discount to last night’s close. Nothing about the business changed between yesterday and this morning; what changed is the share count the market has to absorb.',
+          text: "AI-assisted chip design can broaden the custom-silicon project funnel while frontier labs' profitable inference supports aggressive compute bids. TSM is the strongest expression because scarce leading-edge manufacturing captures utilization and pricing; the adverse case is alternative foundries, customer-owned chips, non-transferable demand, or weaker AI economics.",
         },
-        { type: 'media', src: CHART_WIDE },
+        { type: 'chart' },
       ],
     },
     {
-      type: 'event',
-      tickers: [AVGO, GOOG],
+      type: 'source',
+      tickers: [GOOGL],
       age: '2m ago',
-      sources: SRC_AVGO_NAMED,
+      sources: SRC_GOOGL_GEMINI,
       blocks: [
+        { type: 'title', text: 'Gemini Verticalizes Regulated Workflows' },
+        { type: 'quote', src: SRC_GOOGL_GEMINI[0] },
         {
           type: 'text',
-          text: 'Broadcom named the fourth custom-accelerator customer this morning: Google, extending the existing TPU relationship by two further generations rather than adding a new logo. That makes the backlog figure less of a surprise and the customer concentration more of one.',
+          text: 'Vertical legal and financial-services modules can turn Gemini from a general assistant into repeatable regulated workflows, improving paid-seat conversion and cloud consumption. GOOGL owns the model, product and distribution; Microsoft competition, services intensity or weak adoption could absorb the benefit.',
         },
-        { type: 'mediaRow', items: [CHART_CANDLES, CHART_CANDLES, CHART_TILE] },
+        { type: 'chart' },
       ],
     },
   ];
@@ -598,34 +774,124 @@
     return wrap;
   }
 
-  function chartTile(src, cls) {
-    const tile = btn(cls, 'Open chart');
-    tile.appendChild(img(src));
-    tile.addEventListener('click', e => { e.stopPropagation(); openFullChart(); });
+  /* Six weeks of closes for the tile under a card: a seeded walk mapped so
+     its low is the low the tile labels, its high is the high, and its last
+     point is the price in the header. Nothing here is fetched, but nothing
+     here disagrees with the numbers printed beside it either — which is the
+     part that was wrong while these tiles were three screenshots of NVDA. */
+  function rangeSeries(seed, lo, hi, last, n) {
+    const r = rng(seed);
+    const w = [];
+    let v = 0;
+    for (let i = 0; i < n; i++) { v += (r() - 0.5) * 2 + (r() - 0.5) * 0.8; w.push(v); }
+    let mn = w[0], mx = w[0];
+    w.forEach(k => { if (k < mn) mn = k; if (k > mx) mx = k; });
+    const span = (mx - mn) || 1;
+    const y = w.map(k => lo + (hi - lo) * ((k - mn) / span));
+    /* Land it on the quoted price without moving the two extremes the labels
+       name: ramp the difference across the last few points. */
+    const tail = Math.min(5, n - 1);
+    const d = last - y[n - 1];
+    for (let i = 0; i < tail; i++) {
+      const j = n - 1 - i;
+      y[j] = Math.max(lo, Math.min(hi, y[j] + d * (1 - i / tail)));
+    }
+    y[n - 1] = last;
+    return y;
+  }
+
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const svgEl = (tag, attrs, text) => {
+    const n = document.createElementNS(SVGNS, tag);
+    Object.keys(attrs || {}).forEach(k => n.setAttribute(k, attrs[k]));
+    if (text != null) n.textContent = text;
+    return n;
+  };
+
+  /* The tile the Alpha Radar feed draws: ticker top left, the range's high
+     and low on the right, the two dates along the bottom, and the closes in
+     between. 240 × 135 is the design's media ratio, so the same picture fits
+     the full-width block and the scrolling strip without a second layout. */
+  function sparkNode(t) {
+    const W = 240, H = 135, X0 = 12, X1 = 228, Y0 = 28, Y1 = 101;
+    const n = 30;
+    const y = rangeSeries(t.seed ^ 0x5f3a, t.lo, t.hi, t.price, n);
+    const span = (t.hi - t.lo) || 1;
+    const px = i => X0 + (X1 - X0) * (i / (n - 1));
+    const py = v => Y1 - (Y1 - Y0) * ((v - t.lo) / span);
+
+    /* Catmull-Rom through the closes, converted to cubics: the production
+       tile draws a curve, not a polyline, and a 34-point polyline at this
+       size reads as noise. The control points are clamped to the plot so a
+       curve can never bulge past the high and low the tile labels. */
+    const P = y.map((v, i) => [px(i), py(v)]);
+    const clamp = v => Math.max(Y0, Math.min(Y1, v));
+    let d = 'M' + P[0][0].toFixed(2) + ' ' + P[0][1].toFixed(2);
+    for (let i = 0; i < P.length - 1; i++) {
+      const p0 = P[i > 0 ? i - 1 : 0], p1 = P[i], p2 = P[i + 1];
+      const p3 = P[i + 2 < P.length ? i + 2 : P.length - 1];
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, clamp(p1[1] + (p2[1] - p0[1]) / 6)];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, clamp(p2[1] - (p3[1] - p1[1]) / 6)];
+      d += 'C' + c1[0].toFixed(2) + ' ' + c1[1].toFixed(2) + ',' +
+                 c2[0].toFixed(2) + ' ' + c2[1].toFixed(2) + ',' +
+                 p2[0].toFixed(2) + ' ' + p2[1].toFixed(2);
+    }
+
+    const svg = svgEl('svg', {
+      class: 'spark', viewBox: '0 0 ' + W + ' ' + H,
+      preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': 'true', focusable: 'false',
+    });
+    svg.appendChild(svgEl('path', { class: 'spark-area', d: d + 'L' + X1 + ' ' + Y1 + 'L' + X0 + ' ' + Y1 + 'Z' }));
+    svg.appendChild(svgEl('path', { class: 'spark-line', d: d }));
+    svg.appendChild(svgEl('text', { class: 'spark-sym', x: X0, y: 20 }, '$' + t.sym));
+    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 20, 'text-anchor': 'end' }, '$' + t.hi.toFixed(2)));
+    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 113, 'text-anchor': 'end' }, '$' + t.lo.toFixed(2)));
+    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X0, y: 125 }, 'Jul 15'));
+    svg.appendChild(svgEl('text', { class: 'spark-axis', x: X1, y: 125, 'text-anchor': 'end' }, 'Aug 25'));
+    return svg;
+  }
+
+  function chartTile(t, cls) {
+    const tile = btn(cls, t.sym + ' chart');
+    tile.appendChild(sparkNode(t));
+    tile.addEventListener('click', e => { e.stopPropagation(); openFullChart(t); });
     return tile;
   }
 
-  function block(b) {
+  function block(b, card) {
     if (b.type === 'text') return el('p', 'blk-text', b.text);
     if (b.type === 'lead') return el('p', 'blk-text blk-lead', b.text);
     if (b.type === 'title') return el('p', 'blk-text blk-title', b.text);
 
+    /* The quote is not decoration, it is the card's first source shown in
+       place — so it opens the same sheet the footer opens. That is how the
+       production feed behaves, and it is the only reading that makes the
+       block mean anything: you are looking at a source, tapping it should
+       show you the source. */
     if (b.type === 'quote') {
-      const q = el('div', 'quote');
+      const src = b.src;
+      const q = btn('quote', 'Sources');
       const head = el('div', 'quote-head');
-      head.appendChild(img(b.avatar, 'quote-avatar'));
-      head.appendChild(el('span', 'quote-name', b.name));
+      head.appendChild(img(src.img, 'quote-avatar'));
+      head.appendChild(el('span', 'quote-name', src.name));
       q.appendChild(head);
-      q.appendChild(el('p', 'quote-body', b.text));
+      q.appendChild(el('p', 'quote-body', src.quote));
       q.appendChild(el('span', 'quote-mark', '”'));
+      q.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
       return q;
     }
 
-    if (b.type === 'media') return chartTile(b.src, 'media');
+    /* One chart per ticker, always: a card about two names draws two, and
+       nobody has to wonder which tape a tile belongs to. */
+    if (b.type === 'chart') {
+      const stack = el('div', 'chart-stack');
+      card.tickers.forEach(t => stack.appendChild(chartTile(t, 'media')));
+      return stack;
+    }
 
-    if (b.type === 'mediaRow') {
+    if (b.type === 'chartRow') {
       const row = el('div', 'media-row');
-      b.items.forEach(src => row.appendChild(chartTile(src, 'media-tile')));
+      card.tickers.forEach(t => row.appendChild(chartTile(t, 'media-tile')));
       return row;
     }
 
@@ -643,7 +909,7 @@
     node.appendChild(head);
 
     const body = el('div', 'card-body');
-    card.blocks.forEach(b => body.appendChild(block(b)));
+    card.blocks.forEach(b => body.appendChild(block(b, card)));
     node.appendChild(body);
 
     const footEl = el('div', 'card-foot');
@@ -1062,7 +1328,7 @@
 
   const TK_TABS = ['Overview', 'Narratives', 'Anomalies', 'News & Social', 'Smart Events',
     'Filings', 'Options', 'Ownership', 'Peers'];
-  const followed = new Set(['GOOG', 'BABA']);   /* the two the Me screen counts */
+  const followed = new Set(['GOOGL', 'NVDA']);   /* the two the Me screen counts */
 
   function starButton(t) {
     const b = btn('sheet-btn right', 'Follow ' + t.sym);
@@ -1478,7 +1744,7 @@
         const b2 = btn('', label);
         b2.appendChild(icon(file));
         b2.addEventListener('click', () => {
-          if (label === 'Fullscreen') openFullChart();
+          if (label === 'Fullscreen') openFullChart(t);
           else toast(label + ' is the next thing to build here');
         });
         tools.appendChild(b2);
@@ -1560,17 +1826,32 @@
   const fsClose = document.getElementById('fsClose');
   let fsChart = null;
 
-  function openFullChart() {
+  function openFullChart(t) {
     if (fsChart) fsChart.dispose();
     fs.classList.add('show');
     fs.setAttribute('aria-hidden', 'false');
-    const data = eventSeries(51217);
+    /* The session belongs to the name that opened it. A fixed crash shape
+       scaled to every ticker put the previous close outside its own range on
+       any name that rose, so the series is generated from the ticker's own
+       day instead: its close, its net change, its seed. */
+    const data = t ? sessionSeries(t.seed, t.price, 112, 0.0042, t.pct) : eventSeries(51217);
+    let prev = 124.87, event = 112.69;
+    if (t) {
+      prev = t.price - t.chg;
+      /* Where the move came from: the low of an up day, the high of a down
+         one — the point the three labelled prices are measured against. */
+      let ext = data[0].close;
+      data.forEach(d => {
+        if (t.pct >= 0 ? d.low < ext : d.high > ext) ext = t.pct >= 0 ? d.low : d.high;
+      });
+      event = ext;
+    }
     /* The three numbers the design labels, in the order they matter:
        where the day started from, what the event printed at, where it is. */
     fsChart = mountChart(fsPlot, data, {
       lines: [
-        { price: 124.87, tone: 'amber', title: 'Previous close' },
-        { price: 112.69, tone: 'm2', title: 'Event price' },
+        { price: prev, tone: 'amber', title: 'Previous close' },
+        { price: event, tone: 'm2', title: 'Event price' },
         { price: data[data.length - 1].close, tone: 'up', solid: true },
       ],
       split: true,
