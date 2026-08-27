@@ -430,6 +430,43 @@
     reddit: 'ui-social-reddit.svg',
   };
 
+  /* Sources show only the destination's first-level address. Platform posts
+     resolve to the platform; first-party publications resolve to the
+     publisher. Paths are deliberately absent because the row already carries
+     the excerpt and the full URL would turn the action into another paragraph. */
+  const PLATFORM_SITE = {
+    x: 'x.com',
+    podcast: 'dwarkesh.com',
+    youtube: 'youtube.com',
+    reddit: 'reddit.com',
+  };
+  const PUBLISHER_SITE = {
+    AMD: 'amd.com',
+    'Alibaba Group': 'alibabagroup.com',
+    'Applied Optoelectronics': 'ao-inc.com',
+    Bloomberg: 'bloomberg.com',
+    Broadcom: 'broadcom.com',
+    Cadence: 'cadence.com',
+    'CNN Business': 'cnn.com',
+    Frontline: 'frontlineplc.cy',
+    'Hugging Face': 'huggingface.co',
+    Microsoft: 'microsoft.com',
+    Reuters: 'reuters.com',
+    'Revolution Medicines': 'revmed.com',
+    SemiAnalysis: 'semianalysis.com',
+    'Semtech Corp': 'semtech.com',
+    Synopsys: 'synopsys.com',
+    TSMC: 'tsmc.com',
+  };
+  const domainIn = value => {
+    const match = String(value || '').match(/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+(?:\.[a-z0-9-]+)+)/i);
+    return match ? match[1].toLowerCase() : '';
+  };
+  const sourceSite = source => domainIn(source.handle)
+    || PLATFORM_SITE[source.badge]
+    || PUBLISHER_SITE[source.name]
+    || '';
+
   const src = (name, handle, time, avatar, quote) =>
     ({ name, handle, time, badge: platformOf(handle), img: avatar, quote });
 
@@ -994,17 +1031,14 @@
   const signed = n => (n > 0 ? '+' : '−') + money(Math.abs(n));
   const pct = n => '(' + (n > 0 ? '+' : '−') + Math.abs(n).toFixed(2) + '%)';
 
-  /* Ticker / Stance (1664:17174). Alva's call on the name, not the tape's
-     direction — which is why the same card can carry a bullish name and a
-     bearish one, and why the arrow's bearing is the whole message: the dial
-     is one glyph rotated, not four icons. `none` is the state that earns its
-     keep: a dashed ring and no arrow says Alva has not formed a view, which
-     is a different claim from having looked and found it flat. */
+  /* Ticker / Stance (1664:17174). These labels describe how evidence relates
+     to the ticker rather than issuing a trade call: Tailwind, Headwind,
+     Context and Anomaly. The dial still carries the directional signal. */
   const STANCE = {
-    bull: 'Bullish',
-    bear: 'Bearish',
-    flat: 'Flat',
-    none: 'No call',
+    bull: 'Tailwind',
+    bear: 'Headwind',
+    flat: 'Context',
+    none: 'Anomaly',
   };
 
   function stanceNode(key) {
@@ -1088,8 +1122,8 @@
       const src = b.src;
       /* Markdown - Quote has two variants and the card decides which:
          a card that already carries a title of its own gets the tile with the
-         passage at Regular/12, and a card that does not gets the passage *as*
-         the title — Medium/16, no tile, speaker underneath. Reading it off the
+         passage at Regular/14, and a card that does not gets the passage *as*
+         the title — Medium/14, no tile, speaker underneath. Reading it off the
          card's own blocks rather than off a flag means the two can never
          disagree about whether the card has a title. */
       const h2 = !card.blocks.some(o => o.type === 'title' || o.type === 'lead');
@@ -1157,9 +1191,11 @@
     const stack = el('div', 'sources');
     card.sources.slice(0, 3).forEach(src => stack.appendChild(img(src.img)));
     lead.appendChild(stack);
-    lead.appendChild(el('span', 'foot-src', card.sources[0].name));
+    const copy = el('span', 'foot-copy');
+    copy.appendChild(el('span', 'foot-src', card.sources[0].name));
     const rest = card.sources.length - 1;
-    if (rest > 0) lead.appendChild(el('span', 'foot-more', '+' + rest));
+    if (rest > 0) copy.appendChild(el('span', 'foot-more', '+' + rest));
+    lead.appendChild(copy);
     lead.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
     footEl.appendChild(lead);
 
@@ -1788,8 +1824,9 @@
 
     const head = el('div', 'src-head');
 
-    /* Avatar and byline are one group 8 apart; that group, the time and the
-       button are the row's three columns, 12 apart (I1180:20235;1178:20237). */
+    /* Avatar and byline are one group 8 apart. Time owns the top-right corner;
+       the destination moves below the excerpt so metadata and action no
+       longer compete in the identity row. */
     const who = el('span', 'src-who');
     const av = el('span', 'src-av');
     av.appendChild(img(s.img));
@@ -1806,19 +1843,20 @@
     who.appendChild(id);
     head.appendChild(who);
 
-    /* The time and the way out are one group at the end of the row, 12 apart:
-       when it was said, and where to read it. */
-    const tail = el('div', 'src-tail');
-    tail.appendChild(el('span', 'src-time', s.time));
-    const open = btn('src-open', 'View original');
-    open.appendChild(el('span', null, 'View'));
-    open.appendChild(icon('ui-popout-l.svg'));
-    open.addEventListener('click', () => toast('The original opens outside Alva'));
-    tail.appendChild(open);
-    head.appendChild(tail);
+    head.appendChild(el('span', 'src-time', s.time));
 
     row.appendChild(head);
-    row.appendChild(el('p', 'src-quote', s.quote));
+    const body = el('div', 'src-body');
+    body.appendChild(el('p', 'src-quote', s.quote));
+    const site = sourceSite(s);
+    if (site) {
+      const open = btn('src-open', 'Open ' + site);
+      open.appendChild(el('span', null, site));
+      open.appendChild(icon('ui-popout-l.svg'));
+      open.addEventListener('click', () => toast(site + ' opens outside Alva'));
+      body.appendChild(open);
+    }
+    row.appendChild(body);
     return row;
   }
 

@@ -96,7 +96,7 @@
   --chart-vol-up: rgba(42, 155, 125, .3);
   --chart-vol-down: rgba(224, 83, 87, .3);
 
-  --scrim: rgba(0, 0, 0, .4);
+  --scrim: rgba(0, 0, 0, .6);
   --lift: rgba(0, 0, 0, .08);
 
   /* The bezel and the desktop stage — chrome, not app */
@@ -531,10 +531,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: 4px var(--gutter) 0;
 }
 .card-auto { display: flex; flex: 1 1 0; align-items: center; gap: 4px; min-width: 0; }
-.card-auto img { flex: 0 0 auto; width: 14px; height: 14px; }
-/* Grey, not m1. The meta row is provenance, not a link — the green dot already
-   says the automation is live, and a teal name beside it read as something to
-   tap. n5 against the age's n3 keeps the two halves of the row ordered. */
+.card-auto img { flex: 0 0 auto; width: 6px; height: 6px; }
+/* The solid m1 dot is the automation's live state. Both labels use n5;
+   position, not contrast, separates their roles. */
 .card-auto span {
   overflow: hidden;
   color: var(--n5);
@@ -544,10 +543,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* n3, not the master's n5: the instance in the frame overrides it, and the
-   quieter grey is right — the age is the one thing on the card nobody came
-   for. */
-.card-age { flex: 0 0 auto; color: var(--n3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+.card-age { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
 
 /* Header: one ticker, or up to three divided by a hairline (1496:32409).
    Every one of them is an entry point now, so each is a button — which is
@@ -576,11 +572,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .ticker-name { margin-bottom: -4px; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 
 /* ── Ticker / Stance (1664:17174) ──
-   Alva's call on the name, not the tape's direction. A filled dial and a
-   white arrow whose bearing *is* the conclusion: up-right bullish, down-right
-   bearish, flat horizontal. The fourth state is not a fourth direction — a
-   dashed empty ring says Alva has not formed a view, which is a different
-   claim from "looked at it, it is flat", so it gets no arrow at all. ── */
+   Tailwind, Headwind, Context and Anomaly describe the evidence's relationship
+   to the ticker. The filled dial retains direction; Anomaly stays undirected. */
 
 .stance { display: flex; align-items: center; gap: 4px; height: 20px; }
 .stance-dial {
@@ -716,13 +709,14 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .quote-head { display: flex; align-items: center; gap: 8px; }
 .quote-avatar {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  border: var(--hair) solid var(--bg-container);
   border-radius: 960px;
-  box-shadow: inset 0 0 0 var(--hair) var(--l12);
+  object-fit: cover;
 }
 .quote-name { color: var(--n9); font-size: 12px; font-weight: 500; line-height: 20px; }
-.quote-body { color: var(--n9); font-size: 12px; font-weight: 400; line-height: 20px; }
+.quote-body { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
 /* The mark's own box in the frame is 29 × 46 at x=327 of 361 and y=-5 — so it
    hangs 5 above the tile and sits 5 in from the right, and the 46 line box on
    a 64 glyph is what lifts it that far up inside itself. */
@@ -750,11 +744,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   border-radius: 0;
   background: none;
 }
-.quote-h2 .quote-body { color: var(--n9); font-size: 16px; font-weight: 500; line-height: 26px; }
+.quote-h2 .quote-body { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 /* The byline follows the quote here, and flex order says so without the
    markup having to be built twice. */
 .quote-h2 .quote-head { order: 2; }
-.quote-h2 .quote-avatar { width: 16px; height: 16px; }
 .quote-h2 .quote-name { color: var(--n5); }
 .quote-h2 .quote-mark { display: none; }
 
@@ -838,7 +831,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: flex;
   flex: 1 1 0;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
   height: 32px;
   overflow: hidden;
@@ -851,8 +844,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    1 OUTSIDE in the card's own ground, which is what keeps three faces
    overlapping by 6 legible as three faces. */
 .sources img {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   margin-right: -6px;
   border-radius: 100px;
   background: var(--b10);
@@ -860,6 +853,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   object-fit: cover;
 }
 .sources img:last-child { margin-right: 0; }
+.foot-copy { display: flex; align-items: center; gap: 4px; min-width: 0; }
 /* 145 is the frame's own cap on the name. Past it the name truncates rather
    than pushing the count off the row — the count is the part that has to
    survive, because it is the only thing that says there is more. */
@@ -868,7 +862,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   overflow: hidden;
   color: var(--n5);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1392,7 +1386,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   max-height: calc(100% - var(--status-h) - 40px);
   flex-direction: column;
   overflow: hidden;
-  border-radius: 16px 16px 0 0;
+  border-radius: 12px 12px 0 0;
   background: var(--b10);
   transform: translateY(100%);
   transition: transform .4s var(--ease);
@@ -1414,7 +1408,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   overflow: hidden;
   color: var(--n9);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 26px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1470,8 +1464,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: var(--gutter);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
 }
-.src-head { display: flex; align-items: flex-start; gap: 12px; }
-.src-who { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
+.src-head { display: flex; align-items: flex-start; gap: 12px; overflow: hidden; }
+.src-who { display: flex; flex: 1 1 auto; align-self: stretch; align-items: center; gap: 8px; min-width: 0; overflow: hidden; }
 .src-av { position: relative; flex: 0 0 auto; width: 32px; height: 32px; }
 .src-av > img {
   width: 32px;
@@ -1491,32 +1485,39 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   width: 16px;
   height: 16px;
   border-radius: 960px;
-  background: var(--white);
+  background: var(--b10);
   box-shadow: 0 0 0 var(--hair) var(--l12);
   color: #000;
 }
 .src-badge .ic { width: 10px; height: 10px; }
-.src-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
-.src-name { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
+.src-id { display: flex; flex: 1 1 auto; height: 40px; flex-direction: column; min-width: 0; overflow: hidden; }
+.src-name { flex: 1 1 0; min-height: 0; margin-bottom: -2px; overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
 .src-handle { overflow: hidden; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-.src-time { flex: 0 0 auto; color: var(--n3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
-/* The timestamp and link sit at the row's top edge, but their 12px separation
-   keeps them from reading as one phrase. View uses text/n7 at the timestamp's
-   size and a 14px popout glyph; the icon supplies affordance, so there is no
-   underline or extra weight. */
-.src-tail { display: flex; flex: 0 0 auto; align-items: flex-start; gap: 12px; }
+.src-time { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+/* Excerpt and destination are one reading block, like body + Show more in the
+   feed. Every 14/22 n7 domain uses the component's dotted text treatment;
+   the popout icon carries the common external-link affordance. */
+.src-body { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
 .src-open {
   display: flex;
   flex: 0 0 auto;
+  align-self: flex-start;
   align-items: center;
   gap: 2px;
+  min-height: 22px;
   color: var(--n7);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 22px;
   text-decoration: none;
   white-space: nowrap;
   transition: opacity .16s ease;
+}
+.src-open > span:first-child {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: from-font;
+  text-underline-position: from-font;
 }
 .src-open .ic { width: 14px; height: 14px; }
 .src-open:active { opacity: .55; }

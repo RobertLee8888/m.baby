@@ -44,7 +44,7 @@ seam inside the card is 12, and each part owns its own half of that 12:
 
 | | Padding | Height | Contents |
 | --- | --- | --- | --- |
-| Meta | `4 16 0` | 24 | 14px status dot + the automation in `text/n5`, the age right-aligned in `text/n3` |
+| Meta | `4 16 0` | 24 | 6px status dot + the automation in `text/n5`, the age right-aligned in `text/n5` |
 | Header | `12 16` | 62 | one to three tickers, 16 apart, divided by a 24-tall hairline; symbol over stance, the two lines overlapping by 4 |
 | Content | `0 16` | hugs | markdown blocks, 12 apart; the read and its Show more row are one block inside that 12, stacked at 0 |
 | Footer | `12 16 4` | 48 | source stack + name + `+N`, and one 32-tall labelled button |
@@ -87,8 +87,8 @@ it.
 | `text` | Markdown/M | Regular 14/22 |
 | `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
-| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, speaker at 20px, the mark hanging 5 above the top-right corner |
-| `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 16/26, speaker underneath at 16px in `text/n5` |
+| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, passage at Regular 14/22, speaker at 24px, the mark hanging 5 above the top-right corner |
+| `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 14/22, speaker underneath at 24px in `text/n5` |
 | `media` (one ticker) | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
 | `media` (two or three) | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
 
@@ -146,11 +146,10 @@ to live in the footer: the automation that produced the card, and how old the
 card is. That is the right place for both. The automation is a byline — it says
 which playbook was watching when this happened — and a byline belongs above
 the thing it signs, not down among the actions. The name is `text/n5` beside a
-14px status dot — grey, not the component's `main/m1`, because the row is
-provenance and not a link: the green dot already says the automation is live,
-and a teal name beside it read as something to tap. The age is right-aligned in
-`text/n3`, one step quieter again, because it is the one thing on the card
-nobody came for.
+6px status dot in `main/m1`; the label stays `text/n5`, so state is visible
+without making the automation name look tappable. The age is right-aligned in
+`text/n5`, matching the automation label, because position already makes it
+secondary.
 
 **Ticker / Stance** (`1664:17174`) replaces the price and change that used to
 sit under the symbol. This is the biggest change in the round and the most
@@ -159,7 +158,8 @@ A filled dial and a white arrow whose bearing is the conclusion — up-right
 bullish (`main/m3`), down-right bearish (`main/m4`), horizontal flat
 (`grey/g3`) — so one glyph rotated three ways carries what three colours of
 number used to. The fourth state earns its place by being a different kind of
-claim: a dashed empty ring and "No call" says Alva has not formed a view,
+claim: a dashed empty ring and "Anomaly" says the evidence does not resolve to
+a directional call,
 which is not the same statement as having looked and found it flat.
 
 Two things about building it. The rotations in the frame are **−45 / −135 /
@@ -173,8 +173,8 @@ rather than a hairline, because the frame draws 1 dashed 2/2 and a 0.5 dash at
 
 Because a stance is a view on a name rather than on a session, it lives on the
 ticker and not on the card — one call per symbol, the same wherever the symbol
-appears. Which also meant it could no longer be Bullish fifteen times: MSFT
-and AMD and PLTR are Flat, CBRS is No call, META and AAOI are Bearish. A
+appears. Which also meant it could no longer be Tailwind fifteen times: MSFT
+and AMD and PLTR are Context, CBRS is Anomaly, META and AAOI are Headwind. A
 header that is unanimously bullish is not a header, it is a decoration.
 
 **Feed Card - Footer** loses the automation and gains a label. The left half is
@@ -218,7 +218,7 @@ with what the browser drew.
 `1642:17075` ships two variants and the component's own description says when
 each applies: `Type=正文` when the card already carries a title, and
 `Type=标题` when it does not — there, the quote *is* the title, so it drops the
-tile, takes the title's `Medium/16`, and moves the speaker underneath as a
+tile, takes `Medium/14`, and moves the speaker underneath as a
 byline in `text/n5`.
 
 The renderer reads which one to use off the card's own blocks
@@ -261,8 +261,12 @@ what makes "just now" believable.
 
 ### Every source has a face
 
+The Feed and Sources surfaces use exactly two source-avatar sizes: **24px** in
+quote bylines and footer stacks, and **32px** in source-list identity rows.
+The 16px corner mark is a platform badge, not a third avatar size.
+
 No monograms. A letter in a circle is what you put there when you have not
-decided who the source is, and at 18px in an overlapping stack it reads as
+decided who the source is, and at 24px in an overlapping stack it reads as
 placeholder art. Every row carries a real image instead, from one of three
 places:
 
@@ -285,13 +289,14 @@ The press cast is small on purpose: it is the outlets whose marks read at
 32px. Rows that used to be attributed to an outlet with no usable mark were
 re-attributed rather than given a letter tile.
 
-### The way out of a source row is a link, not a button
+### The way out of a source row follows the excerpt
 
-The row's tail sits at the top right: the timestamp and the way out are 12px
-apart so they do not read as one phrase. `View` is `text/n7` Regular at the
-timestamp's own 12/20 size, followed by the 14px `popout-l` icon. The icon is
-the affordance, so the text has no underline, extra weight, fill, radius or
-hairline. The timestamp steps back to `text/n3`.
+The timestamp owns the top-right corner by itself. The way out sits 4px below
+the excerpt, so it reads like the feed body's `Show more` rather than a second
+metadata value. Its label is the destination's first-level domain (`x.com`,
+`reuters.com`) in `text/n7` Regular at 14/22, followed by the 14px `popout-l`
+icon. Every destination uses the same dotted underline; there is no platform-
+specific link treatment. The timestamp uses `text/n5`.
 
 It used to be a 28-tall outlined button, and at the end of a row whose left
 side is a name and a handle that control was the loudest thing in the sheet
@@ -773,9 +778,9 @@ the battery was.
 
 The sources sheet's excerpt is 14/22, not 12/20 — the frame was updated and
 that was the change. Worth knowing that the row's gaps are not uniform
-either: the avatar and the byline are one group 8 apart, and *that* group, the
-time and the `View` link are the row's three columns 12 apart. One flat gap of
-12 puts the handle too far from the face it belongs to.
+either: the avatar and the byline are one group 8 apart; the time is the sole
+right-hand item; and the domain link sits 4px below the excerpt. One flat gap
+of 12 puts the handle too far from the face it belongs to.
 
 The quote block's mark is likewise measured, not eyeballed: its box is
 29 × 46 at x=327 of the 361-wide tile and y=−5, so it hangs 5 above the tile
