@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>MVP · For You, Chat, Me · Alva prototypes</title>
+<title>MVP · For You, Market, Alva, Me · Alva prototypes</title>
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=24">
+<link rel="stylesheet" href="mvp.css?v=40">
 </head>
 <body>
 
@@ -57,7 +57,7 @@
                     </span>
                   </div>
                 </div>
-                <div class="cards" id="cards"></div>
+                <div class="cards is-booting" id="cards"></div>
               </div>
             </div>
 
@@ -65,6 +65,37 @@
               <span class="ic" style="--ic:url(assets/ui-arrow-up-l1.svg)" aria-hidden="true"></span>
               <span id="newPillText">3 new feeds</span>
             </button>
+          </section>
+
+          <!-- ═══ Market ════════════════════════════════════════ -->
+          <section class="screen" id="screenMarket" data-tab="market" aria-label="Market">
+            <div class="market-scroll" id="marketScroll">
+              <header class="market-title"><h1>Market</h1></header>
+              <div class="market-content">
+                <div class="market-search-recent">
+                  <label class="market-search" for="marketSearchInput">
+                    <input id="marketSearchInput" type="search" placeholder="Ticker or company" autocomplete="off" spellcheck="false">
+                  </label>
+                  <div class="market-chips" aria-label="Recent searches">
+                    <button type="button" class="market-chip">NVDA</button>
+                    <button type="button" class="market-chip">NWG</button>
+                    <button type="button" class="market-chip">SNDK</button>
+                  </div>
+                </div>
+                <section class="market-section" aria-label="Market lists">
+                  <div class="market-tabs" id="marketTabs" role="tablist">
+                    <div class="market-tab-list">
+                      <button type="button" class="market-tab is-active" role="tab" aria-selected="true" data-market-tab="following">Following</button>
+                      <button type="button" class="market-tab" role="tab" aria-selected="false" data-market-tab="trending">Trending</button>
+                    </div>
+                    <button type="button" class="market-search-compact" id="marketSearchCompact" aria-label="Search tickers">
+                      <span class="ic" style="--ic:url(assets/search.svg)" aria-hidden="true"></span>
+                    </button>
+                  </div>
+                  <div class="market-list" id="marketList"></div>
+                </section>
+              </div>
+            </div>
           </section>
 
           <!-- ═══ Chat (545:62465) ══════════════════════════════ -->
@@ -251,15 +282,20 @@
 
         <nav class="tab-bar" id="tabBar" aria-label="Main">
           <div class="tabs" role="tablist">
-            <button class="tab" type="button" role="tab" data-tab="feed" aria-selected="true">
-              <span class="ic ic-off" style="--ic:url(assets/ui-track-l.svg)" aria-hidden="true"></span>
-              <span class="ic ic-on" style="--ic:url(assets/ui-track-f.svg)" aria-hidden="true"></span>
+            <button class="tab is-active" type="button" role="tab" data-tab="feed" aria-selected="true">
+              <span class="ic ic-off" style="--ic:url(assets/ui-heart-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-heart-f.svg)" aria-hidden="true"></span>
               <span>For You</span>
+            </button>
+            <button class="tab" type="button" role="tab" data-tab="market" aria-selected="false">
+              <span class="ic ic-off" style="--ic:url(assets/ui-planet-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-planet-f.svg)" aria-hidden="true"></span>
+              <span>Market</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
               <span class="ic ic-off" style="--ic:url(assets/ui-chat-ai-l.svg)" aria-hidden="true"></span>
               <span class="ic ic-on" style="--ic:url(assets/ui-chat-ai-f.svg)" aria-hidden="true"></span>
-              <span>Chat</span>
+              <span>Alva</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="me" aria-selected="false">
               <span class="ic ic-off" style="--ic:url(assets/ui-me-l.svg)" aria-hidden="true"></span>
@@ -272,6 +308,10 @@
         <!-- Out of the tab bar so it can sit above an open sheet, the way it
              does in the design (the sheet's foot is the indicator's ground). -->
         <div class="home-indicator" aria-hidden="true"><span></span></div>
+
+        <div class="startup-loader" id="startupLoader" role="status" aria-label="Loading feed" aria-hidden="false">
+          <img class="full-loader-mark" src="assets/logo-loading-light.svg" alt="">
+        </div>
 
         <!-- ═══ Overlays ═════════════════════════════════════════
              One scrim, one sheet element. Both sheets are the same
@@ -286,11 +326,32 @@
           <div class="sheet-scroll" id="sheetBody"></div>
         </section>
 
-        <section class="fs" id="fullChart" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Chart">
+        <div class="fs-scrim" id="fsScrim" aria-hidden="true"></div>
+        <section class="fs" id="fullChart" role="dialog" aria-modal="true" aria-hidden="true" aria-busy="false" aria-label="Chart">
           <div class="fs-plot" id="fsPlot"></div>
-          <button class="fs-close" id="fsClose" type="button" aria-label="Close chart">
-            <span class="ic" style="--ic:url(assets/close-l1.svg)" aria-hidden="true"></span>
-          </button>
+          <div class="fs-loader" id="fsLoader" role="status" aria-label="Loading chart" aria-hidden="true">
+            <img class="full-loader-mark" src="assets/logo-loading-light.svg" alt="">
+          </div>
+          <header class="fs-topbar">
+            <button class="fs-close" id="fsClose" type="button" aria-label="Close chart">
+              <span class="ic" style="--ic:url(assets/close-l1.svg)" aria-hidden="true"></span>
+            </button>
+          </header>
+          <nav class="fs-context" aria-label="Chart controls">
+            <div class="fs-switch-row">
+              <button class="fs-switch" id="fsPrev" type="button" aria-label="Previous chart">
+                <span class="ic" style="--ic:url(assets/ui-chart-arrow-left.svg)" aria-hidden="true"></span>
+              </button>
+              <div class="fs-ticker" id="fsTicker"></div>
+              <button class="fs-switch" id="fsNext" type="button" aria-label="Next chart">
+                <span class="ic" style="--ic:url(assets/ui-chart-arrow-right.svg)" aria-hidden="true"></span>
+              </button>
+            </div>
+            <div class="fs-cta-row">
+              <button class="fs-details" id="fsDetails" type="button">View details</button>
+            </div>
+            <div class="fs-home" aria-hidden="true"><span></span></div>
+          </nav>
         </section>
 
         <div class="toast" id="toast" role="status"></div>
@@ -309,6 +370,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=24"></script>
+<script src="mvp.js?v=40"></script>
 </body>
 </html>

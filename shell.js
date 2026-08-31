@@ -35,6 +35,17 @@
 
   const PROTOTYPES = [
     {
+      title: 'MVP onboarding',
+      subtitle: 'Pick the tickers, themes, and people you want Alva to follow, then land in the MVP feed with context-ready alerts.',
+      edited: '2026-08-31',
+      href: 'mvp-onboarding.html',
+      meta: 'Mobile · 4 screens · search + selection + login',
+      figma: {
+        label: 'Feed Mobile MVP · onboarding',
+        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63760',
+      },
+    },
+    {
       title: 'Alpha Radar mobile onboarding',
       subtitle: 'Build an Alpha Radar from FinTwit accounts, key figures, podcasts, news, and earnings. Collection cards open a member sheet.',
       edited: '2026-08-18',
@@ -58,10 +69,10 @@
     },
     {
       title: 'MVP',
-      subtitle: 'The MVP end to end: the For You feed, Chat and Me, plus the three things a card opens — its sources, a ticker, and the chart fullscreen. One switch puts all of it in dark mode.',
+      subtitle: 'The MVP end to end: the For You feed, Market, Alva and Me, plus the three things a card opens — its sources, a ticker, and the chart fullscreen. One switch puts all of it in dark mode.',
       edited: '2026-08-25',
       href: 'mvp.html',
-      meta: 'Mobile · 3 screens · 3 overlays',
+      meta: 'Mobile · 4 screens · 3 overlays',
       figma: {
         label: 'Feed Mobile MVP · ⭐️ MVP',
         url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177',

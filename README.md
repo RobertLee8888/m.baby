@@ -12,7 +12,8 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 | | | Source |
 | --- | --- | --- |
 | `index.html` · `shell.css` · `shell.js` | **The shell** — the list, the stage, the phone mockup, and hash routing | — |
-| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed (three card types, eight items, a topbar that collapses on scroll), Chat, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Every colour is a Theme variable, so one switch puts all of it in dark mode | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1076-48248) |
+| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed (three card types, eight items, a topbar that collapses on scroll), Market, Alva, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Every colour is a Theme variable, so one switch puts all of it in dark mode | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat / Alva](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=2244-19642) |
+| `mvp-onboarding.html` · `mvp-onboarding.css` · `mvp-onboarding.js` | **MVP onboarding** — welcome, choose what to follow with search/filter, turn on notifications, log in, then hand off to the MVP For You feed | [Welcome](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63760) · [Choose what to follow](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63777) · [Notifications](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1769-18035) · [Login](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=2585-90370) |
 | `alpha-radar.html` · `alpha-radar.css` · `alpha-radar.js` | **Alpha Radar mobile onboarding** — source selection, radar setup, login, and building states across 8 screens. On the three source-selection screens a collection card opens a member bottom sheet | [Alpha Radar onboarding](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=13241-205457) · [Collection member sheet](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=14144-48781) |
 | `onboarding.html` · `styles.css` · `app.js` | **Immersive onboarding** — FinTwit Digest path, 6 screens | [Onboarding · Production v4 · FinTwit path](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243) |
 
@@ -20,7 +21,7 @@ Zero dependencies — plain HTML / CSS / JS, no build step. Alva design tokens (
 
 ## MVP — the whole loop
 
-`#/mvp`. Three screens in the tab bar (For You, Chat, Me) and three overlays
+`#/mvp`. Four screens in the tab bar (For You, Market, Alva, Me) and three overlays
 that open out of a feed card (its sources, a ticker, the chart fullscreen).
 Everything below is measured off the Figma frames listed in Contents, not
 eyeballed from a screenshot.
@@ -33,7 +34,7 @@ rather than a toast:
 | a ticker chip | the ticker sheet, with its own follow star | 957:18126 |
 | a quote block | the sources sheet — the quote *is* one of the sources | 1642:17075 |
 | the sources row in the footer | the sources sheet for *that* card | 545:62549 |
-| any chart, wide or a tile in a row | the chart, fullscreen | 1076:48248 |
+| any chart, wide or a tile in a row | the chart, fullscreen | 2244:19642 |
 | the footer's button — Track This / What's my impact / Dig Deeper | the Chat screen | 906:86629 |
 
 ### The card is one object

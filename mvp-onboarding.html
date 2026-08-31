@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>MVP onboarding · Alva prototypes</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="assets/fonts/Delight-Medium.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="assets/fonts/Delight-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
+<script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
+<link rel="stylesheet" href="mvp-onboarding.css?v=2">
+</head>
+<body>
+<div class="desk">
+  <div class="phone" id="phone">
+    <div class="phone-buttons" aria-hidden="true">
+      <span class="pb pb-action"></span>
+      <span class="pb pb-volup"></span>
+      <span class="pb pb-voldown"></span>
+      <span class="pb pb-power"></span>
+    </div>
+    <div class="phone-screen">
+      <main class="onboarding-app" id="onboardingApp">
+        <section class="screen welcome-screen is-active" data-screen="welcome" aria-label="Alva welcome">
+          <div class="welcome-preview">
+            <div class="preview-card">
+              <div class="preview-meta"><span><i></i> Investor-roundtable</span><span>1h ago</span></div>
+              <div class="preview-tickers">
+                <div class="preview-ticker"><img src="assets/feed-logo-goog.svg" alt=""><span><b>GOOG</b><small><em>↗</em> Tailwind</small></span></div>
+                <div class="preview-divider"></div>
+                <div class="preview-ticker"><img src="assets/feed-logo-meta.svg" alt=""><span><b>META</b><small><em>↗</em> Tailwind</small></span></div>
+                <div class="preview-divider"></div>
+                <div class="preview-ticker"><img src="assets/feed-logo-baba.svg" alt=""><span><b>BABA</b><small><em>↗</em> Tailwind</small></span></div>
+              </div>
+              <p class="preview-copy">Alibaba Group Holding's open-weight AI models accumulated more than 3 billion global downloads during the past six months, according to Bloomberg and other reports. The figure surpassed reported downloads for models from Meta Platforms, Alphabet, and domestic peers, making Alibaba's models the world's most downloaded AI models.</p>
+              <div class="preview-media"><img src="assets/feed-media-chart.png" alt="NVDA market chart"><img src="assets/feed-media-chart.png" alt="NVDA market chart"></div>
+            </div>
+          </div>
+          <div class="welcome-copy">
+            <div class="wordmark"><img src="assets/wordmark-symbol.svg" alt=""><img src="assets/wordmark-text.svg" alt="Alva"></div>
+            <h1>Follow what matters.<br>Act with context.</h1>
+            <p>Alva reads your markets, your sources and your questions — and turns them into context you can act on.</p>
+          </div>
+          <div class="cta-dock welcome-dock">
+            <button class="btn btn-primary" id="startButton" type="button">Pick what you follow</button>
+            <button class="btn btn-text" id="signInButton" type="button">Sign in</button>
+          </div>
+        </section>
+
+        <section class="screen watch-screen" data-screen="watch" aria-label="Choose what to follow">
+          <div class="topbar"><button class="back-button" id="watchBack" type="button" aria-label="Back"><img src="assets/onboarding-arrow-left-l1.svg" alt=""></button></div>
+          <div class="watch-body">
+            <div class="title-block">
+              <h1>What are you watching?</h1>
+              <p>Pick a few tickers, themes or people. Alva builds your first feed from real coverage — you can change everything later.</p>
+            </div>
+            <label class="search-field" for="watchSearch"><img src="assets/search.svg" alt=""><input id="watchSearch" type="search" placeholder="Search tickers, themes, people..." autocomplete="off" spellcheck="false"></label>
+            <div class="picker-grid" id="pickerGrid" aria-live="polite"></div>
+            <p class="grid-empty" id="gridEmpty" hidden>No matches for <b></b>.</p>
+          </div>
+          <div class="cta-dock watch-dock">
+            <p id="selectionNote">3 selected · pick 3–8 to start</p>
+            <button class="btn btn-primary" id="continueButton" type="button">Continue</button>
+          </div>
+        </section>
+
+        <section class="screen notify-screen" data-screen="notify" aria-label="Turn on notifications">
+          <div class="topbar"><button class="back-button" id="notifyBack" type="button" aria-label="Back"><img src="assets/onboarding-arrow-left-l1.svg" alt=""></button></div>
+          <div class="notify-body">
+            <div class="notify-icon"><img class="notify-element" src="assets/onboarding-element.png" alt=""><img class="notify-glyph" src="assets/onboarding-notification-l.svg" alt=""></div>
+            <div class="title-block"><h1>Know the move as it happens.</h1><p>Alva notifies you when something you follow moves unusually — and tells you why.</p></div>
+          </div>
+          <div class="cta-dock notify-dock">
+            <button class="btn btn-secondary" id="notNowButton" type="button">Not now</button>
+            <button class="btn btn-primary" id="notificationsButton" type="button">Turn on notifications</button>
+          </div>
+        </section>
+
+        <section class="screen login-screen" data-screen="login" aria-label="Log in to Alva">
+          <div class="login-topbar"><button class="back-button" id="loginBack" type="button" aria-label="Back"><img src="assets/onboarding-arrow-left-l1.svg" alt=""></button></div>
+          <div class="login-body">
+            <div class="login-panel">
+              <div class="login-heading">
+                <img class="login-logo" src="assets/alpha-login-logo.svg" alt="Alva">
+                <div><h1>Log in to Alva</h1><p>Login to build, remix, and trade.</p></div>
+              </div>
+              <div class="login-actions">
+                <button class="login-option" data-login-submit type="button"><img src="assets/alpha-login-google.svg" alt=""><span>Sign in with Google</span></button>
+                <button class="login-option" data-login-submit type="button"><img src="assets/alpha-login-apple.svg" alt=""><span>Sign in with Apple</span></button>
+                <div class="login-social-row">
+                  <button class="login-option icon-only" data-login-submit type="button" aria-label="Sign in with Discord"><span class="discord-mark"><img src="assets/icon-discord.svg" alt=""></span></button>
+                  <button class="login-option icon-only" data-login-submit type="button" aria-label="Sign in with X"><img src="assets/alpha-login-x.svg" alt=""></button>
+                  <button class="login-option icon-only" data-login-submit type="button" aria-label="Sign in with Telegram"><img src="assets/alpha-login-telegram.svg" alt=""></button>
+                </div>
+                <div class="login-divider"><span></span><i>or</i><span></span></div>
+                <button class="email-login" data-login-submit type="button">Login with Email</button>
+              </div>
+            </div>
+            <p class="login-terms">By signing in, you agree to the <strong>Terms of Service</strong> and <strong>Privacy Policy</strong></p>
+          </div>
+        </section>
+
+        <div class="statusbar" aria-hidden="true"><span class="status-side status-left">9:41</span><span class="dynamic-island"></span><span class="status-side status-right"><img src="assets/status-signal.svg" alt=""><img src="assets/status-wifi.svg" alt=""><span class="battery"><img src="assets/battery-outline.svg" alt=""><img src="assets/battery-fill.svg" alt=""><img src="assets/battery-end.svg" alt=""></span></span></div>
+        <div class="home-indicator" aria-hidden="true"><span></span></div>
+      </main>
+    </div>
+  </div>
+</div>
+<div class="stage-controls stage-controls-left"><a class="stage-pill" href="index.html#/mvp-onboarding">←&nbsp; All prototypes</a></div>
+<div class="stage-controls"><button class="stage-pill" id="replayButton" type="button">↺&nbsp; Replay</button><a class="stage-pill" href="https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63760" target="_blank" rel="noopener">Feed Mobile MVP · onboarding</a></div>
+<script src="mvp-onboarding.js?v=2"></script>
+</body>
+</html>

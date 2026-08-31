@@ -18,14 +18,15 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MVP — For You, Chat, Me, and the three overlays
+   MVP — For You, Market, Alva, Me, and the three overlays
    Figma: Feed Mobile MVP · ⭐️ MVP
      For You            1496:32177
+     Market             2300:41141
      Sources sheet       545:62549
      Ticker sheet        957:18126
      Chat                545:62465
      Me                  360:37134
-     Fullscreen chart   1076:48248
+     Fullscreen chart   2244:19642
 
    Every length here is a token from Alva-Library, not a guess:
    spacing 4 / 8 / 12 / 16 / 24 / 28, hairlines at 0.5 on line/l12,
@@ -289,7 +290,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   --bar-h: calc(var(--topbar-h) * (1 - var(--bar-p)));
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  overflow: clip;
   border-radius: inherit;
   background: var(--b10);
 }
@@ -516,6 +517,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   from { opacity: 0; transform: translate3d(0, -10px, 0); }
   to { opacity: 1; transform: none; }
 }
+.cards.is-booting .card { opacity: 0; transform: translate3d(0, 18px, 0); }
+.cards.is-revealing .card {
+  animation: feed-start-in .3s var(--ease) both;
+  animation-delay: calc(var(--reveal-order, 0) * 50ms);
+}
+@keyframes feed-start-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: none; }
+}
 
 /* ── Feed Card - Meta (1629:17047) ──
    The automation that produced the card on the left, how old the card is on
@@ -664,6 +674,35 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    once and what you watch is the gap it held closing. */
 .fold.anim .blk-body { transition: height .2s var(--ease-fold); }
 .fold.anim .showmore { transition: height .2s var(--ease-fold), opacity .09s ease; }
+.fold.anim-structured { transition: height .2s var(--ease-fold); }
+
+.structured-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+}
+.structured-content[hidden] { display: none; }
+.structured-section { display: flex; flex-direction: column; gap: 8px; }
+.structured-heading { margin: 0; font-size: 14px; font-weight: 500; line-height: 22px; }
+.structured-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding-left: 13px;
+}
+.structured-list li { padding-left: 0; }
+.structured-list li::marker { color: var(--n7); font-size: 8px; }
+.structured-list strong { font-weight: 500; }
+.structured-list .is-bull::marker,
+.structured-list .is-bull strong { color: var(--m3); }
+.structured-list .is-bear::marker,
+.structured-list .is-bear strong { color: var(--m4); }
 
 /* Feed Card - Show more (1733:17497). The master is Medium/12, and every
    instance in the frames overrides it to **Medium/14** — text style Medium/14,
@@ -960,6 +999,148 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: translateX(-50%) translateY(-8px) scale(.96);
 }
 
+/* ── Market tab ── */
+
+.market-scroll {
+  position: absolute;
+  inset: var(--status-h) 0 calc(var(--tab-h) + var(--home-h)) 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  background: var(--b10);
+}
+.market-scroll::-webkit-scrollbar { display: none; }
+.market-title {
+  height: var(--topbar-h);
+  padding: 16px var(--gutter) 8px;
+  background: var(--b10);
+}
+.market-title h1 {
+  overflow: hidden;
+  color: var(--n9);
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 34px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.market-content { min-height: 100%; padding: 4px 16px 24px; background: var(--b10); }
+.market-search-recent { display: flex; flex-direction: column; gap: 8px; }
+.market-search {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+  padding: 11px 16px;
+  border: .5px solid var(--l3);
+  border-radius: 6px;
+  background: var(--b10);
+}
+.market-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--n9);
+  font: 400 16px/26px 'Delight', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: .01em;
+  user-select: text;
+}
+.market-search input::placeholder { color: var(--n3); opacity: 1; }
+.market-search:focus-within { border-color: var(--n5); }
+.market-chips { display: flex; align-items: flex-start; gap: 8px; height: 28px; }
+.market-chip {
+  height: 28px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: var(--br03);
+  color: var(--n7);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.market-chip:active { background: var(--br07); }
+.market-section { position: relative; margin-top: 24px; }
+.market-tabs {
+  position: sticky;
+  z-index: 8;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  height: 34px;
+  border-bottom: var(--hair) solid var(--l12);
+  background: var(--b10);
+}
+.market-tab-list { display: flex; align-items: flex-start; gap: 20px; min-width: 0; height: 34px; }
+.market-tab {
+  position: relative;
+  height: 34px;
+  padding: 0 0 8px;
+  color: var(--n7);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 26px;
+  white-space: nowrap;
+}
+.market-tab:focus { outline: none; }
+.market-tab.is-active { color: var(--n9); font-weight: 500; }
+.market-tab.is-active::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--m1);
+  content: '';
+}
+.market-search-compact {
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  color: var(--n9);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+.market-search-compact .ic { width: 20px; height: 20px; }
+.market-scroll.is-pinned .market-search-compact { opacity: 1; pointer-events: auto; transform: none; }
+.market-list { width: 100%; }
+.market-row {
+  display: grid;
+  grid-template-columns: 32px 163px 64px 66px;
+  align-items: center;
+  column-gap: 12px;
+  width: 100%;
+  height: 68px;
+  padding: 12px 0;
+  box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l07);
+}
+.market-row:active { background: var(--br05); }
+.market-logo-wrap { position: relative; flex: 0 0 32px; width: 32px; height: 32px; overflow: hidden; border-radius: 100px; }
+.market-logo-wrap img { position: absolute; inset: 0; width: 32px; height: 32px; object-fit: cover; }
+.market-logo-wrap .market-logo-mark { object-fit: contain; }
+.market-logo-wrap.market-logo-btc { display: grid; place-items: center; background: #f7931a; color: var(--white); font-size: 14px; font-weight: 500; line-height: 22px; }
+.market-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; overflow: hidden; }
+.market-symbol { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; letter-spacing: .01em; text-overflow: ellipsis; white-space: nowrap; }
+.market-company { overflow: hidden; color: var(--n5); font-size: 11px; font-weight: 400; line-height: 18px; letter-spacing: .01em; text-overflow: ellipsis; white-space: nowrap; }
+.market-chart { width: 64px; height: 40px; object-fit: contain; }
+.market-quote { display: flex; width: 66px; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.market-price { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.market-change { font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
+.market-change.up { color: var(--m3); }
+.market-change.down { color: var(--m4); }
+.market-change.flat { color: var(--n5); }
+
 /* ── Tab bar (1024:38385) ── */
 
 /* A 0.5 inset shadow on an 82-tall bar lands on a different subpixel at
@@ -998,13 +1179,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding-top: 8px;
   color: var(--n7);
 }
+.tab:focus { outline: none; }
+.tab:focus-visible { outline: none; }
 .tab .ic { width: 22px; height: 22px; }
 .tab .ic-on { display: none; }
 .tab span { color: var(--n7); font-size: 10px; font-weight: 400; line-height: 16px; }
-.tab[aria-selected="true"] { color: var(--n9); }
-.tab[aria-selected="true"] .ic-on { display: inline-block; }
-.tab[aria-selected="true"] .ic-off { display: none; }
-.tab[aria-selected="true"] span { color: var(--n9); font-weight: 500; }
+.tab[aria-selected="true"], .tab.is-active { color: var(--n9); }
+.tab[aria-selected="true"] .ic-on, .tab.is-active .ic-on { display: inline-block; }
+.tab[aria-selected="true"] .ic-off, .tab.is-active .ic-off { display: none; }
+.tab[aria-selected="true"] span, .tab.is-active span { color: var(--n9); font-weight: 500; }
 
 .home-indicator {
   position: absolute;
@@ -1024,6 +1207,34 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   border-radius: 100px;
   background: var(--n10);
   transform: translateX(-50%);
+}
+
+/* Figma 2566:19568. The loader is a full-screen state, while the status and
+   tab bars remain above it. The exported four-cell mark advances one corner
+   per beat; a stepped quarter-turn keeps that exact asset and motion grammar. */
+.startup-loader {
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--b10);
+  opacity: 1;
+  pointer-events: auto;
+  transition: opacity .16s ease;
+}
+.startup-loader.is-leaving { opacity: 0; pointer-events: none; }
+.full-loader-mark {
+  width: 40px;
+  height: 40px;
+  animation: loader-quarter-turn 1s steps(4, end) infinite;
+}
+@keyframes loader-quarter-turn { to { transform: rotate(360deg); } }
+:root[data-theme="dark"] .full-loader-mark { filter: invert(1) hue-rotate(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .full-loader-mark { animation: none; }
+  .cards.is-revealing .card { animation-duration: .01ms; animation-delay: 0ms; }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1662,7 +1873,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .anom-more .ic { width: 12px; height: 12px; color: var(--m1); }
 
 /* ═══════════════════════════════════════════════════════════
-   Fullscreen chart (1076:48248)
+   Fullscreen chart (2244:19642)
 
    The whole screen is the plot. Two panes, one price scale on the right,
    and three labelled lines — previous close, the price the event printed
@@ -1670,38 +1881,190 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    like this makes.
    ═══════════════════════════════════════════════════════════ */
 
+.fs-scrim {
+  position: absolute;
+  z-index: 79;
+  inset: 0;
+  background: var(--scrim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .28s ease;
+}
+.fs-scrim.show { opacity: 1; pointer-events: auto; }
+
 .fs {
   position: absolute;
   z-index: 80;
   inset: 0;
   background: var(--b10);
-  opacity: 0;
   pointer-events: none;
-  transform: scale(1.02);
-  transition: opacity .28s ease, transform .34s var(--ease);
+  transform: translate3d(0, 100%, 0);
+  transition: transform .46s cubic-bezier(.4, 0, .2, 1);
+  will-change: transform;
 }
-.fs.show { opacity: 1; pointer-events: auto; transform: none; }
-/* The plot runs the whole frame and the status bar sits over it (1076:48248). */
-.fs-plot { position: absolute; inset: 0; }
-.fs-close {
+.fs.show { pointer-events: auto; transform: none; }
+/* 2594:56629: the chart owns only the space between the 56px topbar and the
+   146px context block. Its labels can no longer sit under floating controls. */
+.fs-plot {
   position: absolute;
-  z-index: 3;
-  /* 18 below the status bar, so it clears the battery instead of sitting in
-     the same row as it. */
-  top: calc(var(--status-h) + 18px);
-  right: 16px;
+  inset: calc(var(--status-h) + 56px) 0 146px 0;
+  opacity: 1;
+  transition: opacity .16s ease;
+}
+.fs-loader {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 960px;
-  background: var(--n9);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
-  color: var(--nr10);
+  background: var(--b10);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .16s ease;
+}
+.fs.is-loading .fs-plot { opacity: 0; }
+.fs.is-loading .fs-loader { opacity: 1; }
+.fs-topbar {
+  position: absolute;
+  z-index: 3;
+  top: var(--status-h);
+  right: 0;
+  left: 0;
+  height: 56px;
+  border-bottom: var(--hair) solid var(--l2);
+  background: var(--b10);
+}
+.fs-close {
+  display: flex;
+  align-items: center;
+  width: 48px;
+  height: 56px;
+  padding-left: 16px;
+  color: var(--n10);
   transition: transform .2s var(--ease);
 }
-.fs-close .ic { width: 15px; height: 15px; }
-.fs-close:active { transform: scale(.9); }
+.fs-close .ic { width: 20px; height: 20px; }
+.fs-close:focus { outline: none; }
+.fs-close:active { transform: scale(.94); }
+
+.fs-context {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  height: 146px;
+  padding-top: 8px;
+  flex-direction: column;
+  background: var(--b10);
+}
+.fs-context::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--l2);
+  content: '';
+  transform: scaleY(.5);
+  transform-origin: top;
+}
+.fs-switch-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+}
+.fs-switch {
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 48px;
+  color: var(--n10);
+  transition: opacity .16s ease, transform .2s var(--ease);
+}
+.fs-switch-row .fs-switch:first-child { justify-content: flex-start; }
+.fs-switch-row .fs-switch:last-child { justify-content: flex-end; }
+.fs-switch .ic { width: 16px; height: 16px; }
+.fs-switch:focus, .fs-details:focus { outline: none; }
+.fs-switch:active { opacity: .55; transform: scale(.94); }
+.fs-switch.is-hidden { visibility: hidden; pointer-events: none; }
+
+.fs-ticker {
+  display: flex;
+  align-items: center;
+  justify-self: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  height: 24px;
+}
+.fs-ticker.is-exiting-next, .fs-details.is-exiting-next { animation: fs-ticker-out-next .14s ease-in both; }
+.fs-ticker.is-entering-next, .fs-details.is-entering-next { animation: fs-ticker-in-next .2s var(--ease) both; }
+.fs-ticker.is-exiting-prev, .fs-details.is-exiting-prev { animation: fs-ticker-out-prev .14s ease-in both; }
+.fs-ticker.is-entering-prev, .fs-details.is-entering-prev { animation: fs-ticker-in-prev .2s var(--ease) both; }
+@keyframes fs-ticker-out-next { to { opacity: 0; transform: translate3d(-20px, 0, 0); } }
+@keyframes fs-ticker-in-next {
+  from { opacity: 0; transform: translate3d(20px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fs-ticker-out-prev { to { opacity: 0; transform: translate3d(20px, 0, 0); } }
+@keyframes fs-ticker-in-prev {
+  from { opacity: 0; transform: translate3d(-20px, 0, 0); }
+  to { opacity: 1; transform: none; }
+}
+.fs.is-switching .fs-switch { pointer-events: none; }
+.fs-ticker-logo { width: 24px; height: 24px; border-radius: 960px; object-fit: cover; }
+.fs-ticker-name {
+  max-width: 160px;
+  overflow: hidden;
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fs-cta-row { width: 100%; height: 56px; padding: 8px 16px; overflow: hidden; }
+.fs-details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 40px;
+  padding: 9px 20px;
+  overflow: hidden;
+  border: var(--hair) solid var(--l3);
+  border-radius: 6px;
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: center;
+  white-space: nowrap;
+  transition: background .16s ease, transform .2s var(--ease);
+}
+.fs-details:active { background: var(--br05); transform: scale(.99); }
+
+.fs-home {
+  position: relative;
+  width: 100%;
+  height: var(--home-h);
+  background: var(--b10);
+}
+.fs-home span {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  width: 144px;
+  height: 5px;
+  border-radius: 100px;
+  background: var(--n10);
+  transform: translateX(-50%);
+}
 
 /* ── Toast ──
    Bottom, above the tab bar, and above every overlay in z. A sheet can be

@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   MVP — For You, Chat, Me, and the three overlays
+   MVP — For You, Market, Alva, Me, and the three overlays
    Figma: Feed Mobile MVP · ⭐️ MVP
 
    The feed is data, not markup. A card is a header (one to three
@@ -97,6 +97,30 @@
         when: 'Aug 25, 2026 · 21:47 GMT+8',
       },
     },
+    AMZN: {
+      sym: 'AMZN', logo: A + 'feed-logo-amzn.svg', stance: 'bull',
+      co: 'Amazon.com Inc', mkt: 'NASDAQ', price: 260.28, chg: 0, pct: 0,
+      lo: 200, hi: 285,
+      pre: { price: 260.28, chg: 0, pct: 0, when: 'Aug 26, 20:45 GMT+8' },
+      when: 'At Close · Aug 26, 04:00 GMT+8',
+      seed: 48126, anomaly: {
+        label: 'Context',
+        body: 'Cheaper models improve intelligence per dollar and drive more token usage. Margin shifts toward hyperscalers that maximize cluster utilization and minimize cost per token.',
+        when: 'Aug 26, 2026 · 1h ago',
+      },
+    },
+    TEM: {
+      sym: 'TEM', logo: A + 'feed-logo-tem.png', stance: 'bull',
+      co: 'Tempus AI Inc', mkt: 'NASDAQ', price: 68.48, chg: 0, pct: 0,
+      lo: 40, hi: 75,
+      pre: { price: 68.48, chg: 0, pct: 0, when: 'Aug 26, 20:45 GMT+8' },
+      when: 'At Close · Aug 26, 04:00 GMT+8',
+      seed: 68480, anomaly: {
+        label: 'Context',
+        body: "Personalized cancer vaccines turn tumor sequencing and longitudinal MRD monitoring into recurring workflow requirements. $TEM can capture greater testing and data demand through Tempus's oncology platform.",
+        when: 'Aug 26, 2026 · 1h ago',
+      },
+    },
     SMTC: {
       sym: 'SMTC', logo: A + 'feed-logo-smtc.png', stance: 'bull',
       co: 'Semtech Corp', mkt: 'NASDAQ', price: 127.52, chg: 6.61, pct: 5.47,
@@ -134,7 +158,7 @@
       },
     },
     NVDA: {
-      sym: 'NVDA', logo: A + 'feed-logo-nvda.png', stance: 'bull',
+      sym: 'NVDA', logo: A + 'feed-logo-nvda-real.png', stance: 'flat',
       co: 'NVIDIA Corp', mkt: 'NASDAQ', price: 213.05, chg: 4.57, pct: 2.19,
       lo: 192.42, hi: 225.16,
       pre: { price: 214.2, chg: 1.15, pct: 0.54, when: 'Aug 25, 20:45 GMT+8' },
@@ -170,7 +194,7 @@
       },
     },
     MSFT: {
-      sym: 'MSFT', logo: A + 'feed-logo-msft.svg', stance: 'flat',
+      sym: 'MSFT', logo: A + 'feed-logo-msft-real.svg', stance: 'bull',
       co: 'Microsoft Corp', mkt: 'NASDAQ', price: 491.71, chg: 4.39, pct: 0.9,
       lo: 383.16, hi: 504.4,
       pre: { price: 492.6, chg: 0.89, pct: 0.18, when: 'Aug 25, 20:45 GMT+8' },
@@ -230,7 +254,7 @@
       },
     },
     AVGO: {
-      sym: 'AVGO', logo: A + 'feed-logo-avgo.svg', stance: 'bull',
+      sym: 'AVGO', logo: A + 'feed-logo-avgo-real.svg', stance: 'none',
       co: 'Broadcom Inc', mkt: 'NASDAQ', price: 412.66, chg: 9.84, pct: 2.45,
       lo: 356.2, hi: 428.9,
       pre: { price: 414.2, chg: 1.54, pct: 0.37, when: 'Aug 25, 20:45 GMT+8' },
@@ -279,7 +303,8 @@
     },
   };
 
-  const TSM = TICKERS.TSM, GOOGL = TICKERS.GOOGL, SMTC = TICKERS.SMTC, FRO = TICKERS.FRO;
+  const TSM = TICKERS.TSM, GOOGL = TICKERS.GOOGL, AMZN = TICKERS.AMZN, TEM = TICKERS.TEM;
+  const SMTC = TICKERS.SMTC, FRO = TICKERS.FRO;
   const RVMD = TICKERS.RVMD, NVDA = TICKERS.NVDA, CDNS = TICKERS.CDNS, SNPS = TICKERS.SNPS;
   const MSFT = TICKERS.MSFT, CBRS = TICKERS.CBRS;
   const META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
@@ -694,7 +719,7 @@
      is the shape here.
      ────────────────────────────── */
 
-  const CARDS = [
+  const LEGACY_CARDS = [
     {
       type: 'anomaly',
       tickers: [SMTC],
@@ -940,10 +965,148 @@
     },
   ];
 
+  const REAL_GAVIN = src(
+    'Gavin Baker', '@gavin_baker · X', '1h ago', A + 'feed-source-gavin-baker.png',
+    'Cheaper models would increase the ROI on AI spend, driving incremental token demand. Margin dollars would get redistributed to AI infrastructure providers.'
+  );
+  const REAL_REUTERS = src(
+    'Reuters', 'reuters.com', '1h ago', A + 'feed-source-reuters-small.png',
+    'Merck and Moderna said their personalized mRNA therapy met its primary and secondary endpoints in a late-stage melanoma trial—the first positive Phase 3 result for an mRNA cancer vaccine.'
+  );
+  const REAL_BENZINGA = src(
+    'Benzinga', 'benzinga.com', '1h ago', A + 'feed-source-benzinga.png',
+    'Merck and Moderna said their personalized mRNA therapy met its primary and secondary endpoints in a late-stage melanoma trial—the first positive Phase 3 result for an mRNA cancer vaccine.'
+  );
+  const REAL_YAHOO = src(
+    'Yahoo Finance', 'finance.yahoo.com', '1h ago', A + 'feed-source-yahoo-finance.png',
+    'Broadcom fell sharply after Marvell announced an expanded Google custom-chip partnership.'
+  );
+  const REAL_TIPRANKS = src(
+    'TipRanks', 'tipranks.com', '1h ago', A + 'feed-source-tipranks.png',
+    'Google received a warrant to purchase roughly $12.2 billion of Marvell shares as part of an expanded custom-chip partnership.'
+  );
+  const REAL_NVDA_SOURCES = [
+    src('NVIDIA', 'nvidia.com · Q1 results', '10d ago', A + 'feed-source-nvidia-real.png',
+      'Q1 non-GAAP gross margin was 75%, Q2 guidance is 75% plus or minus 50 basis points, and full-year margin should remain in the mid-70s.'),
+    src('NVIDIA', 'nvidia.com · Q2 outlook', '10d ago', A + 'feed-source-nvidia-real.png',
+      "Q2 revenue consensus is $91.9 billion, near the upper half of the company's $89.18 billion to $92.82 billion sales range."),
+    src('NVIDIA', 'nvidia.com · Rubin roadmap', '10d ago', A + 'feed-source-nvidia-real.png',
+      'Vera Rubin production shipments are expected to start in Q3, making the transition from Blackwell the next execution test.'),
+    src('NVIDIA', 'nvidia.com · H200 update', '10d ago', A + 'feed-source-nvidia-real.png',
+      'H200 licenses for China-based customers have been approved but no revenue has been generated from them.'),
+    src('NVIDIA', 'nvidia.com · AI factories', '10d ago', A + 'feed-source-nvidia-real.png',
+      'AI clouds, enterprise, industrial, sovereign buyers, and frontier labs are still funding AI factories.'),
+  ];
+
+  const CARDS = [
+    {
+      type: 'source',
+      automation: 'Alpha Radar',
+      tickers: [GOOGL, AMZN, MSFT],
+      age: '1h ago',
+      footerName: 'X',
+      sourceFaces: 1,
+      sources: [REAL_GAVIN],
+      blocks: [
+        { type: 'title', text: 'Cheaper Models Shift AI Margins to Compute Platforms' },
+        { type: 'quote', src: REAL_GAVIN },
+        {
+          type: 'text',
+          text: 'Cheaper models improve intelligence per dollar and drive more token usage. Margin shifts from high-margin frontier labs toward hyperscalers that maximize cluster utilization and minimize cost per token—a profit shift that has not fully materialized yet.',
+        },
+        {
+          type: 'media',
+          items: [
+            { ticker: GOOGL, src: A + 'feed-real-googl.png' },
+            { ticker: AMZN, src: A + 'feed-real-amzn.png' },
+            { ticker: MSFT, src: A + 'feed-real-msft.png' },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'source',
+      automation: 'Alpha Radar',
+      tickers: [TEM],
+      age: '1h ago',
+      footerName: 'Reuters',
+      sourceFaces: 2,
+      sources: [REAL_REUTERS, REAL_BENZINGA],
+      blocks: [
+        { type: 'title', text: 'Tempus Captures Personalized Cancer-Vaccine Data Demand' },
+        { type: 'quote', src: REAL_REUTERS },
+        {
+          type: 'text',
+          text: "Personalized cancer vaccines turn tumor sequencing and longitudinal MRD monitoring into recurring workflow requirements. $TEM can capture greater testing and data demand through Tempus's oncology platform and Personalis capabilities as more programs advance toward commercialization.",
+        },
+        { type: 'media', items: [{ ticker: TEM, src: A + 'feed-real-tem.png' }] },
+      ],
+    },
+    {
+      type: 'anomaly',
+      automation: 'Anomaly',
+      ask: 'Dig Deeper',
+      tickers: [AVGO],
+      age: '1h ago',
+      footerName: 'Yahoo Finance',
+      sourceFaces: 2,
+      sources: [REAL_YAHOO, REAL_TIPRANKS],
+      blocks: [
+        { type: 'title', text: 'Broadcom fell sharply after Marvell announced an expanded Google custom-chip partnership.' },
+        {
+          type: 'text',
+          text: "The primary driver was Marvell’s same-session announcement that Google received a warrant to purchase roughly $12.2 billion of Marvell shares as part of an expanded custom-chip partnership. The timing, negative direction, elevated volume, and $AVGO-specific underperformance fit a repricing of perceived competition for Google’s TPU-related custom silicon work.",
+        },
+        { type: 'media', items: [{ ticker: AVGO, src: A + 'feed-real-avgo.png' }] },
+      ],
+    },
+    {
+      type: 'source',
+      automation: 'Pre-earnings',
+      tickers: [NVDA],
+      age: '10d ago',
+      footerName: 'NVIDIA',
+      sourceFaces: 1,
+      sources: REAL_NVDA_SOURCES,
+      blocks: [
+        { type: 'title', text: 'Pre-Earning Analysis' },
+        {
+          type: 'analysis',
+          preview: 'AI factory demand: The key revenue question is whether AI clouds, enterprise, industrial, sovereign buyers, and frontier labs are still funding AI factories at a pace that supports growth beyond Q2.',
+          sections: [
+            {
+              title: 'What investors are watching',
+              items: [
+                { label: 'AI factory demand:', text: 'The key revenue question is whether AI clouds, enterprise, industrial, sovereign buyers, and frontier labs are still funding AI factories at a pace that supports growth beyond Q2.' },
+                { label: 'Forward sales guide:', text: "Q2 revenue consensus is $91.9 billion, near the upper half of the company's $89.18 billion to $92.82 billion sales range." },
+                { label: 'Mid-70s margin durability:', text: 'Margin quality matters because NVIDIA has said Q1 non-GAAP gross margin was 75%, Q2 guidance is 75% plus or minus 50 basis points, and full-year margin should remain in the mid-70s.' },
+                { label: 'Rubin transition:', text: 'Vera Rubin production shipments are expected to start in Q3, making the transition from Blackwell the next execution test.' },
+                { label: 'Custom-silicon pressure:', text: "Investors are watching whether NVIDIA's inference share gains are enough to offset the risk that customer-built accelerators take more workloads." },
+                { label: 'China optionality:', text: 'China remains upside rather than a base-case contributor because H200 licenses for China-based customers have been approved but no revenue has been generated from them.' },
+              ],
+            },
+            {
+              title: 'Scenarios',
+              items: [
+                { tone: 'bull', label: 'Bull case:', text: 'Revenue clears consensus, management guides Q3 sales above market expectations, and gross margin commentary still supports the mid-70s full-year view.' },
+                { label: 'Top-third historical reactions:', text: '-1.444% to +3.249% · $206.63–$216.47' },
+                { label: 'Base case:', text: 'NVIDIA reports revenue around consensus or modestly above it, EPS is close to the Street-adjusted estimate, and forward guidance does not materially change the growth or margin outlook.' },
+                { label: 'Middle-third historical reactions:', text: '-3.92% to -1.444% · $201.44–$206.63' },
+                { tone: 'bear', label: 'Bear case:', text: "Revenue misses consensus or lands near the low end of guidance, and management's forward sales or margin commentary weakens." },
+                { label: 'Bottom-third historical reactions:', text: '-8.478% to -3.92% · $191.89–$201.44' },
+              ],
+            },
+          ],
+        },
+        { type: 'media', items: [{ ticker: NVDA, src: A + 'feed-real-nvda.png' }] },
+      ],
+    },
+  ];
+
   /* What the pill brings in: the 10:58 batch, which is exactly how the
      production playbook behaves — new batches at the top, full history
      below. Two cards, one and two sources, because that is what new means. */
-  const NEW_CARDS = [
+  const LEGACY_NEW_CARDS = [
     {
       type: 'source',
       tickers: [TSM],
@@ -991,6 +1154,8 @@
       ],
     },
   ];
+
+  const NEW_CARDS = [];
 
   /* ──────────────────────────────
      Building blocks
@@ -1081,11 +1246,30 @@
   const MEDIA = [A + 'feed-media-line.webp', A + 'feed-media-candles.webp'];
   let mediaTurn = 0;
 
-  function chartTile(t, cls) {
+  function chartTile(t, cls, source, items, index) {
     const tile = btn(cls, t.sym + ' chart');
-    tile.appendChild(img(MEDIA[mediaTurn++ % MEDIA.length]));
-    tile.addEventListener('click', e => { e.stopPropagation(); openFullChart(t); });
+    tile.appendChild(img(source || MEDIA[mediaTurn++ % MEDIA.length]));
+    tile.addEventListener('click', e => {
+      e.stopPropagation();
+      openFullChart(t, items, index);
+    });
     return tile;
+  }
+
+  function wireFold(fold) {
+    fold.addEventListener('click', () => {
+      if (!fold.classList.contains('is-folded')) return;
+      const selection = window.getSelection && window.getSelection();
+      if (selection && !selection.isCollapsed && selection.rangeCount &&
+          fold.contains(selection.getRangeAt(0).commonAncestorContainer)) return;
+      setFolded(fold, false);
+    });
+    fold.addEventListener('keydown', e => {
+      if (!fold.classList.contains('is-folded') || (e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault();
+      setFolded(fold, false);
+    });
+    return fold;
   }
 
   function block(b, card) {
@@ -1096,19 +1280,29 @@
     if (b.type === 'text') {
       const fold = el('div', 'fold');
       fold.appendChild(el('p', 'blk-text blk-body', b.text));
-      fold.addEventListener('click', () => {
-        if (!fold.classList.contains('is-folded')) return;
-        const selection = window.getSelection && window.getSelection();
-        if (selection && !selection.isCollapsed && selection.rangeCount &&
-            fold.contains(selection.getRangeAt(0).commonAncestorContainer)) return;
-        setFolded(fold, false);
+      return wireFold(fold);
+    }
+    if (b.type === 'analysis') {
+      const fold = el('div', 'fold fold-structured');
+      fold.appendChild(el('p', 'blk-text blk-body', b.preview));
+
+      const expanded = el('div', 'structured-content');
+      expanded.hidden = true;
+      b.sections.forEach(section => {
+        const group = el('section', 'structured-section');
+        group.appendChild(el('h3', 'structured-heading', section.title));
+        const list = el('ul', 'structured-list');
+        section.items.forEach(item => {
+          const row = el('li', item.tone ? 'is-' + item.tone : '');
+          row.appendChild(el('strong', null, item.label));
+          row.appendChild(document.createTextNode(' ' + item.text));
+          list.appendChild(row);
+        });
+        group.appendChild(list);
+        expanded.appendChild(group);
       });
-      fold.addEventListener('keydown', e => {
-        if (!fold.classList.contains('is-folded') || (e.key !== 'Enter' && e.key !== ' ')) return;
-        e.preventDefault();
-        setFolded(fold, false);
-      });
-      return fold;
+      fold.appendChild(expanded);
+      return wireFold(fold);
     }
     if (b.type === 'lead') return el('p', 'blk-text blk-lead', b.text);
     if (b.type === 'title') return el('p', 'blk-text blk-title', b.text);
@@ -1148,9 +1342,12 @@
        be two block types and a card could ask for the wrong one — the CDNS ·
        SNPS card did, and stacked two full-width tiles down the card. */
     if (b.type === 'media') {
-      if (card.tickers.length === 1) return chartTile(card.tickers[0], 'media');
+      const items = b.items || card.tickers.map(ticker => ({ ticker }));
+      if (items.length === 1) return chartTile(items[0].ticker, 'media', items[0].src, items, 0);
       const row = el('div', 'media-row');
-      card.tickers.forEach(t => row.appendChild(chartTile(t, 'media-tile')));
+      items.forEach((item, index) => {
+        row.appendChild(chartTile(item.ticker, 'media-tile', item.src, items, index));
+      });
       return row;
     }
 
@@ -1189,17 +1386,17 @@
        card came from. */
     const lead = btn('foot-lead', 'Sources');
     const stack = el('div', 'sources');
-    card.sources.slice(0, 3).forEach(src => stack.appendChild(img(src.img)));
+    card.sources.slice(0, card.sourceFaces || 3).forEach(src => stack.appendChild(img(src.img)));
     lead.appendChild(stack);
     const copy = el('span', 'foot-copy');
-    copy.appendChild(el('span', 'foot-src', card.sources[0].name));
+    copy.appendChild(el('span', 'foot-src', card.footerName || card.sources[0].name));
     const rest = card.sources.length - 1;
     if (rest > 0) copy.appendChild(el('span', 'foot-more', '+' + rest));
     lead.appendChild(copy);
     lead.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
     footEl.appendChild(lead);
 
-    const label = ASK[card.type] || ASK.event;
+    const label = card.ask || ASK[card.type] || ASK.event;
     const ask = btn('ask', label);
     ask.appendChild(icon('ui-chat-ai-l.svg'));
     ask.appendChild(el('span', null, label));
@@ -1213,6 +1410,107 @@
     node.appendChild(footEl);
     return node;
   }
+
+  /* Market rows mirror 2300:41141. The first five are the exact design
+     sample; the additional names keep the prototype scrollable so the sticky
+     tabs/search state can be exercised on a phone-sized viewport. */
+  const marketDetail = row => Object.assign({
+    mkt: 'NASDAQ',
+    price: row.numericPrice,
+    chg: row.numericChg,
+    pct: row.numericPct,
+    lo: row.numericPrice * .9,
+    hi: row.numericPrice * 1.1,
+    seed: Math.abs(row.sym.split('').reduce((n, c) => n * 31 + c.charCodeAt(0), 7)),
+  }, row);
+
+  const MARKET_FOLLOWING = [
+    { sym: 'NVDA', co: 'NVIDIA Corporation', numericPrice: 197.58, numericChg: -1.25, numericPct: -1.25, priceLabel: '$197.58', changeLabel: '-1.25%', tone: 'down', logo: A + 'market-logo-nvda.png', logoMark: A + 'market-logo-nvda-mark.svg', chart: A + 'market-chart-nvda.svg' },
+    { sym: 'TSLA', co: 'Tesla, Inc.', numericPrice: 268.4, numericChg: 2.1, numericPct: 2.1, priceLabel: '$268.4', changeLabel: '+2.1%', tone: 'up', logo: A + 'market-logo-tsla.svg', chart: A + 'market-chart-tsla.svg' },
+    { sym: 'BTC', co: 'Bitcoin', numericPrice: 104230, numericChg: 1.6, numericPct: 1.6, priceLabel: '$104,230', changeLabel: '+1.6%', tone: 'up', crypto: true, chart: A + 'market-chart-btc.svg' },
+    { sym: 'MU', co: 'Micron Technology, Inc.', numericPrice: 916.17, numericChg: 1.94, numericPct: 1.94, priceLabel: '$916.17', changeLabel: '+1.94%', tone: 'up', logo: A + 'market-logo-mu.png', chart: A + 'market-chart-mu.svg' },
+    { sym: 'META', co: 'Meta Platforms, Inc.', numericPrice: 718.2, numericChg: -0.4, numericPct: -0.4, priceLabel: '$718.2', changeLabel: '-0.4%', tone: 'down', logo: A + 'market-logo-meta.svg', logoMark: A + 'market-logo-meta-mask.svg', chart: A + 'market-chart-meta.svg' },
+    { sym: 'GOOGL', co: 'Alphabet Inc', numericPrice: GOOGL.price, numericChg: GOOGL.chg, numericPct: GOOGL.pct, priceLabel: '$' + money(GOOGL.price), changeLabel: signed(GOOGL.chg) + ' ' + pct(GOOGL.pct), tone: GOOGL.pct < 0 ? 'down' : 'up', logo: GOOGL.logo, chart: A + 'market-chart-nvda.svg' },
+    { sym: 'AMZN', co: 'Amazon.com Inc', numericPrice: AMZN.price, numericChg: AMZN.chg, numericPct: AMZN.pct, priceLabel: '$' + money(AMZN.price), changeLabel: '0.00%', tone: 'flat', logo: AMZN.logo, chart: A + 'market-chart-tsla.svg' },
+    { sym: 'MSFT', co: 'Microsoft Corp', numericPrice: MSFT.price, numericChg: MSFT.chg, numericPct: MSFT.pct, priceLabel: '$' + money(MSFT.price), changeLabel: signed(MSFT.chg) + ' ' + pct(MSFT.pct), tone: MSFT.pct < 0 ? 'down' : 'up', logo: MSFT.logo, chart: A + 'market-chart-mu.svg' },
+    { sym: 'AVGO', co: 'Broadcom Inc', numericPrice: AVGO.price, numericChg: AVGO.chg, numericPct: AVGO.pct, priceLabel: '$' + money(AVGO.price), changeLabel: signed(AVGO.chg) + ' ' + pct(AVGO.pct), tone: AVGO.pct < 0 ? 'down' : 'up', logo: AVGO.logo, chart: A + 'market-chart-meta.svg' },
+    { sym: 'TEM', co: 'Tempus AI Inc', numericPrice: TEM.price, numericChg: TEM.chg, numericPct: TEM.pct, priceLabel: '$' + money(TEM.price), changeLabel: '0.00%', tone: 'flat', logo: TEM.logo, chart: A + 'market-chart-btc.svg' },
+  ].map(marketDetail);
+
+  const MARKET_TRENDING = [
+    MARKET_FOLLOWING[0], MARKET_FOLLOWING[2], MARKET_FOLLOWING[4],
+    { sym: 'CDNS', co: 'Cadence Design Systems', numericPrice: CDNS.price, numericChg: CDNS.chg, numericPct: CDNS.pct, priceLabel: '$' + money(CDNS.price), changeLabel: signed(CDNS.chg) + ' ' + pct(CDNS.pct), tone: 'up', logo: CDNS.logo, chart: A + 'market-chart-nvda.svg' },
+    { sym: 'SNPS', co: 'Synopsys Inc', numericPrice: SNPS.price, numericChg: SNPS.chg, numericPct: SNPS.pct, priceLabel: '$' + money(SNPS.price), changeLabel: signed(SNPS.chg) + ' ' + pct(SNPS.pct), tone: 'up', logo: SNPS.logo, chart: A + 'market-chart-tsla.svg' },
+    { sym: 'AMD', co: 'Advanced Micro Devices', numericPrice: AMD.price, numericChg: AMD.chg, numericPct: AMD.pct, priceLabel: '$' + money(AMD.price), changeLabel: signed(AMD.chg) + ' ' + pct(AMD.pct), tone: 'down', logo: AMD.logo, chart: A + 'market-chart-mu.svg' },
+    { sym: 'BABA', co: 'Alibaba Group', numericPrice: BABA.price, numericChg: BABA.chg, numericPct: BABA.pct, priceLabel: '$' + money(BABA.price), changeLabel: signed(BABA.chg) + ' ' + pct(BABA.pct), tone: 'up', logo: BABA.logo, chart: A + 'market-chart-meta.svg' },
+    { sym: 'PLTR', co: 'Palantir Technologies', numericPrice: PLTR.price, numericChg: PLTR.chg, numericPct: PLTR.pct, priceLabel: '$' + money(PLTR.price), changeLabel: signed(PLTR.chg) + ' ' + pct(PLTR.pct), tone: 'down', logo: PLTR.logo, chart: A + 'market-chart-btc.svg' },
+  ].map(marketDetail);
+
+  const marketEl = document.getElementById('marketList');
+  const marketScroll = document.getElementById('marketScroll');
+  const marketInput = document.getElementById('marketSearchInput');
+  const marketCompactSearch = document.getElementById('marketSearchCompact');
+  const marketTabButtons = [...document.querySelectorAll('[data-market-tab]')];
+  let marketMode = 'following';
+
+  function marketLogo(row) {
+    if (row.crypto) return el('span', 'market-logo-wrap market-logo-btc', 'B');
+    const wrap = el('span', 'market-logo-wrap');
+    if (row.logo) wrap.appendChild(img(row.logo));
+    if (row.logoMark) wrap.appendChild(img(row.logoMark, 'market-logo-mark'));
+    return wrap;
+  }
+
+  function marketRow(rowData) {
+    const row = btn('market-row', rowData.sym + ' details');
+    row.appendChild(marketLogo(rowData));
+
+    const copy = el('span', 'market-copy');
+    copy.appendChild(el('span', 'market-symbol', rowData.sym));
+    copy.appendChild(el('span', 'market-company', rowData.co));
+    row.appendChild(copy);
+
+    row.appendChild(img(rowData.chart, 'market-chart'));
+    const quote = el('span', 'market-quote');
+    quote.appendChild(el('span', 'market-price', rowData.priceLabel));
+    quote.appendChild(el('span', 'market-change ' + rowData.tone, rowData.changeLabel));
+    row.appendChild(quote);
+
+    row.addEventListener('click', e => {
+      e.stopPropagation();
+      openTicker(rowData);
+    });
+    return row;
+  }
+
+  function renderMarket() {
+    if (!marketEl) return;
+    const source = marketMode === 'trending' ? MARKET_TRENDING : MARKET_FOLLOWING;
+    const query = (marketInput?.value || '').trim().toLowerCase();
+    const rows = query ? source.filter(row => (row.sym + ' ' + row.co).toLowerCase().includes(query)) : source;
+    marketEl.replaceChildren(...rows.map(marketRow));
+  }
+
+  marketTabButtons.forEach(button => button.addEventListener('click', () => {
+    marketMode = button.dataset.marketTab;
+    marketTabButtons.forEach(tab => {
+      const active = tab === button;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+    renderMarket();
+  }));
+  marketInput?.addEventListener('input', renderMarket);
+  document.querySelectorAll('.market-chip').forEach(chip => chip.addEventListener('click', () => {
+    if (!marketInput) return;
+    marketInput.value = chip.textContent.trim();
+    marketInput.dispatchEvent(new Event('input', { bubbles: true }));
+    marketInput.focus();
+  }));
+  marketCompactSearch?.addEventListener('click', () => {
+    marketScroll?.scrollTo({ top: 0, behavior: 'smooth' });
+    window.setTimeout(() => marketInput?.focus({ preventScroll: true }), 220);
+  });
 
   /* ──────────────────────────────
      The feed, and the pull that refreshes it
@@ -1373,11 +1671,27 @@
     const fullBodyHeight = body.offsetHeight;
     const lineHeight = lineHeightOf(body);
     const bodyLines = lineCount(fullBodyHeight, lineHeight);
+    const structured = fold.querySelector('.structured-content');
 
     fold.dataset.cap = String(cap);
     fold.dataset.fullLines = String(bodyLines);
     delete fold.dataset.previewLines;
     delete fold.dataset.firstSentenceClamped;
+
+    /* A structured analysis has much more content behind its preview even
+       when that preview and the chart happen to fit in the viewport. Keep the
+       same one-sentence floor as ordinary cards, clamp only a long first
+       sentence, and always expose the full analysis through Show more. */
+    if (structured) {
+      if (bodyLines > FIRST_SENTENCE_MAX_LINES) {
+        ellipsizeToLines(body, full, FIRST_SENTENCE_MAX_LINES, lineHeight);
+        fold.dataset.firstSentenceClamped = '1';
+      }
+      fold.dataset.previewLines = String(lineCount(body.offsetHeight, lineHeight));
+      fold.appendChild(showMoreRow());
+      setFoldInteractive(fold, true);
+      return;
+    }
 
     if (fullCardHeight <= cap) return;
 
@@ -1430,11 +1744,60 @@
     return el('span', 'showmore', 'Show more');
   }
 
+  function expandStructured(fold) {
+    const body = fold.querySelector('.blk-body');
+    const expanded = fold.querySelector('.structured-content');
+    const row = fold.querySelector('.showmore');
+    if (!body || !expanded || !row) return;
+
+    const fromH = fold.offsetHeight;
+    setFoldInteractive(fold, false);
+    fold.dataset.expanded = '1';
+    body.hidden = true;
+    expanded.hidden = false;
+    row.remove();
+
+    fold.style.height = '';
+    const toH = fold.offsetHeight;
+    fold.style.height = fromH + 'px';
+    fold.style.overflow = 'hidden';
+    void fold.offsetHeight;
+
+    fold.classList.add('anim-structured');
+    fold.dataset.busy = '1';
+    fold.style.height = toH + 'px';
+
+    const done = () => {
+      fold.classList.remove('anim-structured');
+      delete fold.dataset.busy;
+      fold.style.height = '';
+      fold.style.overflow = '';
+    };
+    let ended = false;
+    const onEnd = ev => {
+      if (ev.target !== fold || ev.propertyName !== 'height' || ended) return;
+      ended = true;
+      fold.removeEventListener('transitionend', onEnd);
+      done();
+    };
+    fold.addEventListener('transitionend', onEnd);
+    setTimeout(() => {
+      if (ended) return;
+      ended = true;
+      fold.removeEventListener('transitionend', onEnd);
+      done();
+    }, 300);
+  }
+
   /* One function both ways. The design gives the open card no way back, so
      only the opening direction has a control — but the closing direction is
      the same three lines, and the prototype's own reset uses it. */
   function setFolded(fold, folded) {
     if (fold.dataset.busy) return;
+    if (!folded && fold.classList.contains('fold-structured')) {
+      expandStructured(fold);
+      return;
+    }
     const body = fold.querySelector('.blk-body');
     const row = fold.querySelector('.showmore');
     const fromH = body.offsetHeight;
@@ -1504,6 +1867,35 @@
     /* The full cards are in the document before this synchronous pass, but
        the browser has not painted them yet. */
     foldPass();
+  }
+
+  const startupLoader = document.getElementById('startupLoader');
+  let startupLoadTimer = 0;
+  let startupCleanupTimer = 0;
+
+  function runStartupLoading() {
+    window.clearTimeout(startupLoadTimer);
+    window.clearTimeout(startupCleanupTimer);
+    cardsEl.classList.remove('is-revealing');
+    cardsEl.classList.add('is-booting');
+    cardsEl.querySelectorAll('.card').forEach((card, index) => {
+      card.style.setProperty('--reveal-order', String(Math.min(index, 5)));
+    });
+    startupLoader.hidden = false;
+    startupLoader.classList.remove('is-leaving');
+    startupLoader.setAttribute('aria-hidden', 'false');
+
+    startupLoadTimer = window.setTimeout(() => {
+      startupLoader.classList.add('is-leaving');
+      startupLoader.setAttribute('aria-hidden', 'true');
+      cardsEl.classList.remove('is-booting');
+      cardsEl.classList.add('is-revealing');
+      startupCleanupTimer = window.setTimeout(() => {
+        startupLoader.hidden = true;
+        cardsEl.classList.remove('is-revealing');
+        cardsEl.querySelectorAll('.card').forEach(card => card.style.removeProperty('--reveal-order'));
+      }, 560);
+    }, 1000);
   }
 
   function foldPass() {
@@ -1693,6 +2085,23 @@
   }
 
   feed.addEventListener('scroll', paintBar, { passive: true });
+
+  function offsetWithin(node, ancestor) {
+    let top = 0;
+    for (let current = node; current && current !== ancestor; current = current.offsetParent) {
+      top += current.offsetTop;
+    }
+    return top;
+  }
+
+  /* The title is part of Market's own scroll flow. The tab strip becomes the
+     only sticky boundary when its actual rendered top reaches the viewport. */
+  function paintMarket() {
+    if (!marketScroll) return;
+    const pinAt = offsetWithin(document.getElementById('marketTabs'), marketScroll);
+    marketScroll.classList.toggle('is-pinned', marketScroll.scrollTop >= pinAt - .5);
+  }
+  marketScroll?.addEventListener('scroll', paintMarket, { passive: true });
 
   /* ──────────────────────────────
      Media rows: a sideways drag scrolls them on a desktop, where there is
@@ -1916,7 +2325,7 @@
     co.appendChild(el('span', null, t.sym + ' · ' + t.mkt));
     wrap.appendChild(co);
 
-    wrap.appendChild(el('div', 'tk-when', t.when));
+    if (t.when) wrap.appendChild(el('div', 'tk-when', t.when));
 
     const price = el('div', 'tk-price');
     price.appendChild(el('b', null, '$' + money(t.price)));
@@ -1924,13 +2333,15 @@
     price.appendChild(el('span', 'tk-chg ' + dir, signed(t.chg) + ' ' + pct(t.pct)));
     wrap.appendChild(price);
 
-    const pre = el('div', 'tk-pre');
-    pre.appendChild(el('span', null, 'Pre-Market '));
-    pre.appendChild(el('b', null, '$' + money(t.pre.price)));
-    pre.appendChild(el('span', 'tk-chg ' + (t.pre.chg >= 0 ? 'up' : 'down'),
-      ' ' + signed(t.pre.chg) + ' ' + pct(t.pre.pct)));
-    pre.appendChild(el('span', null, ' · ' + t.pre.when));
-    wrap.appendChild(pre);
+    if (t.pre) {
+      const pre = el('div', 'tk-pre');
+      pre.appendChild(el('span', null, 'Pre-Market '));
+      pre.appendChild(el('b', null, '$' + money(t.pre.price)));
+      pre.appendChild(el('span', 'tk-chg ' + (t.pre.chg >= 0 ? 'up' : 'down'),
+        ' ' + signed(t.pre.chg) + ' ' + pct(t.pre.pct)));
+      pre.appendChild(el('span', null, ' · ' + t.pre.when));
+      wrap.appendChild(pre);
+    }
 
     return wrap;
   }
@@ -1955,7 +2366,9 @@
   function openTicker(t) {
     const header = [sheetClose(), el('h2', null, ''), starButton(t)];
     const chart = chartModule(t);
-    openSheet(header, [tkTabs(), tkName(t), chart.node, anomalyCard(t)],
+    const body = [tkTabs(), tkName(t), chart.node];
+    if (t.anomaly) body.push(anomalyCard(t));
+    openSheet(header, body,
       { full: true, teardown: chart.dispose });
     chart.mount();
   }
@@ -2361,33 +2774,61 @@
     };
   }
 
-  /* ── The fullscreen chart (1076:48248) ── */
+  /* ── The fullscreen chart (2244:19642) ── */
 
   const fs = document.getElementById('fullChart');
+  const fsScrim = document.getElementById('fsScrim');
   const fsPlot = document.getElementById('fsPlot');
   const fsClose = document.getElementById('fsClose');
+  const fsPrev = document.getElementById('fsPrev');
+  const fsNext = document.getElementById('fsNext');
+  const fsTicker = document.getElementById('fsTicker');
+  const fsDetails = document.getElementById('fsDetails');
+  const FS_ENTER_MS = 460;
+  const FS_LOAD_MS = 1000;
   let fsChart = null;
+  let fsItems = [];
+  let fsIndex = 0;
+  let fsLoadTimer = 0;
+  let fsSwitchTimer = 0;
+  let fsSwitchFinishTimer = 0;
+  let fsSwitching = false;
+  let fsOpenFrame = 0;
 
-  function openFullChart(t) {
+  function currentFsTicker() {
+    const item = fsItems[fsIndex];
+    return item && (item.ticker || item);
+  }
+
+  function paintFsTicker(t) {
+    fsTicker.replaceChildren(img(t.logo, 'fs-ticker-logo'), el('span', 'fs-ticker-name', t.sym));
+    fsDetails.setAttribute('aria-label', 'View ' + t.sym + ' details');
+
+    const multiple = fsItems.length > 1;
+    [fsPrev, fsNext].forEach(control => {
+      control.classList.toggle('is-hidden', !multiple);
+      control.disabled = !multiple;
+      control.setAttribute('aria-hidden', String(!multiple));
+    });
+  }
+
+  function drawFullChart() {
+    const t = currentFsTicker();
+    if (!t) return;
     if (fsChart) fsChart.dispose();
-    fs.classList.add('show');
-    fs.setAttribute('aria-hidden', 'false');
+    paintFsTicker(t);
     /* The session belongs to the name that opened it. A fixed crash shape
        scaled to every ticker put the previous close outside its own range on
        any name that rose, so the series is generated from the ticker's own
        day instead: its close, its net change, its seed. */
-    const data = t ? sessionSeries(t.seed, t.price, 112, 0.0042, t.pct) : eventSeries(51217);
-    let prev = 124.87, event = 112.69;
-    if (t) {
-      prev = t.price - t.chg;
-      /* Where the move came from: the low of an up day, the high of a down
-         one — the point the three labelled prices are measured against. */
-      let ext = data[0].close;
-      data.forEach(d => {
-        if (t.pct >= 0 ? d.low < ext : d.high > ext) ext = t.pct >= 0 ? d.low : d.high;
-      });
-      event = ext;
-    }
+    const data = sessionSeries(t.seed, t.price, 112, 0.0042, t.pct);
+    const prev = t.price - t.chg;
+    /* Where the move came from: the low of an up day, the high of a down
+       one — the point the three labelled prices are measured against. */
+    let event = data[0].close;
+    data.forEach(d => {
+      if (t.pct >= 0 ? d.low < event : d.high > event) event = t.pct >= 0 ? d.low : d.high;
+    });
     /* The three numbers the design labels, in the order they matter:
        where the day started from, what the event printed at, where it is. */
     fsChart = mountChart(fsPlot, data, {
@@ -2401,19 +2842,111 @@
     });
   }
 
+  function openFullChart(t, items, index) {
+    const group = Array.isArray(items) && items.length ? items : [{ ticker: t }];
+    fsItems = group.filter(item => item && (item.ticker || item).sym);
+    fsIndex = Math.min(Math.max(Number(index) || 0, 0), Math.max(0, fsItems.length - 1));
+    fs.setAttribute('aria-hidden', 'false');
+    startFullChartLoading(FS_ENTER_MS + FS_LOAD_MS);
+    fsScrim.classList.add('show');
+    fsScrim.setAttribute('aria-hidden', 'false');
+    window.cancelAnimationFrame(fsOpenFrame);
+    fsOpenFrame = window.requestAnimationFrame(() => fs.classList.add('show'));
+  }
+
+  function startFullChartLoading(delay = FS_LOAD_MS) {
+    window.clearTimeout(fsLoadTimer);
+    if (fsChart) fsChart.dispose();
+    fsChart = null;
+    fsPlot.replaceChildren();
+    const t = currentFsTicker();
+    if (t) paintFsTicker(t);
+    fs.classList.add('is-loading');
+    fs.setAttribute('aria-busy', 'true');
+    document.getElementById('fsLoader').setAttribute('aria-hidden', 'false');
+    fsLoadTimer = window.setTimeout(() => {
+      if (!fs.classList.contains('show')) return;
+      drawFullChart();
+      fs.classList.remove('is-loading');
+      fs.setAttribute('aria-busy', 'false');
+      document.getElementById('fsLoader').setAttribute('aria-hidden', 'true');
+    }, delay);
+  }
+
+  function stepFullChart(delta) {
+    if (fsItems.length < 2 || fsSwitching) return;
+    fsSwitching = true;
+    const direction = delta > 0 ? 'next' : 'prev';
+    const motionNodes = [fsTicker, fsDetails];
+    fs.classList.add('is-switching');
+    motionNodes.forEach(node => node.classList.add('is-exiting-' + direction));
+
+    fsSwitchTimer = window.setTimeout(() => {
+      fsIndex = (fsIndex + delta + fsItems.length) % fsItems.length;
+      if (fs.classList.contains('is-loading')) startFullChartLoading();
+      else drawFullChart();
+      motionNodes.forEach(node => {
+        node.classList.remove('is-exiting-' + direction);
+        node.classList.add('is-entering-' + direction);
+      });
+
+      fsSwitchFinishTimer = window.setTimeout(() => {
+        motionNodes.forEach(node => node.classList.remove('is-entering-' + direction));
+        fs.classList.remove('is-switching');
+        fsSwitching = false;
+      }, 200);
+    }, 140);
+  }
+
   function closeFullChart() {
+    window.cancelAnimationFrame(fsOpenFrame);
+    window.clearTimeout(fsLoadTimer);
+    window.clearTimeout(fsSwitchTimer);
+    window.clearTimeout(fsSwitchFinishTimer);
+    fsSwitching = false;
     fs.classList.remove('show');
+    fsScrim.classList.remove('show');
+    fsScrim.setAttribute('aria-hidden', 'true');
+    fs.classList.remove('is-loading');
+    fs.classList.remove('is-switching');
+    fs.setAttribute('aria-busy', 'false');
+    [fsTicker, fsDetails].forEach(node => {
+      node.classList.remove('is-exiting-next', 'is-entering-next', 'is-exiting-prev', 'is-entering-prev');
+    });
     fs.setAttribute('aria-hidden', 'true');
-    window.setTimeout(() => { if (fsChart) { fsChart.dispose(); fsChart = null; } }, 320);
+    document.getElementById('fsLoader').setAttribute('aria-hidden', 'true');
+    const closingChart = fsChart;
+    fsChart = null;
+    window.setTimeout(() => closingChart && closingChart.dispose(), 480);
   }
 
   fsClose.addEventListener('click', closeFullChart);
+  fsScrim.addEventListener('click', closeFullChart);
+  fsPrev.addEventListener('click', () => stepFullChart(-1));
+  fsNext.addEventListener('click', () => stepFullChart(1));
+  fsDetails.addEventListener('click', () => {
+    const t = currentFsTicker();
+    if (!t) return;
+    closeFullChart();
+    openTicker(t);
+  });
 
   /* Escape closes whatever is on top — the chart first, then a sheet. */
   window.addEventListener('keydown', e => {
-    if (e.key !== 'Escape') return;
-    if (fs.classList.contains('show')) closeFullChart();
-    else if (sheetOpen) closeSheet();
+    if (fs.classList.contains('show') && e.key === 'ArrowLeft') {
+      e.preventDefault();
+      stepFullChart(-1);
+      return;
+    }
+    if (fs.classList.contains('show') && e.key === 'ArrowRight') {
+      e.preventDefault();
+      stepFullChart(1);
+      return;
+    }
+    if (e.key === 'Escape') {
+      if (fs.classList.contains('show')) closeFullChart();
+      else if (sheetOpen) closeSheet();
+    }
   });
 
   /* ──────────────────────────────
@@ -2423,12 +2956,16 @@
   const tabs = [...document.querySelectorAll('.tab')];
   const screens = new Map([...document.querySelectorAll('.screen')].map(s => [s.dataset.tab, s]));
 
-  const TAB_ORDER = ['feed', 'chat', 'me'];
+  const TAB_ORDER = ['feed', 'market', 'chat', 'me'];
   const tabBar = document.getElementById('tabBar');
 
   function showTab(name) {
     const at = TAB_ORDER.indexOf(name);
-    tabs.forEach(t => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    tabs.forEach(t => {
+      const active = t.dataset.tab === name;
+      t.setAttribute('aria-selected', String(active));
+      t.classList.toggle('is-active', active);
+    });
     screens.forEach((screen, key) => {
       screen.classList.toggle('current', key === name);
       /* Where this screen sits on the track, in screen-widths from the one
@@ -2437,6 +2974,12 @@
     });
     /* Chat's composer already draws the edge above the tab bar. */
     tabBar.classList.toggle('flat', name === 'chat');
+    if (name === 'market') {
+      app.style.setProperty('--bar-p', '0');
+      paintMarket();
+    }
+    else if (name === 'feed') paintBar();
+    else app.style.setProperty('--bar-p', '0');
   }
 
   tabs.forEach(tab => {
@@ -2489,10 +3032,11 @@
     render();
     wireRowDrag(cardsEl);
     pillText.textContent = NEW_CARDS.length + ' new feeds';
-    setPill(true);
+    setPill(NEW_CARDS.length > 0);
     feed.scrollTop = 0;
     paintBar();
     showTab('feed');
+    runStartupLoading();
     hideToast();
   }
 
@@ -2523,13 +3067,17 @@
 
   setTheme(readTheme());
   /* The screens live on a track now, so their places have to be assigned
-     before the first paint — otherwise all three sit at translateX(0) and the
+     before the first paint — otherwise all four sit at translateX(0) and the
      last one in the document wins. */
   showTab('feed');
   render();
+  renderMarket();
   wireRowDrag(cardsEl);
+  pillText.textContent = NEW_CARDS.length + ' new feeds';
+  setPill(NEW_CARDS.length > 0);
   paintBar();
   fitPhone();
+  runStartupLoading();
   /* Webfont metrics can change line wraps after the first synchronous pass.
      Re-measure once they settle; expanded cards stay expanded. */
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(foldPass);
