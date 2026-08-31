@@ -10,23 +10,23 @@
 
   const picks = [
     { id: 'NVDA', name: 'NVDA', type: 'AI compute', image: A + 'market-logo-nvda.png' },
-    { id: 'TSLA', name: 'TSLA', type: 'EV · Robotaxi', image: A + 'market-logo-tsla.svg' },
+    { id: 'TSLA', name: 'TSLA', type: 'EV · Robotaxi', image: A + 'onboarding-tsla.svg' },
     { id: 'BTC', name: 'BTC', type: 'Crypto', mark: '₿' },
     { id: 'META', name: 'META', type: 'AI · Ads', image: A + 'feed-logo-meta.svg' },
-    { id: 'AMD', name: 'AMD', type: 'AI compute', image: A + 'feed-logo-amd.svg' },
+    { id: 'AMD', name: 'AMD', type: 'AI compute', image: A + 'onboarding-amd.svg' },
     { id: 'MU', name: 'MU', type: 'Memory', image: A + 'market-logo-mu.png' },
     { id: 'AI Infra', name: 'AI Infra', type: 'Theme', mark: 'AI' },
     { id: 'HBM', name: 'HBM', type: 'Theme', mark: 'HB' },
     { id: 'Stablecoin', name: 'Stablecoin', type: 'Theme', mark: 'S' },
     { id: 'Nuclear', name: 'Nuclear', type: 'Theme', mark: 'N' },
-    { id: 'Jensen Huang', name: 'Jensen Huang', type: 'Key figure', image: A + 'onboarding-jensen.png' },
-    { id: 'Jerome Powell', name: 'Jerome Powell', type: 'Key figure', image: A + 'onboarding-jerome.png' },
-    { id: 'QQQ', name: 'QQQ', type: 'Index', mark: 'Q' },
-    { id: 'TSM', name: 'TSM', type: 'Semis', image: A + 'feed-logo-tsm.png' },
-    { id: 'AVGO', name: 'AVGO', type: 'Semis', image: A + 'feed-logo-avgo-real.svg' },
-    { id: 'COIN', name: 'COIN', type: 'Crypto', mark: 'C' },
-    { id: 'SPY', name: 'SPY', type: 'Index', mark: 'S' },
-    { id: 'Elon Musk', name: 'Elon Musk', type: 'Key figure', image: A + 'onboarding-elon.png' },
+    { id: 'Jensen Huang', name: 'Jensen Huang', type: 'Key figure', image: A + 'onboarding-jensen.png?v=2' },
+    { id: 'Jerome Powell', name: 'Jerome Powell', type: 'Key figure', image: A + 'onboarding-jerome.png?v=2' },
+    { id: 'QQQ', name: 'QQQ', type: 'Index', image: A + 'onboarding-qqq.svg' },
+    { id: 'TSM', name: 'TSM', type: 'Semis', image: A + 'onboarding-tsm.png' },
+    { id: 'AVGO', name: 'AVGO', type: 'Semis', image: A + 'onboarding-avgo.svg' },
+    { id: 'COIN', name: 'COIN', type: 'Crypto', image: A + 'onboarding-coin.svg' },
+    { id: 'SPY', name: 'SPY', type: 'Index', image: A + 'onboarding-spy.svg' },
+    { id: 'Elon Musk', name: 'Elon Musk', type: 'Key figure', mark: 'E' },
   ];
 
   function go(name) {
