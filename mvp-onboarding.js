@@ -10,6 +10,8 @@
   let splashRevealStarted = false;
   let splashFallback;
   let splashAnimation;
+  const MIN_PICKS = 3;
+  const MAX_PICKS = 8;
   const selected = new Set(['NVDA', 'MU', 'HBM']);
 
   const picks = [
@@ -110,10 +112,12 @@
     const visible = picks.filter(p => `${p.name} ${p.type}`.toLowerCase().includes(q));
     grid.replaceChildren();
     visible.forEach(pick => {
+      const isSelected = selected.has(pick.id);
       const card = document.createElement('button');
       card.type = 'button';
-      card.className = 'picker-card' + (selected.has(pick.id) ? ' is-selected' : '');
-      card.setAttribute('aria-pressed', String(selected.has(pick.id)));
+      card.className = 'picker-card' + (isSelected ? ' is-selected' : '');
+      card.setAttribute('aria-pressed', String(isSelected));
+      card.disabled = selected.size >= MAX_PICKS && !isSelected;
       card.append(iconFor(pick));
       const name = document.createElement('span');
       name.className = 'picker-name';
@@ -124,7 +128,7 @@
       card.append(name, type);
       card.addEventListener('click', () => {
         if (selected.has(pick.id)) selected.delete(pick.id);
-        else selected.add(pick.id);
+        else if (selected.size < MAX_PICKS) selected.add(pick.id);
         renderPicks(document.getElementById('watchSearch').value);
         updateSelection();
       });
@@ -136,8 +140,10 @@
 
   function updateSelection() {
     const count = selected.size;
-    document.getElementById('selectionNote').textContent = `${count} selected · pick 3–8 to start`;
-    document.getElementById('continueButton').disabled = count < 3;
+    document.getElementById('selectionNote').textContent = count === MAX_PICKS
+      ? `${count} selected · maximum reached`
+      : `${count} selected · pick ${MIN_PICKS}–${MAX_PICKS} to start`;
+    document.getElementById('continueButton').disabled = count < MIN_PICKS;
   }
 
   function enterMvp() {
@@ -150,7 +156,7 @@
   document.getElementById('watchBack').addEventListener('click', () => go('welcome'));
   document.getElementById('notifyBack').addEventListener('click', () => go('watch'));
   document.getElementById('continueButton').addEventListener('click', () => {
-    if (selected.size < 3) return;
+    if (selected.size < MIN_PICKS) return;
     if (notificationFlowCompleted) goLogin('watch');
     else go('notify');
   });
