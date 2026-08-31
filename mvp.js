@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   MVP — For You, Market, Alva, Me, and the three overlays
+   MVP — For You, Alva, Market, Me, and the three overlays
    Figma: Feed Mobile MVP · ⭐️ MVP
 
    The feed is data, not markup. A card is a header (one to three
@@ -1424,26 +1424,61 @@
     seed: Math.abs(row.sym.split('').reduce((n, c) => n * 31 + c.charCodeAt(0), 7)),
   }, row);
 
+  const marketTicker = (ticker, chart) => ({
+    sym: ticker.sym,
+    co: ticker.co,
+    numericPrice: ticker.price,
+    numericChg: ticker.chg,
+    numericPct: ticker.pct,
+    priceLabel: '$' + money(ticker.price),
+    changeLabel: ticker.pct === 0
+      ? '0.00%'
+      : (ticker.pct > 0 ? '+' : '-') + Math.abs(ticker.pct).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') + '%',
+    tone: ticker.pct < 0 ? 'down' : ticker.pct > 0 ? 'up' : 'flat',
+    logo: ticker.logo,
+    chart,
+  });
+
   const MARKET_FOLLOWING = [
     { sym: 'NVDA', co: 'NVIDIA Corporation', numericPrice: 197.58, numericChg: -1.25, numericPct: -1.25, priceLabel: '$197.58', changeLabel: '-1.25%', tone: 'down', logo: A + 'market-logo-nvda.png', logoMark: A + 'market-logo-nvda-mark.svg', chart: A + 'market-chart-nvda.svg' },
     { sym: 'TSLA', co: 'Tesla, Inc.', numericPrice: 268.4, numericChg: 2.1, numericPct: 2.1, priceLabel: '$268.4', changeLabel: '+2.1%', tone: 'up', logo: A + 'market-logo-tsla.svg', chart: A + 'market-chart-tsla.svg' },
     { sym: 'BTC', co: 'Bitcoin', numericPrice: 104230, numericChg: 1.6, numericPct: 1.6, priceLabel: '$104,230', changeLabel: '+1.6%', tone: 'up', crypto: true, chart: A + 'market-chart-btc.svg' },
     { sym: 'MU', co: 'Micron Technology, Inc.', numericPrice: 916.17, numericChg: 1.94, numericPct: 1.94, priceLabel: '$916.17', changeLabel: '+1.94%', tone: 'up', logo: A + 'market-logo-mu.png', chart: A + 'market-chart-mu.svg' },
     { sym: 'META', co: 'Meta Platforms, Inc.', numericPrice: 718.2, numericChg: -0.4, numericPct: -0.4, priceLabel: '$718.2', changeLabel: '-0.4%', tone: 'down', logo: A + 'market-logo-meta.svg', logoMark: A + 'market-logo-meta-mask.svg', chart: A + 'market-chart-meta.svg' },
-    { sym: 'GOOGL', co: 'Alphabet Inc', numericPrice: GOOGL.price, numericChg: GOOGL.chg, numericPct: GOOGL.pct, priceLabel: '$' + money(GOOGL.price), changeLabel: signed(GOOGL.chg) + ' ' + pct(GOOGL.pct), tone: GOOGL.pct < 0 ? 'down' : 'up', logo: GOOGL.logo, chart: A + 'market-chart-nvda.svg' },
-    { sym: 'AMZN', co: 'Amazon.com Inc', numericPrice: AMZN.price, numericChg: AMZN.chg, numericPct: AMZN.pct, priceLabel: '$' + money(AMZN.price), changeLabel: '0.00%', tone: 'flat', logo: AMZN.logo, chart: A + 'market-chart-tsla.svg' },
-    { sym: 'MSFT', co: 'Microsoft Corp', numericPrice: MSFT.price, numericChg: MSFT.chg, numericPct: MSFT.pct, priceLabel: '$' + money(MSFT.price), changeLabel: signed(MSFT.chg) + ' ' + pct(MSFT.pct), tone: MSFT.pct < 0 ? 'down' : 'up', logo: MSFT.logo, chart: A + 'market-chart-mu.svg' },
-    { sym: 'AVGO', co: 'Broadcom Inc', numericPrice: AVGO.price, numericChg: AVGO.chg, numericPct: AVGO.pct, priceLabel: '$' + money(AVGO.price), changeLabel: signed(AVGO.chg) + ' ' + pct(AVGO.pct), tone: AVGO.pct < 0 ? 'down' : 'up', logo: AVGO.logo, chart: A + 'market-chart-meta.svg' },
-    { sym: 'TEM', co: 'Tempus AI Inc', numericPrice: TEM.price, numericChg: TEM.chg, numericPct: TEM.pct, priceLabel: '$' + money(TEM.price), changeLabel: '0.00%', tone: 'flat', logo: TEM.logo, chart: A + 'market-chart-btc.svg' },
+    marketTicker(GOOGL, A + 'market-chart-nvda.svg'),
+    marketTicker(AMZN, A + 'market-chart-tsla.svg'),
+    marketTicker(MSFT, A + 'market-chart-mu.svg'),
+    marketTicker(AVGO, A + 'market-chart-meta.svg'),
+    marketTicker(TEM, A + 'market-chart-btc.svg'),
+    marketTicker(TSM, A + 'market-chart-nvda.svg'),
+    marketTicker(SMTC, A + 'market-chart-tsla.svg'),
+    marketTicker(FRO, A + 'market-chart-btc.svg'),
+    marketTicker(RVMD, A + 'market-chart-meta.svg'),
+    marketTicker(CDNS, A + 'market-chart-mu.svg'),
+    marketTicker(SNPS, A + 'market-chart-nvda.svg'),
+    marketTicker(AMD, A + 'market-chart-meta.svg'),
+    marketTicker(BABA, A + 'market-chart-tsla.svg'),
+    marketTicker(AAOI, A + 'market-chart-btc.svg'),
+    marketTicker(NBIS, A + 'market-chart-mu.svg'),
   ].map(marketDetail);
 
   const MARKET_TRENDING = [
     MARKET_FOLLOWING[0], MARKET_FOLLOWING[2], MARKET_FOLLOWING[4],
-    { sym: 'CDNS', co: 'Cadence Design Systems', numericPrice: CDNS.price, numericChg: CDNS.chg, numericPct: CDNS.pct, priceLabel: '$' + money(CDNS.price), changeLabel: signed(CDNS.chg) + ' ' + pct(CDNS.pct), tone: 'up', logo: CDNS.logo, chart: A + 'market-chart-nvda.svg' },
-    { sym: 'SNPS', co: 'Synopsys Inc', numericPrice: SNPS.price, numericChg: SNPS.chg, numericPct: SNPS.pct, priceLabel: '$' + money(SNPS.price), changeLabel: signed(SNPS.chg) + ' ' + pct(SNPS.pct), tone: 'up', logo: SNPS.logo, chart: A + 'market-chart-tsla.svg' },
-    { sym: 'AMD', co: 'Advanced Micro Devices', numericPrice: AMD.price, numericChg: AMD.chg, numericPct: AMD.pct, priceLabel: '$' + money(AMD.price), changeLabel: signed(AMD.chg) + ' ' + pct(AMD.pct), tone: 'down', logo: AMD.logo, chart: A + 'market-chart-mu.svg' },
-    { sym: 'BABA', co: 'Alibaba Group', numericPrice: BABA.price, numericChg: BABA.chg, numericPct: BABA.pct, priceLabel: '$' + money(BABA.price), changeLabel: signed(BABA.chg) + ' ' + pct(BABA.pct), tone: 'up', logo: BABA.logo, chart: A + 'market-chart-meta.svg' },
-    { sym: 'PLTR', co: 'Palantir Technologies', numericPrice: PLTR.price, numericChg: PLTR.chg, numericPct: PLTR.pct, priceLabel: '$' + money(PLTR.price), changeLabel: signed(PLTR.chg) + ' ' + pct(PLTR.pct), tone: 'down', logo: PLTR.logo, chart: A + 'market-chart-btc.svg' },
+    marketTicker(CDNS, A + 'market-chart-nvda.svg'),
+    marketTicker(SNPS, A + 'market-chart-tsla.svg'),
+    marketTicker(AMD, A + 'market-chart-mu.svg'),
+    marketTicker(BABA, A + 'market-chart-meta.svg'),
+    marketTicker(PLTR, A + 'market-chart-btc.svg'),
+    marketTicker(TSM, A + 'market-chart-nvda.svg'),
+    marketTicker(GOOGL, A + 'market-chart-tsla.svg'),
+    marketTicker(AMZN, A + 'market-chart-btc.svg'),
+    marketTicker(TEM, A + 'market-chart-meta.svg'),
+    marketTicker(SMTC, A + 'market-chart-mu.svg'),
+    marketTicker(FRO, A + 'market-chart-nvda.svg'),
+    marketTicker(RVMD, A + 'market-chart-tsla.svg'),
+    marketTicker(MSFT, A + 'market-chart-btc.svg'),
+    marketTicker(CBRS, A + 'market-chart-meta.svg'),
+    marketTicker(AAOI, A + 'market-chart-mu.svg'),
   ].map(marketDetail);
 
   const marketEl = document.getElementById('marketList');
@@ -1451,7 +1486,10 @@
   const marketInput = document.getElementById('marketSearchInput');
   const marketCompactSearch = document.getElementById('marketSearchCompact');
   const marketTabButtons = [...document.querySelectorAll('[data-market-tab]')];
+  const marketTabList = document.querySelector('.market-tab-list');
   let marketMode = 'following';
+  let marketSwitching = false;
+  let marketSwitchTimer = 0;
 
   function marketLogo(row) {
     if (row.crypto) return el('span', 'market-logo-wrap market-logo-btc', 'B');
@@ -1483,22 +1521,63 @@
     return row;
   }
 
-  function renderMarket() {
+  function marketPane(rows) {
+    const pane = el('div', 'market-list-pane');
+    pane.replaceChildren(...rows.map(marketRow));
+    return pane;
+  }
+
+  function setMarketIndicator(button, animate = true) {
+    if (!marketTabList || !button) return;
+    marketTabList.classList.toggle('no-indicator-motion', !animate);
+    marketTabList.style.setProperty('--market-indicator-x', button.offsetLeft + 'px');
+    marketTabList.style.setProperty('--market-indicator-w', button.offsetWidth + 'px');
+    if (!animate) window.requestAnimationFrame(() => marketTabList.classList.remove('no-indicator-motion'));
+  }
+
+  function renderMarket(options = {}) {
     if (!marketEl) return;
     const source = marketMode === 'trending' ? MARKET_TRENDING : MARKET_FOLLOWING;
     const query = (marketInput?.value || '').trim().toLowerCase();
     const rows = query ? source.filter(row => (row.sym + ' ' + row.co).toLowerCase().includes(query)) : source;
-    marketEl.replaceChildren(...rows.map(marketRow));
+    const nextPane = marketPane(rows);
+    const currentPane = marketEl.querySelector('.market-list-pane');
+
+    window.clearTimeout(marketSwitchTimer);
+    if (!options.animate || !currentPane) {
+      marketSwitching = false;
+      marketTabButtons.forEach(tab => tab.setAttribute('aria-disabled', 'false'));
+      marketEl.replaceChildren(nextPane);
+      return;
+    }
+
+    const direction = options.direction === 'prev' ? 'prev' : 'next';
+    marketSwitching = true;
+    marketTabButtons.forEach(tab => tab.setAttribute('aria-disabled', 'true'));
+    currentPane.setAttribute('aria-hidden', 'true');
+    currentPane.classList.add('is-exiting-' + direction);
+    nextPane.classList.add('is-entering-' + direction);
+    marketEl.appendChild(nextPane);
+
+    marketSwitchTimer = window.setTimeout(() => {
+      currentPane.remove();
+      nextPane.classList.remove('is-entering-' + direction);
+      marketSwitching = false;
+      marketTabButtons.forEach(tab => tab.setAttribute('aria-disabled', 'false'));
+    }, 250);
   }
 
   marketTabButtons.forEach(button => button.addEventListener('click', () => {
+    if (marketSwitching || marketMode === button.dataset.marketTab) return;
+    const direction = button.dataset.marketTab === 'trending' ? 'next' : 'prev';
     marketMode = button.dataset.marketTab;
     marketTabButtons.forEach(tab => {
       const active = tab === button;
       tab.classList.toggle('is-active', active);
       tab.setAttribute('aria-selected', String(active));
     });
-    renderMarket();
+    setMarketIndicator(button);
+    renderMarket({ animate: true, direction });
   }));
   marketInput?.addEventListener('input', renderMarket);
   document.querySelectorAll('.market-chip').forEach(chip => chip.addEventListener('click', () => {
@@ -2086,20 +2165,18 @@
 
   feed.addEventListener('scroll', paintBar, { passive: true });
 
-  function offsetWithin(node, ancestor) {
-    let top = 0;
-    for (let current = node; current && current !== ancestor; current = current.offsetParent) {
-      top += current.offsetTop;
-    }
-    return top;
-  }
-
-  /* The title is part of Market's own scroll flow. The tab strip becomes the
-     only sticky boundary when its actual rendered top reaches the viewport. */
+  /* Market's title leaves with the content, following the same lift-and-fade
+     grammar as For You. The tabs are a full 56px topbar in their pinned state;
+     their upper 22px occupies the existing inter-section gap before pinning,
+     so the list never jumps when the sticky boundary takes over. */
   function paintMarket() {
     if (!marketScroll) return;
-    const pinAt = offsetWithin(document.getElementById('marketTabs'), marketScroll);
-    marketScroll.classList.toggle('is-pinned', marketScroll.scrollTop >= pinAt - .5);
+    const titleP = Math.min(1, Math.max(0, marketScroll.scrollTop / 58));
+    marketScroll.style.setProperty('--market-title-p', titleP.toFixed(4));
+    marketScroll.style.setProperty('--market-title-y', Math.min(58, Math.max(0, marketScroll.scrollTop)).toFixed(2) + 'px');
+    const tabs = document.getElementById('marketTabs');
+    const pinned = tabs.getBoundingClientRect().top <= marketScroll.getBoundingClientRect().top + .5;
+    marketScroll.classList.toggle('is-pinned', pinned);
   }
   marketScroll?.addEventListener('scroll', paintMarket, { passive: true });
 
@@ -2956,7 +3033,7 @@
   const tabs = [...document.querySelectorAll('.tab')];
   const screens = new Map([...document.querySelectorAll('.screen')].map(s => [s.dataset.tab, s]));
 
-  const TAB_ORDER = ['feed', 'market', 'chat', 'me'];
+  const TAB_ORDER = ['feed', 'chat', 'market', 'me'];
   const tabBar = document.getElementById('tabBar');
 
   function showTab(name) {
@@ -3072,6 +3149,7 @@
   showTab('feed');
   render();
   renderMarket();
+  setMarketIndicator(marketTabButtons.find(tab => tab.classList.contains('is-active')), false);
   wireRowDrag(cardsEl);
   pillText.textContent = NEW_CARDS.length + ' new feeds';
   setPill(NEW_CARDS.length > 0);

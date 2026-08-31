@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>MVP · For You, Market, Alva, Me · Alva prototypes</title>
+<title>MVP · For You, Alva, Market, Me · Alva prototypes</title>
 <meta name="theme-color" content="#ffffff">
 <link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
@@ -18,7 +18,7 @@
      is the mode the Figma frames are drawn in — dark is a choice the person
      makes in Me, and once made it is remembered. -->
 <script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=40">
+<link rel="stylesheet" href="mvp.css?v=54">
 </head>
 <body>
 
@@ -74,6 +74,7 @@
               <div class="market-content">
                 <div class="market-search-recent">
                   <label class="market-search" for="marketSearchInput">
+                    <span class="ic market-search-icon" style="--ic:url(assets/search.svg)" aria-hidden="true"></span>
                     <input id="marketSearchInput" type="search" placeholder="Ticker or company" autocomplete="off" spellcheck="false">
                   </label>
                   <div class="market-chips" aria-label="Recent searches">
@@ -287,15 +288,15 @@
               <span class="ic ic-on" style="--ic:url(assets/ui-heart-f.svg)" aria-hidden="true"></span>
               <span>For You</span>
             </button>
-            <button class="tab" type="button" role="tab" data-tab="market" aria-selected="false">
-              <span class="ic ic-off" style="--ic:url(assets/ui-planet-l.svg)" aria-hidden="true"></span>
-              <span class="ic ic-on" style="--ic:url(assets/ui-planet-f.svg)" aria-hidden="true"></span>
-              <span>Market</span>
-            </button>
             <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
               <span class="ic ic-off" style="--ic:url(assets/ui-chat-ai-l.svg)" aria-hidden="true"></span>
               <span class="ic ic-on" style="--ic:url(assets/ui-chat-ai-f.svg)" aria-hidden="true"></span>
               <span>Alva</span>
+            </button>
+            <button class="tab" type="button" role="tab" data-tab="market" aria-selected="false">
+              <span class="ic ic-off" style="--ic:url(assets/ui-planet-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-planet-f.svg)" aria-hidden="true"></span>
+              <span>Market</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="me" aria-selected="false">
               <span class="ic ic-off" style="--ic:url(assets/ui-me-l.svg)" aria-hidden="true"></span>
@@ -370,6 +371,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=40"></script>
+<script src="mvp.js?v=54"></script>
 </body>
 </html>
