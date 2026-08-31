@@ -7,6 +7,7 @@
   let loginBackTarget = 'welcome';
   let notificationFlowCompleted = false;
   let splashFinished = false;
+  let splashRevealStarted = false;
   let splashFallback;
   let splashAnimation;
   const selected = new Set(['NVDA', 'MU', 'HBM']);
@@ -47,7 +48,15 @@
     window.clearTimeout(splashFallback);
     document.getElementById('themeColor').content = '#ffffff';
     go('welcome');
+    screens.get('splash').classList.remove('is-revealing');
+    screens.get('welcome').classList.remove('is-under-splash');
     window.setTimeout(() => splashAnimation?.destroy(), 0);
+  }
+
+  function revealSplash() {
+    if (splashRevealStarted || splashFinished) return;
+    splashRevealStarted = true;
+    screens.get('splash').classList.add('is-revealing');
   }
 
   function startSplash() {
@@ -57,6 +66,7 @@
     }
 
     splashFallback = window.setTimeout(finishSplash, 5000);
+    screens.get('welcome').classList.add('is-under-splash');
     splashAnimation = window.lottie.loadAnimation({
       container: document.getElementById('splashAnimation'),
       renderer: 'svg',
@@ -65,6 +75,9 @@
       initialSegment: [0, 60],
       path: A + 'onboarding-splash.json?v=2',
       rendererSettings: { preserveAspectRatio: 'xMidYMid slice' },
+    });
+    splashAnimation.addEventListener('enterFrame', event => {
+      if (event.currentTime >= 45) revealSplash();
     });
     splashAnimation.addEventListener('complete', finishSplash);
     splashAnimation.addEventListener('data_failed', finishSplash);
