@@ -63,7 +63,7 @@
       loop: false,
       autoplay: true,
       initialSegment: [0, 60],
-      path: A + 'onboarding-splash.json',
+      path: A + 'onboarding-splash.json?v=2',
       rendererSettings: { preserveAspectRatio: 'xMidYMid slice' },
     });
     splashAnimation.addEventListener('complete', finishSplash);
