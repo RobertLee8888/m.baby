@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>MVP onboarding · Alva prototypes</title>
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" id="themeColor" content="#000000">
 <link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/Delight-Medium.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/Delight-SemiBold.ttf" as="font" type="font/ttf" crossorigin>
 <script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
-<link rel="stylesheet" href="mvp-onboarding.css?v=5">
+<link rel="stylesheet" href="mvp-onboarding.css?v=6">
 </head>
 <body>
 <div class="desk">
@@ -23,7 +23,11 @@
     </div>
     <div class="phone-screen">
       <main class="onboarding-app" id="onboardingApp">
-        <section class="screen welcome-screen is-active" data-screen="welcome" aria-label="Alva welcome">
+        <section class="screen splash-screen is-active" data-screen="splash" aria-label="Alva">
+          <div class="splash-animation" id="splashAnimation" aria-hidden="true"></div>
+        </section>
+
+        <section class="screen welcome-screen" data-screen="welcome" aria-label="Alva welcome">
           <div class="welcome-preview">
             <div class="preview-card">
               <div class="preview-meta"><span><i></i> Investor-roundtable</span><span>1h ago</span></div>
@@ -110,6 +114,7 @@
 </div>
 <div class="stage-controls stage-controls-left"><a class="stage-pill" href="index.html#/mvp-onboarding">←&nbsp; All prototypes</a></div>
 <div class="stage-controls"><button class="stage-pill" id="replayButton" type="button">↺&nbsp; Replay</button><a class="stage-pill" href="https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63760" target="_blank" rel="noopener">Feed Mobile MVP · onboarding</a></div>
-<script src="mvp-onboarding.js?v=5"></script>
+<script src="assets/vendor/lottie-light.min.js"></script>
+<script src="mvp-onboarding.js?v=6"></script>
 </body>
 </html>

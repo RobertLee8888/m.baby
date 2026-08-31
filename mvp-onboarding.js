@@ -3,9 +3,12 @@
 
   const A = 'assets/';
   const screens = new Map([...document.querySelectorAll('[data-screen]')].map(el => [el.dataset.screen, el]));
-  let current = 'welcome';
+  let current = 'splash';
   let loginBackTarget = 'welcome';
   let notificationFlowCompleted = false;
+  let splashFinished = false;
+  let splashFallback;
+  let splashAnimation;
   const selected = new Set(['NVDA', 'MU', 'HBM']);
 
   const picks = [
@@ -36,6 +39,36 @@
     previous.classList.remove('is-active');
     next.classList.add('is-active');
     current = name;
+  }
+
+  function finishSplash() {
+    if (splashFinished) return;
+    splashFinished = true;
+    window.clearTimeout(splashFallback);
+    document.getElementById('themeColor').content = '#ffffff';
+    go('welcome');
+    window.setTimeout(() => splashAnimation?.destroy(), 0);
+  }
+
+  function startSplash() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.lottie) {
+      window.requestAnimationFrame(finishSplash);
+      return;
+    }
+
+    splashFallback = window.setTimeout(finishSplash, 5000);
+    splashAnimation = window.lottie.loadAnimation({
+      container: document.getElementById('splashAnimation'),
+      renderer: 'svg',
+      loop: false,
+      autoplay: true,
+      initialSegment: [0, 60],
+      path: A + 'onboarding-splash.json',
+      rendererSettings: { preserveAspectRatio: 'xMidYMid slice' },
+    });
+    splashAnimation.addEventListener('complete', finishSplash);
+    splashAnimation.addEventListener('data_failed', finishSplash);
+    splashAnimation.addEventListener('error', finishSplash);
   }
 
   function goLogin(backTarget) {
@@ -128,4 +161,5 @@
 
   renderPicks('');
   updateSelection();
+  startSplash();
 })();
