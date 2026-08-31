@@ -1192,6 +1192,47 @@
     return n;
   };
 
+  const TAB_EDGE_INSET = 16;
+
+  /* Keep a selected tab fully visible without using scrollIntoView: that API
+     can also move vertical ancestors, which is especially disruptive inside
+     the ticker sheet. This correction only changes the horizontal scroller
+     and measures the 16px guardrail from the phone's visible edges. */
+  function revealSelectedTab(tab) {
+    const scroller = tab && tab.closest('[data-tab-scroll]');
+    if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 1) return;
+
+    window.requestAnimationFrame(() => {
+      if (!tab.isConnected || !scroller.isConnected) return;
+      const phone = document.getElementById('phone') || document.getElementById('mvpApp');
+      const scrollerRect = scroller.getBoundingClientRect();
+      const tabRect = tab.getBoundingClientRect();
+      const phoneRect = phone ? phone.getBoundingClientRect() : scrollerRect;
+      const scale = phone && phone.clientWidth ? phoneRect.width / phone.clientWidth : 1;
+      const inset = TAB_EDGE_INSET * (scale || 1);
+      const leftLimit = Math.max(scrollerRect.left, phoneRect.left + inset);
+      const rightLimit = Math.min(scrollerRect.right, phoneRect.right - inset);
+      let delta = 0;
+
+      if (tabRect.left < leftLimit) delta = tabRect.left - leftLimit;
+      else if (tabRect.right > rightLimit) delta = tabRect.right - rightLimit;
+      if (Math.abs(delta) < .5) return;
+
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      scroller.scrollBy({ left: delta / (scale || 1), behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+  }
+
+  /* Every tab group opts its actual horizontal scroller in with
+     data-tab-scroll. State owners update aria-selected first; this one
+     delegated listener then applies the same visibility rule to static and
+     dynamically-created groups. */
+  document.addEventListener('click', event => {
+    const tab = event.target.closest && event.target.closest('[role="tab"]');
+    if (!tab || tab.getAttribute('aria-selected') !== 'true') return;
+    revealSelectedTab(tab);
+  });
+
   const money = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const signed = n => (n > 0 ? '+' : '−') + money(Math.abs(n));
   const pct = n => '(' + (n > 0 ? '+' : '−') + Math.abs(n).toFixed(2) + '%)';
@@ -2380,12 +2421,20 @@
 
   function tkTabs() {
     const nav = el('nav', 'strip strip-inline');
+    nav.setAttribute('role', 'tablist');
+    nav.setAttribute('aria-label', 'Ticker detail sections');
+    nav.dataset.tabScroll = '';
     TK_TABS.forEach((name, i) => {
       const b = btn('strip-item' + (i === 0 ? ' on' : ''));
       b.textContent = name;
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(i === 0));
       b.addEventListener('click', () => {
-        nav.querySelectorAll('.strip-item').forEach(x => x.classList.remove('on'));
-        b.classList.add('on');
+        nav.querySelectorAll('.strip-item').forEach(x => {
+          const active = x === b;
+          x.classList.toggle('on', active);
+          x.setAttribute('aria-selected', String(active));
+        });
         if (i) toast(name + ' is the next tab to be built');
       });
       nav.appendChild(b);
@@ -2395,6 +2444,7 @@
 
   function tkName(t) {
     const wrap = el('div', 'tk-name');
+    wrap.dataset.tickerTitle = '';
 
     const co = el('div', 'tk-co');
     co.appendChild(img(t.logo));
@@ -2443,7 +2493,10 @@
   function openTicker(t) {
     const header = [sheetClose(), el('h2', null, ''), starButton(t)];
     const chart = chartModule(t);
-    const body = [tkTabs(), tkName(t), chart.node];
+    /* Identity is a stable sibling of the tab list and its panels. Switching
+       away from Overview must never replace or hide the ticker title/price. */
+    const identity = tkName(t);
+    const body = [tkTabs(), identity, chart.node];
     if (t.anomaly) body.push(anomalyCard(t));
     openSheet(header, body,
       { full: true, teardown: chart.dispose });
@@ -2747,14 +2800,22 @@
        boxes the interval, not the range, because the interval is the thing
        with a menu behind it. */
     const bar = el('div', 'chart-bar');
+    bar.dataset.tabScroll = '';
     const tf = el('div', 'tf');
+    tf.setAttribute('role', 'tablist');
+    tf.setAttribute('aria-label', 'Chart timeframe');
     let tfIndex = 2;
     const tfButtons = TIMEFRAMES.map((name, i) => {
       const b2 = btn(i === tfIndex ? 'on' : '');
       b2.textContent = name;
+      b2.setAttribute('role', 'tab');
+      b2.setAttribute('aria-selected', String(i === tfIndex));
       b2.addEventListener('click', () => {
-        tfButtons.forEach(x => x.classList.remove('on'));
-        b2.classList.add('on');
+        tfButtons.forEach(x => {
+          const active = x === b2;
+          x.classList.toggle('on', active);
+          x.setAttribute('aria-selected', String(active));
+        });
         tfIndex = i;
         redraw();
       });

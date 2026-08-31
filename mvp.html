@@ -84,8 +84,8 @@
                   </div>
                 </div>
                 <section class="market-section" aria-label="Market lists">
-                  <div class="market-tabs" id="marketTabs" role="tablist">
-                    <div class="market-tab-list">
+                  <div class="market-tabs" id="marketTabs">
+                    <div class="market-tab-list" role="tablist" aria-label="Market sections" data-tab-scroll>
                       <button type="button" class="market-tab is-active" role="tab" aria-selected="true" data-market-tab="following">Following</button>
                       <button type="button" class="market-tab" role="tab" aria-selected="false" data-market-tab="trending">Trending</button>
                     </div>
@@ -112,12 +112,12 @@
               </button>
             </header>
 
-            <nav class="strip" aria-label="Chat sections">
-              <button class="strip-item on" type="button">Chat</button>
-              <button class="strip-item" type="button" data-hint="Tasks: 5 running automations">Tasks (5)</button>
-              <button class="strip-item" type="button" data-hint="Alerts: 8 unread">Alerts (8)</button>
-              <button class="strip-item" type="button" data-hint="Memory is what Alva keeps between threads">Memory</button>
-              <button class="strip-item" type="button" data-hint="Files: 8 attached to this workspace">Files (8)</button>
+            <nav class="strip" aria-label="Chat sections" role="tablist" data-tab-scroll>
+              <button class="strip-item on" type="button" role="tab" aria-selected="true">Chat</button>
+              <button class="strip-item" type="button" role="tab" aria-selected="false" data-hint="Tasks: 5 running automations">Tasks (5)</button>
+              <button class="strip-item" type="button" role="tab" aria-selected="false" data-hint="Alerts: 8 unread">Alerts (8)</button>
+              <button class="strip-item" type="button" role="tab" aria-selected="false" data-hint="Memory is what Alva keeps between threads">Memory</button>
+              <button class="strip-item" type="button" role="tab" aria-selected="false" data-hint="Files: 8 attached to this workspace">Files (8)</button>
             </nav>
 
             <div class="thread" id="thread">

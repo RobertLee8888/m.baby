@@ -1098,8 +1098,13 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: 20px;
   min-width: 0;
   height: 56px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
 }
+.market-tab-list::-webkit-scrollbar { display: none; }
 .market-tab-list::after {
   position: absolute;
   bottom: -.5px;
@@ -1347,6 +1352,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: var(--gutter);
   padding: 0 var(--gutter);
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 16px;
   background: var(--b10);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
   scrollbar-width: none;
@@ -1364,6 +1371,12 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   font-weight: 400;
   line-height: 22px;
   white-space: nowrap;
+}
+.strip-item:focus { outline: none; }
+.strip-item:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--m1);
+  outline-offset: 2px;
 }
 .strip-item.on { color: var(--n9); font-weight: 500; }
 .strip-item.on::after {
@@ -1814,6 +1827,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: var(--gutter);
   padding: 0 var(--gutter) 8px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 16px;
   scrollbar-width: none;
 }
 .chart-bar::-webkit-scrollbar { display: none; }
