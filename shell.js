@@ -374,7 +374,22 @@
     btn.innerHTML = '<span></span><span class="opt-size"></span>';
     btn.firstChild.textContent = d.name;
     btn.lastChild.textContent = `${d.w} × ${d.h}`;
-    btn.addEventListener('click', () => { selectDevice(d); closeMenu(true); });
+
+    const choose = () => {
+      /* A pointer selection closes the menu on pointerdown. Ignore the
+         synthetic click that some browsers dispatch afterwards; keyboard
+         activation still arrives here while the menu is open. */
+      if (!menuOpen()) return;
+      selectDevice(d);
+      closeMenu(true);
+    };
+
+    btn.addEventListener('pointerdown', e => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      choose();
+    });
+    btn.addEventListener('click', choose);
     options.set(d.id, btn);
     menuEl.appendChild(btn);
   });
@@ -409,6 +424,11 @@
     const items = [...options.values()];
     const i = items.indexOf(document.activeElement);
     if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); return; }
+    if ((e.key === 'Enter' || e.key === ' ') && i >= 0) {
+      e.preventDefault();
+      items[i].click();
+      return;
+    }
     let next = null;
     if (e.key === 'ArrowDown') next = items[(i + 1) % items.length];
     else if (e.key === 'ArrowUp') next = items[(i - 1 + items.length) % items.length];
