@@ -108,6 +108,8 @@
   const SAFE_BOTTOM_VARS = ['--home-h'];
 
   const DEVICE_KEY = 'alva.prototypes.device';
+  const APPEARANCE_KEY = 'alva-mvp-appearance';
+  const LEGACY_THEME_KEY = 'alva-mvp-theme';
   const byId = new Map(DEVICES.map(d => [d.id, d]));
 
   /* newest edit first, so the thing you were just working on is on top */
@@ -242,10 +244,54 @@
   const restartPill = document.getElementById('restartPill');
   const figmaPill = document.getElementById('figmaPill');
   const figmaPillText = document.getElementById('figmaPillText');
+  const themePill = document.getElementById('themePill');
+  const themeLabel = document.getElementById('themeLabel');
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const systemTheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
   const BASE_TITLE = 'Alva · Mobile prototypes';
   let mounted = null;        // slug currently in the iframe
   let focusOnMount = false;
+  let appearance = readAppearance();
+
+  function readAppearance() {
+    let value = '';
+    let legacy = '';
+    try {
+      value = localStorage.getItem(APPEARANCE_KEY) || '';
+      legacy = localStorage.getItem(LEGACY_THEME_KEY) || '';
+    } catch (e) {}
+    if (value === 'system' || value === 'light' || value === 'dark') return value;
+    return legacy === 'dark' ? 'dark' : 'system';
+  }
+
+  function resolvedTheme(preference) {
+    if (preference === 'dark') return 'dark';
+    if (preference === 'light') return 'light';
+    return systemTheme && systemTheme.matches ? 'dark' : 'light';
+  }
+
+  function pushAppearance(frame) {
+    try {
+      frame.contentWindow.postMessage({ type: 'alva:set-appearance', appearance }, window.location.origin);
+    } catch (e) {}
+  }
+
+  function applyAppearance(preference, persist, notifyFrame) {
+    appearance = preference === 'light' || preference === 'dark' ? preference : 'system';
+    const mode = resolvedTheme(appearance);
+    document.documentElement.dataset.theme = mode;
+    themeLabel.textContent = mode === 'dark' ? 'Light mode' : 'Dark mode';
+    themePill.setAttribute('aria-label', `Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`);
+    if (themeMeta) themeMeta.setAttribute('content', mode === 'dark' ? '#1c1d21' : '#f7f7f7');
+    if (persist !== false) {
+      try { localStorage.setItem(APPEARANCE_KEY, appearance); } catch (e) {}
+    }
+    if (notifyFrame !== false) {
+      const frame = screenEl.firstElementChild;
+      if (frame) pushAppearance(frame);
+    }
+  }
 
   function mount(p, force) {
     if (!force && mounted === p.slug) return;
@@ -260,6 +306,7 @@
     frame.setAttribute('scrolling', 'no');
     frame.addEventListener('load', function () {
       pushMetrics(frame);
+      pushAppearance(frame);
       frame.classList.add('ready');
       if (focusOnMount) { focusOnMount = false; try { frame.contentWindow.focus(); } catch (e) {} }
     });
@@ -275,6 +322,29 @@
        flow rather than a fresh one */
     screenEl.replaceChildren();
     mounted = null;
+  }
+
+  themePill.addEventListener('click', () => {
+    applyAppearance(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+  });
+
+  window.addEventListener('message', e => {
+    const frame = screenEl.firstElementChild;
+    if (!frame || e.source !== frame.contentWindow || e.origin !== window.location.origin) return;
+    if (!e.data || e.data.type !== 'alva:appearance-change') return;
+    applyAppearance(e.data.appearance, false, false);
+  });
+
+  window.addEventListener('storage', e => {
+    if (e.key === APPEARANCE_KEY) applyAppearance(readAppearance(), false);
+  });
+
+  if (systemTheme) {
+    const followSystem = () => {
+      if (appearance === 'system') applyAppearance('system', false);
+    };
+    if (systemTheme.addEventListener) systemTheme.addEventListener('change', followSystem);
+    else if (systemTheme.addListener) systemTheme.addListener(followSystem);
   }
 
   /* ──────────────────────────────
@@ -604,6 +674,7 @@
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(stage);
   window.addEventListener('resize', fit);
 
+  applyAppearance(appearance, false);
   applyDevice(device);
   applySidebar((() => { try { return localStorage.getItem(SIDEBAR_KEY) === '1'; } catch (e) { return false; } })());
   route();

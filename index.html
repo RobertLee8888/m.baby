@@ -9,7 +9,8 @@
 <link rel="icon" href="assets/logo-portrait2.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/Delight-Medium.ttf" as="font" type="font/ttf" crossorigin>
-<link rel="stylesheet" href="shell.css?v=23">
+<script>(function(){var p='',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';})();</script>
+<link rel="stylesheet" href="shell.css?v=24">
 </head>
 <body>
 
@@ -81,6 +82,13 @@
       <a class="tb-cell tb-lead" id="figmaPill" href="#" target="_blank" rel="noopener" hidden>
         <span id="figmaPillText">Figma source</span><span class="tb-ico">↗</span>
       </a>
+      <button class="tb-cell tb-theme" id="themePill" type="button">
+        <span class="tb-theme-icon" aria-hidden="true"></span>
+        <span class="tb-label">
+          <span class="tb-sizer" aria-hidden="true">Light mode</span>
+          <span id="themeLabel">Dark mode</span>
+        </span>
+      </button>
       <div class="tb-select" id="deviceGroup">
         <button class="tb-cell tb-trigger" id="deviceTrigger"
                 aria-haspopup="listbox" aria-expanded="false" aria-label="Phone size">
@@ -100,6 +108,6 @@
 
 </div>
 
-<script src="shell.js?v=28"></script>
+<script src="shell.js?v=29"></script>
 </body>
 </html>

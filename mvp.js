@@ -63,7 +63,16 @@
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', mode === 'dark' ? '#15161a' : '#ffffff');
     restyleCharts();
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'alva:appearance-change', appearance: value, theme: mode }, window.location.origin);
+    }
   }
+
+  window.addEventListener('message', e => {
+    if (e.source !== window.parent || e.origin !== window.location.origin) return;
+    if (!e.data || e.data.type !== 'alva:set-appearance') return;
+    setAppearance(e.data.appearance);
+  });
 
   if (systemTheme) {
     const followSystem = () => {

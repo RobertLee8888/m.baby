@@ -92,6 +92,27 @@
      Not white, deliberately. The phone's screen is the only white surface on
      the page, and that is what makes it read as the object. */
   --ground: #f7f7f7;
+  --screen-fill: #ffffff;
+  --action-fill: #000000;
+  --action-ink: #ffffff;
+  --action-hover: rgba(0, 0, 0, 0.9);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --n9: rgba(255, 255, 255, 0.9);
+  --n7: rgba(255, 255, 255, 0.7);
+  --n5: rgba(255, 255, 255, 0.5);
+  --n3: rgba(255, 255, 255, 0.3);
+  --n10: #ffffff;
+  --l07: rgba(255, 255, 255, 0.1);
+  --l12: rgba(255, 255, 255, 0.12);
+  --br03: rgba(255, 255, 255, 0.03);
+  --ground: #1c1d21;
+  --screen-fill: #15161a;
+  --action-fill: #ffffff;
+  --action-ink: #15161a;
+  --action-hover: rgba(255, 255, 255, 0.9);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -107,6 +128,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
+
+:root[data-theme='dark'] .brand img { filter: invert(1); }
 
 img { display: block; -webkit-user-drag: none; }
 button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
@@ -441,7 +464,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   height: var(--screen-h);
   overflow: hidden;
   border-radius: 54px;
-  background: #fff;
+  background: var(--screen-fill);
   box-shadow: 0 0 0 6px #000;
 }
 .phone-screen iframe {
@@ -449,7 +472,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   width: 100%;
   height: 100%;
   border: 0;
-  background: #fff;
+  background: var(--screen-fill);
   opacity: 0;
   transition: opacity 0.22s ease;
 }
@@ -541,12 +564,21 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
    left hairline — the fill already ends the cell beside it. */
 .tb-primary {
   border-left: 0;
-  background: var(--n10);
-  color: #fff;
+  background: var(--action-fill);
+  color: var(--action-ink);
 }
-.tb-primary:hover { background: var(--n9); color: #fff; }
+.tb-primary:hover { background: var(--action-hover); color: var(--action-ink); }
 .tb-cell:focus-visible { outline: 2px solid var(--m1); outline-offset: -2px; }
 .tb-ico { flex: none; opacity: 0.5; text-transform: none; }
+
+.tb-theme-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: url('assets/ui-theme-l.svg') center / contain no-repeat;
+  mask: url('assets/ui-theme-l.svg') center / contain no-repeat;
+}
 
 /* Device switcher — one cell that opens a menu.
 
