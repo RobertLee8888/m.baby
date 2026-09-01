@@ -624,13 +624,22 @@ the quote at 128 and the cards at 423 / 525 / 581.
 Pull to refresh is the standing gesture on this screen, not a one-shot
 animation. From the top of the list a drag moves the **track** the cards sit
 on (the refresh gutter lives at `bottom: 100%` of that track, so it comes
-into view with the pull and leaves no gap behind when the list springs
-back), the 20px Alva brand loader fades in and turns with the finger, and past
-48 the release commits: the list holds open at 64, the loader runs at 720ms
-linear for 1150ms, and the result replaces it in the same 64px gutter. New
-cards land while the list is still held; the actual count or caught-up message
-stays for one second, then the list closes. A list that changed under the eye
-would be worse than one that waited.
+into view with the pull and leaves no gap behind when the list springs back).
+The 20px Alva mark is built clockwise rather than faded in as one image: its
+top-left, top-right, bottom-right, and bottom-left tiles complete over pull
+distances 0–12, 12–24, 24–36, and 36–48px. It does not rotate while the finger
+is down. At exactly 48px the fourth tile becomes complete and one light haptic
+marks Ready. Pulling back to 40px or lower re-arms that feedback, so a later
+crossing can confirm the threshold again without buzzing continuously.
+
+Releasing at or above 48 commits: the list holds open at 64, the now-complete
+loader switches to its 720ms linear loop for 1150ms, and the result replaces
+it in the same 64px gutter. The web demo requests one 8ms vibration when the
+browser supports it; production maps the same event to iOS light impact and
+Android `GESTURE_THRESHOLD_ACTIVATE`, both of which honor system haptic
+settings. New cards land while the list is still held; the actual count or
+caught-up message stays for one second, then the list closes. A list that
+changed under the eye would be worse than one that waited.
 
 `Pill · New cards` is that same refresh with a number on it. It sits 8 below
 the topbar, centred, on `main/m1` with the library's `Shadow L (10 20 8)` —

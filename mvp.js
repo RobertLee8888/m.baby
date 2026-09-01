@@ -1658,6 +1658,7 @@
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
   const refreshLoader = document.getElementById('refreshLoader');
+  const refreshTiles = Array.from(refreshLoader.querySelectorAll('.refresh-loader-tile'));
   const refreshResult = document.getElementById('refreshResult');
   const refreshResultText = document.getElementById('refreshResultText');
   const pill = document.getElementById('newPill');
@@ -1666,6 +1667,7 @@
 
   const PULL_MAX = 96;      /* how far the list can be dragged */
   const PULL_TRIGGER = 48;  /* past here, releasing commits the refresh */
+  const PULL_REARM = 40;    /* hysteresis prevents repeated threshold haptics */
   const PULL_REST = 64;     /* where the list sits while it loads */
   const REFRESH_WAIT_MS = 1150; /* the design's held loading interval */
 
@@ -2059,9 +2061,19 @@
     track.style.transform = y ? 'translate3d(0,' + y + 'px,0)' : '';
     track.classList.toggle('pulled', y > 0);
     if (!refreshLoader.classList.contains('spinning')) {
-      refreshLoader.style.opacity = Math.min(1, y / PULL_TRIGGER).toFixed(3);
-      refreshLoader.style.transform = 'rotate(' + (y * 4).toFixed(1) + 'deg)';
+      const progress = Math.max(0, Math.min(1, y / PULL_TRIGGER));
+      refreshLoader.style.opacity = y > 0 ? '1' : '0';
+      refreshLoader.classList.toggle('is-ready', progress >= 1);
+      refreshTiles.forEach((tile, index) => {
+        const tileProgress = Math.max(0, Math.min(1, progress * refreshTiles.length - index));
+        tile.style.setProperty('--tile-progress', tileProgress.toFixed(3));
+      });
     }
+  }
+
+  function pullReadyHaptic() {
+    if (typeof navigator.vibrate !== 'function') return;
+    try { navigator.vibrate(8); } catch (error) { /* unsupported prototype host */ }
   }
 
   function springTo(y) {
@@ -2096,7 +2108,6 @@
 
     await springTo(PULL_REST);
     refreshLoader.style.opacity = '1';
-    refreshLoader.style.transform = '';
     refreshLoader.classList.add('spinning');
 
     await wait(REFRESH_WAIT_MS);
@@ -2138,6 +2149,7 @@
   let pulling = false;
   let pullStart = 0;
   let pullY = 0;
+  let readyHapticArmed = true;
 
   const canPull = target => !refreshing && !sheetOpen && feed.scrollTop <= 0 &&
     !(target.closest && target.closest('.media-row'));
@@ -2147,15 +2159,26 @@
     pulling = true;
     pullStart = y;
     pullY = 0;
+    readyHapticArmed = true;
   }
 
   function pullMove(y) {
     if (!pulling) return false;
     const raw = y - pullStart;
-    if (raw <= 0) { pullY = 0; setPull(0); return false; }
+    if (raw <= 0) {
+      pullY = 0;
+      readyHapticArmed = true;
+      setPull(0);
+      return false;
+    }
     /* resistance, so the list feels attached to the finger rather than free */
     pullY = Math.min(PULL_MAX, raw * 0.55);
     setPull(pullY);
+    if (pullY <= PULL_REARM) readyHapticArmed = true;
+    if (readyHapticArmed && pullY >= PULL_TRIGGER) {
+      readyHapticArmed = false;
+      pullReadyHaptic();
+    }
     return true;
   }
 

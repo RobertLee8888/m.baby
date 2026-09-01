@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=61">
+<link rel="stylesheet" href="mvp.css?v=62">
 </head>
 <body>
 
@@ -49,8 +49,12 @@
                      gutter hangs off its bottom edge. -->
                 <div class="lead" aria-hidden="true">
                   <div class="refresh">
-                    <img class="refresh-loader" id="refreshLoader"
-                      src="assets/logo-loading-light.svg" alt="" aria-hidden="true">
+                    <span class="refresh-loader" id="refreshLoader" aria-hidden="true">
+                      <i class="refresh-loader-tile tile-1"></i>
+                      <i class="refresh-loader-tile tile-2"></i>
+                      <i class="refresh-loader-tile tile-3"></i>
+                      <i class="refresh-loader-tile tile-4"></i>
+                    </span>
                     <span class="refresh-result" id="refreshResult" aria-live="polite">
                       <span class="ic" style="--ic:url(assets/ui-check-f2.svg)" aria-hidden="true"></span>
                       <span id="refreshResultText"></span>
@@ -370,6 +374,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=61"></script>
+<script src="mvp.js?v=62"></script>
 </body>
 </html>
