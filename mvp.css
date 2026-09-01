@@ -103,6 +103,8 @@
 
   --scrim: rgba(0, 0, 0, .6);
   --lift: rgba(0, 0, 0, .08);
+  --lift-subtle: rgba(0, 0, 0, .05);
+  --lift-pressed: rgba(0, 0, 0, .18);
 
   /* The bezel and the desktop stage — chrome, not app */
   --desk-1: #eef1f2;
@@ -169,6 +171,8 @@
 
   --scrim: rgba(0, 0, 0, .6);
   --lift: rgba(0, 0, 0, .5);
+  --lift-subtle: rgba(0, 0, 0, .28);
+  --lift-pressed: rgba(0, 0, 0, .64);
 
   --desk-1: #202226;
   --desk-2: #14151a;
@@ -662,9 +666,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   gap: 8px;
   border-radius: 8px;
-  transition: transform .18s var(--ease);
 }
-.ticker:active { transform: scale(.96); }
 .ticker-logo { width: 36px; height: 36px; border-radius: 100px; }
 .ticker-text { display: flex; flex-direction: column; justify-content: center; }
 /* The two lines overlap by 4 in the frame — 22 + 20 − 4 is the 38 the header
@@ -834,7 +836,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background: var(--br03);
   transition: transform .2s var(--ease);
 }
-.quote:active { transform: scale(.99); }
 .quote-head { display: flex; align-items: center; gap: 8px; }
 .quote-avatar {
   flex: 0 0 auto;
@@ -915,8 +916,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .media-tile { flex: 0 0 240px; }
 .media img,
 .media-tile img { width: 100%; height: 100%; object-fit: cover; filter: var(--media-filter); }
-.media:active,
-.media-tile:active { transform: scale(.985); }
 
 /* The row bleeds through both gutters, so a tile leaving the row is cut off
    by the edge of the screen — the only place a cut reads as "there is more
@@ -1020,7 +1019,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transition: background .16s ease, transform .18s var(--ease);
 }
 .ask .ic { width: 14px; height: 14px; }
-.ask:active { background: var(--br05); transform: scale(.96); }
+.ask:active { background: var(--br05); }
 
 /* ── Where you left off ──
    Twitter's rule: after a refresh, the boundary between what just arrived
@@ -1079,10 +1078,11 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   line-height: 22px;
   white-space: nowrap;
   transform: translateX(-50%);
-  transition: opacity .24s ease, transform .32s var(--ease);
+  transition: opacity .24s ease, transform .32s var(--ease), box-shadow .12s cubic-bezier(.2, .9, .25, 1);
+  --press-shadow-active: 0 3px 7px var(--lift-pressed), inset 0 0 0 var(--hair) var(--l07);
 }
 .pill .ic { width: 14px; height: 14px; }
-.pill:active { transform: translateX(-50%) scale(.96); }
+[data-press-shadow].is-unified-pressed { box-shadow: var(--press-shadow-active); }
 .pill.gone {
   opacity: 0;
   pointer-events: none;
@@ -1813,7 +1813,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .sheet-btn .ic { width: 20px; height: 20px; }
 .sheet-btn .ic-star-f { color: var(--amber); }
 .sheet-btn .ic { transition: transform .22s var(--ease); }
-.sheet-btn:active .ic { transform: scale(.86); }
 
 /* `0 1 auto` is what lets the sheet hug: the scroller takes its content's
    height and only shrinks when the sheet has run out of ceiling. */
@@ -2122,6 +2121,26 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .fs.is-loading .fs-plot { opacity: 0; }
 .fs.is-loading .fs-loader { opacity: 1; }
+.fs-chart-type {
+  position: absolute;
+  z-index: 4;
+  bottom: 158px;
+  left: 16px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--b10);
+  box-shadow: 0 4px 15px var(--lift-subtle), inset 0 0 0 var(--hair) var(--l12);
+  color: var(--n9);
+  opacity: 1;
+  transition: opacity .16s ease, box-shadow .12s cubic-bezier(.2, .9, .25, 1);
+  --press-shadow-active: 0 1px 5px var(--lift-pressed), inset 0 0 0 var(--hair) var(--l12);
+}
+.fs-chart-type .ic { width: 20px; height: 20px; }
+.fs-chart-type:focus { outline: none; }
+.fs.is-loading .fs-chart-type { opacity: 0; pointer-events: none; }
 .fs-topbar {
   position: absolute;
   z-index: 3;
@@ -2143,7 +2162,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .fs-close .ic { width: 20px; height: 20px; }
 .fs-close:focus { outline: none; }
-.fs-close:active { transform: scale(.94); }
 
 .fs-context {
   position: absolute;
@@ -2188,7 +2206,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .fs-switch-row .fs-switch:last-child { justify-content: flex-end; }
 .fs-switch .ic { width: 16px; height: 16px; }
 .fs-switch:focus, .fs-details:focus { outline: none; }
-.fs-switch:active { opacity: .55; transform: scale(.94); }
+.fs-switch:active { opacity: .55; }
 .fs-switch.is-hidden { visibility: hidden; pointer-events: none; }
 
 .fs-ticker {
@@ -2245,7 +2263,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   white-space: nowrap;
   transition: background .16s ease, transform .2s var(--ease);
 }
-.fs-details:active { background: var(--br05); transform: scale(.99); }
+.fs-details:active { background: var(--br05); }
 
 .fs-home {
   position: relative;

@@ -2741,6 +2741,18 @@
     };
   }
 
+  function lineColors(p) {
+    return {
+      color: p.m1,
+      lineWidth: 2,
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 3,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      priceFormat: { type: 'price', precision: 2, minMove: 0.01 },
+    };
+  }
+
   /* A mounted chart keeps its own restyle closure, so flipping the mode
      re-reads the tokens instead of rebuilding the canvas.
 
@@ -2755,14 +2767,21 @@
       return { restyle() {}, dispose() {} };
     }
     const split = !!(extras && extras.split);
+    const isLine = !!(extras && extras.displayMode === 'line');
     const p = chartPalette();
     const chart = LWC.createChart(host, Object.assign(baseOptions(p), {
       width: host.clientWidth || 393,
       height: host.clientHeight || 250,
     }));
 
-    const candles = chart.addSeries(LWC.CandlestickSeries, candleColors(p), 0);
-    candles.setData(data.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close })));
+    const priceSeries = chart.addSeries(
+      isLine ? LWC.LineSeries : LWC.CandlestickSeries,
+      isLine ? lineColors(p) : candleColors(p),
+      0,
+    );
+    priceSeries.setData(data.map(d => isLine
+      ? { time: d.time, value: d.close }
+      : { time: d.time, open: d.open, high: d.high, low: d.low, close: d.close }));
 
     const volOpts = {
       priceFormat: { type: 'volume' },
@@ -2802,10 +2821,10 @@
       /* More room above the highest print than a chart normally needs, so the
          previous-close line lands where the design has it — below the close
          button rather than under it. */
-      candles.priceScale().applyOptions({ scaleMargins: { top: 0.22, bottom: 0.06 }, borderVisible: false });
+      priceSeries.priceScale().applyOptions({ scaleMargins: { top: 0.22, bottom: 0.06 }, borderVisible: false });
       vol.priceScale().applyOptions({ scaleMargins: { top: 0.18, bottom: 0.02 }, borderVisible: false });
     } else {
-      candles.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.26 }, borderVisible: false });
+      priceSeries.priceScale().applyOptions({ scaleMargins: { top: 0.08, bottom: 0.26 }, borderVisible: false });
       chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.78, bottom: 0 }, borderVisible: false });
     }
 
@@ -2813,7 +2832,7 @@
     (extras && extras.lines ? extras.lines : []).forEach(cfg => {
       lines.push({
         cfg,
-        ref: candles.createPriceLine({
+        ref: priceSeries.createPriceLine({
           price: cfg.price,
           color: p[cfg.tone],
           lineWidth: 1,
@@ -2848,11 +2867,11 @@
         size: 1,
       });
     }
-    if (marks.length && LWC.createSeriesMarkers) LWC.createSeriesMarkers(candles, marks);
+    if (marks.length && LWC.createSeriesMarkers) LWC.createSeriesMarkers(priceSeries, marks);
 
     if (extras && extras.onCrosshair) {
       chart.subscribeCrosshairMove(param => {
-        const bar = param && param.seriesData ? param.seriesData.get(candles) : null;
+        const bar = param && param.seriesData ? param.seriesData.get(priceSeries) : null;
         const v = param && param.seriesData ? param.seriesData.get(vol) : null;
         extras.onCrosshair(bar || null, v ? v.value : null);
       });
@@ -2873,7 +2892,7 @@
       restyle() {
         const q = chartPalette();
         chart.applyOptions(baseOptions(q));
-        candles.applyOptions(candleColors(q));
+        priceSeries.applyOptions(isLine ? lineColors(q) : candleColors(q));
         vol.applyOptions({ color: q.up });
         vol.setData(volBars(q));
         volLine.applyOptions({ color: q.up });
@@ -3019,6 +3038,8 @@
   const fs = document.getElementById('fullChart');
   const fsScrim = document.getElementById('fsScrim');
   const fsPlot = document.getElementById('fsPlot');
+  const fsChartType = document.getElementById('fsChartType');
+  const fsChartTypeIcon = fsChartType.querySelector('.ic');
   const fsClose = document.getElementById('fsClose');
   const fsPrev = document.getElementById('fsPrev');
   const fsNext = document.getElementById('fsNext');
@@ -3034,6 +3055,7 @@
   let fsSwitchFinishTimer = 0;
   let fsSwitching = false;
   let fsOpenFrame = 0;
+  let fsDisplayMode = 'candles';
 
   function currentFsTicker() {
     const item = fsItems[fsIndex];
@@ -3050,6 +3072,16 @@
       control.disabled = !multiple;
       control.setAttribute('aria-hidden', String(!multiple));
     });
+  }
+
+  function paintFsChartType() {
+    const isLine = fsDisplayMode === 'line';
+    fsChartTypeIcon.style.setProperty('--ic', 'url(' + A + (isLine ? 'ui-k-line-l.svg' : 'ui-chart-candles-l.svg') + ')');
+    fsChartType.setAttribute('aria-pressed', String(isLine));
+    fsChartType.setAttribute(
+      'aria-label',
+      isLine ? 'Display: Line. Switch to candlesticks' : 'Display: Candlesticks. Switch to line chart',
+    );
   }
 
   function drawFullChart() {
@@ -3079,6 +3111,7 @@
       ],
       split: true,
       marker: 52,
+      displayMode: fsDisplayMode,
     });
   }
 
@@ -3164,12 +3197,18 @@
   fsScrim.addEventListener('click', closeFullChart);
   fsPrev.addEventListener('click', () => stepFullChart(-1));
   fsNext.addEventListener('click', () => stepFullChart(1));
+  fsChartType.addEventListener('click', () => {
+    fsDisplayMode = fsDisplayMode === 'candles' ? 'line' : 'candles';
+    paintFsChartType();
+    if (!fs.classList.contains('is-loading')) drawFullChart();
+  });
   fsDetails.addEventListener('click', () => {
     const t = currentFsTicker();
     if (!t) return;
     closeFullChart();
     openTicker(t);
   });
+  paintFsChartType();
 
   /* Escape closes whatever is on top — the chart first, then a sheet. */
   window.addEventListener('keydown', e => {
