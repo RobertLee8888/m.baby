@@ -656,10 +656,12 @@ The 20px Alva mark is built clockwise rather than faded in as one image: its
 top-left, top-right, bottom-right, and bottom-left tiles complete over pull
 distances 0–12, 12–24, 24–36, and 36–48px. Every tile is neutral `grey/g3`
 while the finger is down; the mark does not adopt brand colours or rotate until
-the refresh commits. At exactly 48px the fourth tile becomes complete and one
-light haptic marks Ready. Pulling back to 40px or lower re-arms that feedback,
-so a later crossing can confirm the threshold again without buzzing
-continuously.
+the refresh commits. The whole mark also grows continuously from 72% at the
+start of the pull to its full 20px size at 48px, so completion has a clear
+physical build-up rather than appearing at full size immediately. At exactly
+48px the fourth tile becomes complete and one light haptic marks Ready. Pulling
+back to 40px or lower re-arms that feedback, so a later crossing can confirm the
+threshold again without buzzing continuously.
 
 Releasing at or above 48 commits: the list holds open at 64, and the now-complete
 20px loader switches to the same 1s four-step quarter-turn used by the 40px
@@ -670,6 +672,11 @@ Android `GESTURE_THRESHOLD_ACTIVATE`, both of which honor system haptic
 settings. New cards land while the list is still held; the actual count or
 caught-up message stays for one second, then the list closes. A list that
 changed under the eye would be worse than one that waited.
+
+The cards container clips new-card entrance motion at its own top edge. New
+cards can still fade and move into place, but their initial `-10px` transform
+cannot paint over the open refresh gutter and make its bottom hairline appear
+to twitch.
 
 `Pill · New cards` is that same refresh with a number on it. It sits 8 below
 the topbar, centred, on `main/m1` with the library's `Shadow L (10 20 8)` —

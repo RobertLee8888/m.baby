@@ -2069,7 +2069,9 @@
     refreshSurface.style.setProperty('--pull-y', y.toFixed(2) + 'px');
     if (!refreshLoader.classList.contains('spinning')) {
       const progress = Math.max(0, Math.min(1, y / PULL_TRIGGER));
+      const loaderScale = 0.72 + progress * 0.28;
       refreshLoader.style.opacity = y > 0 ? '1' : '0';
+      refreshLoader.style.setProperty('--loader-scale', loaderScale.toFixed(3));
       refreshLoader.classList.toggle('is-ready', progress >= 1);
       refreshTiles.forEach((tile, index) => {
         const tileProgress = Math.max(0, Math.min(1, progress * refreshTiles.length - index));
