@@ -13,12 +13,11 @@
      stage chrome, so the page renders as a bare full-screen app. Set before
      the stylesheet loads so no mockup is ever painted. -->
 <script>if (window.self !== window.top) document.documentElement.classList.add('embedded');</script>
-<!-- The mode is stamped before the stylesheet loads, so a dark session never
-     flashes the light palette on the way in. The default is Light because that
-     is the mode the Figma frames are drawn in — dark is a choice the person
-     makes in Me, and once made it is remembered. -->
-<script>(function(){var t='light';try{t=localStorage.getItem('alva-mvp-theme')||'light';}catch(e){}document.documentElement.dataset.theme=t;})();</script>
-<link rel="stylesheet" href="mvp.css?v=54">
+<!-- Resolve the saved appearance before CSS loads so System and Dark never
+     flash a light frame. Legacy Dark choices survive; the old Light default
+     becomes the new System default. -->
+<script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
+<link rel="stylesheet" href="mvp.css?v=55">
 </head>
 <body>
 
@@ -217,18 +216,16 @@
 
               <p class="me-group">Preferences</p>
 
-              <!-- The one row the Figma file does not have. Dark mode is a
-                   library mode, not a screen, so this is where a prototype
-                   has to put the switch for it. -->
-              <div class="row" role="group" aria-label="Appearance">
-                <span class="ic ic-lead" style="--ic:url(assets/ui-theme-l.svg)" aria-hidden="true"></span>
-                <span class="row-label">Dark mode</span>
-                <button class="switch" id="themeSwitch" type="button" role="switch" aria-checked="false" aria-label="Dark mode"></button>
-              </div>
-
               <button class="row" type="button" data-hint="Language: English (US)">
                 <span class="ic ic-lead" style="--ic:url(assets/ui-language-l.svg)" aria-hidden="true"></span>
                 <span class="row-label">Language</span>
+                <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
+              </button>
+
+              <button class="row" id="appearanceRow" type="button" aria-haspopup="dialog" aria-expanded="false">
+                <span class="ic ic-lead" style="--ic:url(assets/ui-theme-l.svg)" aria-hidden="true"></span>
+                <span class="row-label">Appearance</span>
+                <span class="row-count appearance-value" id="appearanceValue">System</span>
                 <span class="ic ic-chev" style="--ic:url(assets/ui-arrow-right-l2.svg)" aria-hidden="true"></span>
               </button>
 
@@ -371,6 +368,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=54"></script>
+<script src="mvp.js?v=55"></script>
 </body>
 </html>

@@ -18,7 +18,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MVP — For You, Alva, Market, Me, and the three overlays
+   MVP — For You, Alva, Market, Me, and the app overlays
    Figma: Feed Mobile MVP · ⭐️ MVP
      For You            1496:32177
      Market             2300:41141
@@ -26,6 +26,7 @@
      Ticker sheet        957:18126
      Chat                545:62465
      Me                  360:37134
+     Appearance sheet   2932:26436
      Fullscreen chart   2244:19642
 
    Every length here is a token from Alva-Library, not a guess:
@@ -1546,6 +1547,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .row .ic-lead { width: 20px; height: 20px; color: var(--n9); }
 .row-label { flex: 1 1 auto; color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
 .row-count { flex: 0 0 auto; margin-right: -4px; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.appearance-value { min-width: 42px; text-align: right; }
 .row .ic-chev { width: 12px; height: 12px; color: var(--n5); }
 
 .me-group {
@@ -1579,39 +1581,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .credits-line { display: flex; gap: 4px; font-size: 10px; line-height: 16px; }
 .credits-line b { color: var(--n9); font-weight: 400; font-variant-numeric: tabular-nums; }
 .credits-line span { color: var(--n5); }
-
-/* The switch. Nothing in the Figma file has one — the appearance row is
-   the one thing on this screen the design does not specify, because the
-   design is a mode, not a control. It is built out of the same tokens so
-   it belongs anyway. */
-
-.switch {
-  position: relative;
-  flex: 0 0 auto;
-  /* 24 tall inside a 22 line: the extra pixel either side comes out of the
-     margin so the appearance row is the same 54 as every row beside it. */
-  margin: -1px 0;
-  width: 40px;
-  height: 24px;
-  border-radius: 960px;
-  background: var(--br07);
-  box-shadow: inset 0 0 0 var(--hair) var(--l12);
-  transition: background .22s ease;
-}
-.switch::after {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 960px;
-  background: var(--white);
-  box-shadow: 0 1px 3px var(--lift), inset 0 0 0 var(--hair) var(--l07);
-  content: '';
-  transition: transform .22s var(--ease);
-}
-.switch[aria-checked="true"] { background: var(--m1); }
-.switch[aria-checked="true"]::after { transform: translateX(16px); }
 
 /* The Social frame's top stroke and the buttons' 5% fill are both
    switched off in the frame — the buttons are a hairline outline on the
@@ -1717,6 +1686,26 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Appearance (2932:26436) is the compact form of the shared sheet: 8 above
+   three 46px choices, then the sheet's normal home-indicator clearance. */
+.appearance-list { padding-top: 8px; }
+.appearance-option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 4px;
+  color: var(--n9);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  text-align: left;
+  transition: background .16s ease, color .16s ease;
+}
+.appearance-option[aria-checked="true"] { background: var(--m1-10); color: var(--m1); }
+.appearance-option:active { background: var(--br07); }
+.appearance-option[aria-checked="true"]:active { background: var(--m1-10); }
 
 /* The ticker sheet's body is a column with one flexible row in it — the
    chart — so the anomaly card lands on the bottom edge the way the design

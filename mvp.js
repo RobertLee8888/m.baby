@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   MVP — For You, Alva, Market, Me, and the three overlays
+   MVP — For You, Alva, Market, Me, and the app overlays
    Figma: Feed Mobile MVP · ⭐️ MVP
 
    The feed is data, not markup. A card is a header (one to three
@@ -26,30 +26,51 @@
 
   const A = 'assets/';
   /* ──────────────────────────────
-     Mode
+     Appearance
 
-     One switch, two modes, and the choice outlives the session. The
-     stylesheet does the rest: nothing below this block knows which mode
-     it is in, because every colour it uses is a variable.
+     Preference and rendered theme are separate. System is the default and
+     follows the device live; Light and Dark are explicit durable overrides.
+     The stylesheet still owns every colour through its theme variables.
      ────────────────────────────── */
 
-  const THEME_KEY = 'alva-mvp-theme';
+  const APPEARANCE_KEY = 'alva-mvp-appearance';
   const root = document.documentElement;
+  const systemTheme = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-  function readTheme() {
-    return root.dataset.theme === 'dark' ? 'dark' : 'light';
+  function readAppearance() {
+    const value = root.dataset.appearance;
+    return value === 'light' || value === 'dark' ? value : 'system';
   }
 
-  function setTheme(mode) {
+  function resolvedTheme(preference) {
+    if (preference === 'dark') return 'dark';
+    if (preference === 'light') return 'light';
+    return systemTheme && systemTheme.matches ? 'dark' : 'light';
+  }
+
+  function setAppearance(preference, persist) {
+    const value = preference === 'light' || preference === 'dark' ? preference : 'system';
+    const mode = resolvedTheme(value);
+    root.dataset.appearance = value;
     root.dataset.theme = mode;
-    try { localStorage.setItem(THEME_KEY, mode); } catch (e) { /* private window */ }
-    const sw = document.getElementById('themeSwitch');
-    if (sw) sw.setAttribute('aria-checked', String(mode === 'dark'));
+    if (persist !== false) {
+      try { localStorage.setItem(APPEARANCE_KEY, value); } catch (e) { /* private window */ }
+    }
+    const current = document.getElementById('appearanceValue');
+    if (current) current.textContent = value[0].toUpperCase() + value.slice(1);
     const btn = document.getElementById('themeButton');
     if (btn) btn.textContent = mode === 'dark' ? 'Light mode' : 'Dark mode';
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', mode === 'dark' ? '#15161a' : '#ffffff');
     restyleCharts();
+  }
+
+  if (systemTheme) {
+    const followSystem = () => {
+      if (readAppearance() === 'system') setAppearance('system', false);
+    };
+    if (systemTheme.addEventListener) systemTheme.addEventListener('change', followSystem);
+    else if (systemTheme.addListener) systemTheme.addListener(followSystem);
   }
 
   /* The chart is a canvas, so it cannot inherit a token — it has to be
@@ -2309,7 +2330,13 @@
     closeSheet(true);
     sheet.classList.toggle('full', !!o.full);
     sheetTop.className = 'sheet-top' + (o.ruled ? ' ruled' : '');
-    sheetBody.className = o.full ? 'tk-body' : 'sheet-scroll';
+    sheetBody.className = (o.full ? 'tk-body' : 'sheet-scroll') + (o.bodyClass ? ' ' + o.bodyClass : '');
+    if (o.bodyRole) sheetBody.setAttribute('role', o.bodyRole);
+    else sheetBody.removeAttribute('role');
+    if (o.bodyLabel) sheetBody.setAttribute('aria-label', o.bodyLabel);
+    else sheetBody.removeAttribute('aria-label');
+    if (o.label) sheet.setAttribute('aria-label', o.label);
+    else sheet.removeAttribute('aria-label');
     sheetTop.replaceChildren(...header);
     sheetBody.replaceChildren(...nodes);
     sheetBody.scrollTop = 0;
@@ -2328,6 +2355,8 @@
     scrim.classList.remove('show');
     sheet.setAttribute('aria-hidden', 'true');
     app.classList.remove('dim');
+    const appearanceRow = document.getElementById('appearanceRow');
+    if (appearanceRow) appearanceRow.setAttribute('aria-expanded', 'false');
     const done = () => {
       if (sheetTeardown) { sheetTeardown(); sheetTeardown = null; }
       if (!sheetOpen) { sheetTop.replaceChildren(); sheetBody.replaceChildren(); }
@@ -2342,6 +2371,42 @@
     b.appendChild(icon('close-l1.svg'));
     b.addEventListener('click', () => closeSheet());
     return b;
+  }
+
+  /* ── Appearance sheet (2932:26436) ── */
+
+  const APPEARANCE_OPTIONS = ['system', 'light', 'dark'];
+
+  function appearanceOption(value) {
+    const label = value[0].toUpperCase() + value.slice(1);
+    const option = btn('appearance-option', label);
+    option.textContent = label;
+    option.setAttribute('role', 'radio');
+    option.setAttribute('aria-checked', String(readAppearance() === value));
+    option.addEventListener('click', () => {
+      setAppearance(value);
+      closeSheet();
+    });
+    return option;
+  }
+
+  function openAppearance() {
+    const trigger = document.getElementById('appearanceRow');
+    openSheet(
+      [sheetClose(), el('h2', null, 'Appearance')],
+      APPEARANCE_OPTIONS.map(appearanceOption),
+      {
+        ruled: true,
+        bodyClass: 'appearance-list',
+        bodyRole: 'radiogroup',
+        bodyLabel: 'Appearance options',
+        label: 'Appearance',
+      }
+    );
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'true');
+      trigger.blur();
+    }
   }
 
   /* ── Sources sheet (545:62549) ── */
@@ -3135,20 +3200,18 @@
   });
 
   /* ──────────────────────────────
-     The mode switch, in two places: the Me screen (where a person would
-     look for it) and the stage (where whoever is reviewing the prototype
-     would).
+     Appearance lives in Me. The standalone stage control remains a quick
+     review shortcut and chooses an explicit opposite mode.
      ────────────────────────────── */
 
-  const themeSwitch = document.getElementById('themeSwitch');
-  if (themeSwitch) {
-    themeSwitch.addEventListener('click', () => {
-      setTheme(readTheme() === 'dark' ? 'light' : 'dark');
-      toast(readTheme() === 'dark' ? 'Dark mode on' : 'Dark mode off');
+  const appearanceRow = document.getElementById('appearanceRow');
+  if (appearanceRow) appearanceRow.addEventListener('click', openAppearance);
+  const themeButton = document.getElementById('themeButton');
+  if (themeButton) {
+    themeButton.addEventListener('click', () => {
+      setAppearance(root.dataset.theme === 'dark' ? 'light' : 'dark');
     });
   }
-  const themeButton = document.getElementById('themeButton');
-  if (themeButton) themeButton.addEventListener('click', () => setTheme(readTheme() === 'dark' ? 'light' : 'dark'));
 
   /* ──────────────────────────────
      Restart (standalone) and the stage's Restart both land here
@@ -3203,7 +3266,7 @@
     foldResizeFrame = window.requestAnimationFrame(foldPass);
   });
 
-  setTheme(readTheme());
+  setAppearance(readAppearance());
   /* The screens live on a track now, so their places have to be assigned
      before the first paint — otherwise all four sit at translateX(0) and the
      last one in the document wins. */
