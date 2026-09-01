@@ -1,0 +1,118 @@
+/* Device chrome shared by every prototype. The shell writes these data
+   attributes only while it is simulating a desktop device; standalone pages
+   keep their native/default chrome. */
+
+html[data-device-platform='android'] :is(.system-bar, .statusbar, .sysbar) {
+  align-items: center;
+  justify-content: space-between;
+  height: var(--status-h, var(--sb-h));
+  color: var(--n10, #000);
+  font-family: Roboto, Arial, sans-serif;
+}
+
+html[data-device-platform='android'] :is(.system-left, .status-left, .sb-left) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1 1 0;
+  height: 100%;
+  padding: 0 0 0 16px;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+html[data-device-platform='android'] .sb-time {
+  color: currentColor;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+
+html[data-device-platform='android'] :is(.system-right, .status-right, .sb-right) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 0;
+  height: 100%;
+  gap: 5px;
+  padding: 0 12px 0 0;
+}
+
+html[data-device-platform='android'] :is(.dynamic-island, .sb-island) {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  border-radius: 50%;
+  background: #050505;
+  transform: translateX(-50%);
+}
+
+html[data-device-cutout='drop'] :is(.dynamic-island, .sb-island) {
+  top: 0;
+  width: 22px;
+  height: 15px;
+  border-radius: 0 0 12px 12px;
+}
+
+html[data-device-platform='android'] :is(
+  .system-right .sb-signal,
+  .system-right > img:first-child,
+  .status-right > img:first-child,
+  .sb-right > img:nth-child(1)
+) { width: 14px; height: 10px; }
+
+html[data-device-platform='android'] :is(
+  .system-right .sb-wifi,
+  .system-right > img:nth-child(2),
+  .status-right > img:nth-child(2),
+  .sb-right > img:nth-child(2)
+) { width: 14px; height: 10px; }
+
+html[data-device-platform='android'] :is(.battery, .sb-batt) {
+  position: relative;
+  display: block;
+  width: 17px;
+  height: 10px;
+  border: 1.25px solid currentColor;
+  border-radius: 2px;
+}
+
+html[data-device-platform='android'] :is(.battery, .sb-batt)::before {
+  position: absolute;
+  inset: 2px 3px 2px 2px;
+  border-radius: 1px;
+  background: currentColor;
+  content: '';
+}
+
+html[data-device-platform='android'] :is(.battery, .sb-batt)::after {
+  position: absolute;
+  top: 2px;
+  right: -3px;
+  width: 2px;
+  height: 4px;
+  border-radius: 0 1px 1px 0;
+  background: currentColor;
+  content: '';
+}
+
+html[data-device-platform='android'] :is(.battery, .sb-batt) > * { display: none; }
+
+html[data-device-platform='android'] :is(.home-indicator, .sys-home) {
+  height: var(--home-h);
+}
+
+html[data-device-platform='android'] :is(.home-indicator, .sys-home) span {
+  bottom: 6px;
+  width: 108px;
+  height: 4px;
+  border-radius: 100px;
+}

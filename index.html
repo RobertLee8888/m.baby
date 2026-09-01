@@ -10,7 +10,7 @@
 <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/Delight-Medium.ttf" as="font" type="font/ttf" crossorigin>
 <script>(function(){var p='',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="shell.css?v=24">
+<link rel="stylesheet" href="shell.css?v=25">
 </head>
 <body>
 
@@ -21,8 +21,8 @@
      < 900px  → two views, list ⇄ prototype, switched by the hash,
                 so the browser's own back gesture is the way back
 
-     Each prototype runs inside an iframe sized to one real iPhone
-     screen — which iPhone is the device switcher's business. The bezel
+     Each prototype runs inside an iframe sized to one real phone
+     screen — which model is the device switcher's business. The body
      around it is drawn here, by the shell — so the prototype itself is
      always in its full-screen mode and never renders a mockup of its
      own.
@@ -108,6 +108,6 @@
 
 </div>
 
-<script src="shell.js?v=29"></script>
+<script src="shell.js?v=30"></script>
 </body>
 </html>

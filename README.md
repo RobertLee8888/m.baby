@@ -2,7 +2,7 @@
 
 A single-page gallery of interactive design prototypes for Alva. One page, two layouts:
 
-- **Desktop** — the list of prototypes on the left, the selected prototype running on the right, inside an iPhone mockup that scales to fit the window.
+- **Desktop** — the list of prototypes on the left, the selected prototype running on the right, inside the selected iPhone or Android mockup scaled to fit the window.
 - **Phone** — two views. The list, then the prototype full-screen with no mockup and no added chrome, because it is already running on a phone. The system back gesture returns to the list.
 
 ### ▶︎ [Open the live prototypes](https://robertlee8888.github.io/m.baby/)
@@ -887,7 +887,7 @@ white space over it.
 `fit()` measured the *current* device and scaled it to the stage, so every
 phone came out the same size on screen: switching from a 402 to a 440 changed
 the readout and nothing else, which reads as broken. It measures the largest
-device in `DEVICES` now, so all three share one scale — the big phone just
+device in `DEVICES` now, so all models share one scale — the big phone just
 fits, the smaller ones are visibly smaller, and the switcher does something
 you can see.
 
@@ -1103,7 +1103,7 @@ Each prototype runs in its own `<iframe>`, and the shell mounts exactly one at a
 
 That is deliberate, not a shortcut. The prototypes are full-screen apps that own their document: they set `body { overflow: hidden }`, position themselves `fixed`, and both use the same class names (`.screen`, `.toast`, `.sheet`, `.phone`) and the same element ids. Loading two of them into one document would have them overwrite each other. Giving each its own document means a new prototype can never break an existing one, and each stays openable on its own URL.
 
-**The iframe is laid out at exactly one phone screen** — see the device switcher below for which. So the prototype always sees a real phone viewport: its own `vh`, its own media queries, its own full-screen mode. The iPhone bezel around it on desktop is drawn by the shell, outside the iframe, and only the bezel is scaled to fit the window — never above 1:1. Inside the iframe the prototype is always in its bare full-screen mode, which is why the phone layout needed nothing removed: there was never a mockup inside it to remove.
+**The iframe is laid out at exactly one phone screen** — see the device switcher below for which. So the prototype always sees a real phone viewport: its own `vh`, its own media queries, and its own full-screen mode. The selected device body around it on desktop is drawn by the shell, outside the iframe, and only that composite is scaled to fit the window — never above 1:1. Inside the iframe the prototype is always in its bare full-screen mode, which is why the phone layout needed nothing removed: there was never a second mockup inside it to remove.
 
 ## One object has depth
 
@@ -1252,21 +1252,24 @@ which is the shape this shell keeps removing.
 
 ## The device switcher
 
-The stage's bottom-right control sets which iPhone the mockup is, so a layout can be read at more than the one size it was drawn at. It is global: the size outlives the prototype you picked it on and survives a reload, because "how does this hold up at 6.9 inches" is a question you ask of the whole gallery, not of one screen.
+The stage's bottom-right control sets the complete simulated device, so a layout can be read across platforms as well as sizes. It is global: the choice outlives the prototype you picked it on and survives a reload, because "how does this hold up on the high-volume Android hardware" is a question you ask of the whole gallery, not of one screen.
 
-| | Points | Safe area |
-| --- | --- | --- |
-| **iPhone 17** — the default | 402 × 874 | 62 top · 34 bottom |
-| **iPhone Air** | 420 × 912 | 62 top · 34 bottom |
-| **iPhone 17 Pro Max** | 440 × 956 | 62 top · 34 bottom |
+| | CSS viewport | System area | Front camera |
+| --- | --- | --- | --- |
+| **iPhone 17** — the default | 402 × 874 | 62 top · 34 bottom | Dynamic Island |
+| **iPhone Air** | 420 × 912 | 62 top · 34 bottom | Dynamic Island |
+| **iPhone 17 Pro Max** | 440 × 956 | 62 top · 34 bottom | Dynamic Island |
+| **Galaxy A16 5G** | 412 × 892 | 32 top · 24 bottom | Waterdrop |
+| **Galaxy S25 Ultra** | 412 × 915 | 32 top · 24 bottom | Punch hole |
+| **Redmi 14C** | 360 × 820 | 32 top · 24 bottom | Waterdrop |
 
-Logical points, portrait — the resolution a layout actually sees, not the pixel count. The 17 and the 17 Pro Max carry the 6.3″ and 6.9″ displays forward unchanged; the Air's 6.5″ is the size that is new this generation.
+These are portrait CSS viewports — the resolution a layout actually sees, not raw panel pixels. The Android choices are volume-led rather than a list of new flagships: Counterpoint names the [Galaxy A16 5G as 2025's best-selling Android phone](https://counterpointresearch.com/en/insights/iphone-16-worlds-best-selling-smartphone-in-2025-apple-takes-7-spots-in-top-10-models), identifies the S25 Ultra as the high-performing Samsung flagship in the same ranking, and lists the [Redmi 14C as the only Xiaomi model in the Q2 2025 global top ten](https://counterpointresearch.com/en/insights/global-smartphone-sales-top-10-best-sellers).
 
-**The insets are the part that makes this more than a resize.** Both prototypes were built at 393 × 852, whose top inset is 59 — and all three devices here are taller-island ones at 62. A 402-wide frame still padded to 59 would not be an iPhone 17, it would be the old phone stretched, and every screen's content would start 3px too high. So the shell writes the device's insets onto the prototype's own root (same origin, so an inline custom property beats its stylesheet's `:root`). The two prototypes name that variable differently — `--status-h` in Alpha Radar, `--sb-h` in the immersive onboarding — so both are set.
+**The platform chrome is the part that makes this more than a resize.** The shell writes the selected model's insets and device attributes onto the prototype's own root. iPhone keeps the 62px island status area and 34px Home Indicator area. Android uses a 32px status area, the selected waterdrop or punch-hole camera treatment, Android typography and battery geometry, plus a 24px navigation area with a 108 × 4 gesture pill. The outer mockup changes bezel thickness, corner radius, material and side-button layout at the same time. All four prototypes consume the same `device-chrome.css`, so platform chrome cannot drift page by page.
 
 Below 900px none of this applies: there is no mockup and no switcher, the prototype is running on whatever phone is actually in someone's hand, and the overrides are removed so its own values take back over. Handing a real device a chosen device's insets would be worse than not choosing.
 
-**Switching never remounts the iframe.** Remounting would throw away which of the eight screens you are on, and comparing *the same screen* at three sizes is the whole point — so the frame is resized underneath a running prototype and its own layout does the rest. Restart still remounts, and the device survives it.
+**Switching never remounts the iframe.** Remounting would throw away which screen you are on, and comparing *the same state* across six devices is the whole point — so viewport, system areas, platform chrome and mockup geometry update around the running prototype. Restart still remounts, and the device survives it.
 
 Two things fell out of building it, both of which had been hardcoded guesses that were only ever right for the row that existed when they were written:
 
@@ -1404,8 +1407,9 @@ grep -nE '^[[:space:]]*(height|min-height|max-height):[[:space:]]*[0-9]{3,4}px' 
 ```
 
 Every hit has to be a drawn object's own size. Then open the prototype in the
-shell and click through all three devices on one screen — not three screens at
-one device. The bug you are looking for is a gap that grows.
+shell and click through all six devices on one screen — not six screens at
+one device. The bugs you are looking for are a gap that grows or system chrome
+that belongs to the previous platform.
 
 **The worked example** is the Alpha Radar intro screen, which used to be
 `height: 469px` — that is 852 − 384, right at exactly one viewport. It now

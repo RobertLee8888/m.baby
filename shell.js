@@ -83,25 +83,21 @@
   /* ──────────────────────────────
      Devices
 
-     Logical points, portrait — the resolution a layout actually sees,
-     not the pixel count. The 17 and the 17 Pro Max carry the 6.3" and
-     6.9" displays unchanged from the 16 Pro pair; the Air's 6.5" is the
-     size that is new this generation.
-
-     safeTop / safeBottom are the real insets, and they are what makes
-     this more than a resize: the prototypes were built at 393 × 852,
-     whose top inset is 59 — every device here is a taller-island one at
-     62, so a 402-wide frame still padded to 59 would not be an iPhone
-     17, it would be the old phone stretched. The prototypes name that
-     inset differently (--status-h in Alpha Radar, --sb-h in the
-     immersive onboarding), so both are set; a document that does not
-     use one is not harmed by having it.
+     Logical CSS pixels, portrait. Insets, platform chrome, camera cutout,
+     bezel and corner geometry travel as one device record, so changing a
+     model is more than resizing the iframe. The Android set covers the
+     high-volume Galaxy A line, Samsung's large flagship and Xiaomi's global
+     volume model; their viewport values are the physical panel resolution
+     normalized to common Android density buckets.
      ────────────────────────────── */
 
   const DEVICES = [
-    { id: 'iphone-17',         name: 'iPhone 17',         short: '17',      w: 402, h: 874, safeTop: 62, safeBottom: 34 },
-    { id: 'iphone-air',        name: 'iPhone Air',        short: 'Air',     w: 420, h: 912, safeTop: 62, safeBottom: 34 },
-    { id: 'iphone-17-pro-max', name: 'iPhone 17 Pro Max', short: 'Pro Max', w: 440, h: 956, safeTop: 62, safeBottom: 34 },
+    { id: 'iphone-17', name: 'iPhone 17', w: 402, h: 874, safeTop: 62, safeBottom: 34, platform: 'ios', cutout: 'island', nav: 'gesture', bezel: 16, phoneRadius: 68, screenRadius: 54, screenStroke: 6 },
+    { id: 'iphone-air', name: 'iPhone Air', w: 420, h: 912, safeTop: 62, safeBottom: 34, platform: 'ios', cutout: 'island', nav: 'gesture', bezel: 16, phoneRadius: 68, screenRadius: 54, screenStroke: 6 },
+    { id: 'iphone-17-pro-max', name: 'iPhone 17 Pro Max', w: 440, h: 956, safeTop: 62, safeBottom: 34, platform: 'ios', cutout: 'island', nav: 'gesture', bezel: 16, phoneRadius: 68, screenRadius: 54, screenStroke: 6 },
+    { id: 'galaxy-a16-5g', name: 'Galaxy A16 5G', w: 412, h: 892, safeTop: 32, safeBottom: 24, platform: 'android', cutout: 'drop', nav: 'gesture', bezel: 11, phoneRadius: 46, screenRadius: 36, screenStroke: 4 },
+    { id: 'galaxy-s25-ultra', name: 'Galaxy S25 Ultra', w: 412, h: 915, safeTop: 32, safeBottom: 24, platform: 'android', cutout: 'punch', nav: 'gesture', bezel: 8, phoneRadius: 34, screenRadius: 26, screenStroke: 4 },
+    { id: 'redmi-14c', name: 'Redmi 14C', w: 360, h: 820, safeTop: 32, safeBottom: 24, platform: 'android', cutout: 'drop', nav: 'gesture', bezel: 11, phoneRadius: 48, screenRadius: 38, screenStroke: 5 },
   ];
 
   const SAFE_TOP_VARS = ['--status-h', '--sb-h'];
@@ -403,6 +399,16 @@
         if (wide.matches) root.style.setProperty(v, px + 'px');
         else root.style.removeProperty(v);
       }));
+      const data = {
+        devicePlatform: device.platform,
+        deviceCutout: device.cutout,
+        deviceNav: device.nav,
+        deviceId: device.id,
+      };
+      Object.keys(data).forEach(key => {
+        if (wide.matches) root.dataset[key] = data[key];
+        else delete root.dataset[key];
+      });
     } catch (e) {}
   }
 
@@ -412,6 +418,14 @@
     const root = document.documentElement;
     root.style.setProperty('--screen-w', d.w + 'px');
     root.style.setProperty('--screen-h', d.h + 'px');
+    root.style.setProperty('--bezel', d.bezel + 'px');
+    root.style.setProperty('--phone-radius', d.phoneRadius + 'px');
+    root.style.setProperty('--screen-radius', d.screenRadius + 'px');
+    root.style.setProperty('--screen-stroke', d.screenStroke + 'px');
+    root.dataset.devicePlatform = d.platform;
+    root.dataset.deviceCutout = d.cutout;
+    root.dataset.deviceNav = d.nav;
+    root.dataset.deviceId = d.id;
 
     labelEl.textContent = label(d);
 
@@ -663,9 +677,8 @@
        the switcher looked broken because it had no visible effect. One shared
        scale means the big phone just fits and the smaller ones are visibly
        smaller, which is the whole point of a device switcher. */
-    const bezel = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bezel')) || 0;
-    const refW = Math.max.apply(null, DEVICES.map(d => d.w)) + 2 * bezel;
-    const refH = Math.max.apply(null, DEVICES.map(d => d.h)) + 2 * bezel;
+    const refW = Math.max.apply(null, DEVICES.map(d => d.w + 2 * d.bezel));
+    const refH = Math.max.apply(null, DEVICES.map(d => d.h + 2 * d.bezel));
     if (!refW || !refH) return;
     const s = Math.min(1, w / refW, h / refH);
     stage.style.setProperty('--fit', Math.max(0.4, s).toFixed(4));

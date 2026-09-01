@@ -4,8 +4,8 @@
    Two layouts, one page:
 
    ≥ 900px   sidebar (the list) + stage (the running prototype).
-             The stage draws the iPhone bezel; the iframe inside it is
-             exactly one phone screen, at whichever iPhone the device
+             The stage draws the selected device body; the iframe inside it is
+             exactly one phone screen, at whichever model the device
              switcher is set to. --screen-w / --screen-h are the single
              source of that size; everything else derives from them.
 
@@ -65,10 +65,12 @@
   --screen-w: 402px;
   --screen-h: 874px;
 
-  /* A real iPhone's bezel is a uniform border of the same thickness on
-     every model in a generation, so this is a constant, not a per-device
-     number — the phone box is only ever the screen plus that border. */
+  /* Device geometry defaults to iPhone 17 and is replaced as one record by
+     shell.js when a different model is selected. */
   --bezel: 16px;
+  --phone-radius: 68px;
+  --screen-radius: 54px;
+  --screen-stroke: 6px;
 
   /* The toolbar's height, and therefore the band the stage reserves for it.
      A constant now — the bar is one row of cells that cannot wrap, so there
@@ -436,7 +438,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   width: 100%;
   height: 100%;
   padding: var(--bezel);
-  border-radius: 68px;
+  border-radius: var(--phone-radius);
   background: linear-gradient(145deg, #3f4147 0%, #17181c 55%, #3a3c42 100%);
   /* The one object on the page allowed to have depth — which is the whole
      point of taking it away from everything else. Two atmospheric drop
@@ -463,9 +465,38 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
   width: var(--screen-w);
   height: var(--screen-h);
   overflow: hidden;
-  border-radius: 54px;
+  border-radius: var(--screen-radius);
   background: var(--screen-fill);
-  box-shadow: 0 0 0 6px #000;
+  box-shadow: 0 0 0 var(--screen-stroke) #000;
+}
+:root[data-device-platform='android'] .phone {
+  background: linear-gradient(145deg, #3a3d43 0%, #16171a 58%, #2b2e33 100%);
+  box-shadow:
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.2),
+    inset 0 0 2px 3px rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.65),
+    0 24px 60px -16px rgba(23, 32, 34, 0.28);
+}
+:root[data-device-id='galaxy-a16-5g'] .phone {
+  background: linear-gradient(145deg, #26303a 0%, #10151a 58%, #202933 100%);
+}
+:root[data-device-id='galaxy-s25-ultra'] .phone {
+  background: linear-gradient(145deg, #777770 0%, #272824 58%, #575851 100%);
+}
+:root[data-device-platform='android'] .pb-action,
+:root[data-device-platform='android'] .pb-voldown { display: none; }
+:root[data-device-platform='android'] .pb-volup {
+  top: 168px;
+  right: -2.5px;
+  left: auto;
+  width: 3px;
+  height: 66px;
+}
+:root[data-device-platform='android'] .pb-power {
+  top: 252px;
+  right: -2.5px;
+  width: 3px;
+  height: 74px;
 }
 .phone-screen iframe {
   display: block;
