@@ -430,8 +430,8 @@ three sit at `translateX(0)` and the last one in the document wins.
 ### An answer belongs where the question was asked
 
 A pull that comes back with nothing used to raise a toast at the bottom of
-the screen, which is answering somewhere else. Now the spinner hands its place
-in the refresh gutter to the sentence — "You're all caught up" — the sentence
+the screen, which is answering somewhere else. Now the brand loader hands its
+place in the refresh gutter to the sentence — "You're all caught up" — the sentence
 is readable for a second, and then the gutter closes. Same gesture, same
 place, one less floating object.
 
@@ -621,11 +621,11 @@ Pull to refresh is the standing gesture on this screen, not a one-shot
 animation. From the top of the list a drag moves the **track** the cards sit
 on (the refresh gutter lives at `bottom: 100%` of that track, so it comes
 into view with the pull and leaves no gap behind when the list springs
-back), the spinner fades in and turns with the finger, and past 48 the
-release commits: the list holds open at 64, the green spinner runs for a few
-turns, the new cards land while it is still held, and only then does the
-list close over them. A list that changed under the eye would be worse than
-one that waited.
+back), the 20px Alva brand loader fades in and turns with the finger, and past
+48 the release commits: the list holds open at 64, the loader runs at 720ms
+linear for 1150ms, the new cards land while it is still held, and only then
+does the list close over them. A list that changed under the eye would be
+worse than one that waited.
 
 `Pill · New cards` is that same refresh with a number on it. It sits 8 below
 the topbar, centred, on `main/m1` with the library's `Shadow L (10 20 8)` —
@@ -635,7 +635,7 @@ one.
 
 **There are two cards waiting, and only the first refresh gets them.** Every
 refresh after that is the other half of the state a feed has to show: the
-spinner runs its turns, nothing new comes back, and the list says so —
+brand loader runs, nothing new comes back, and the list says so —
 *You're all caught up*. A prototype that always produces content teaches the
 wrong thing about a feed.
 
@@ -666,8 +666,8 @@ box-shadow: inset 0 0 0 var(--hair) var(--l2);     /* a ring, radius-aware */
 
 A hairline that costs the layout nothing is also why the cards now measure
 exactly what Figma says — 423 / 525.06 / 581 — instead of half a pixel more
-each. The ticker divider is a 0.5-wide element with a background, and the
-only 2px arc left is the refresh spinner: an indicator, not an edge.
+each. The ticker divider is a 0.5-wide element with a background; refresh now
+uses the Library's 20px four-tile brand loader rather than a stroked ring.
 
 ### The line belongs to the top of a card
 

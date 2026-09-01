@@ -1666,15 +1666,15 @@
      The feed, and the pull that refreshes it
 
      Pull-to-refresh is the standing gesture on this screen: from the top of
-     the list, a drag down moves the track, brings the spinner into view and
-     — past 48 — commits. The pill is the same refresh with a number on it,
-     so tapping it runs exactly the same sequence rather than a second one.
+     the list, a drag down moves the track, brings the brand loader into view
+     and — past 48 — commits. The pill is the same refresh with a number on
+     it, so tapping it runs exactly the same sequence rather than a second one.
      ────────────────────────────── */
 
   const feed = document.getElementById('feed');
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
-  const spinner = document.getElementById('spinner');
+  const refreshLoader = document.getElementById('refreshLoader');
   const refreshNote = document.getElementById('refreshNote');
   const refreshNoteText = document.getElementById('refreshNoteText');
   const pill = document.getElementById('newPill');
@@ -1684,7 +1684,7 @@
   const PULL_MAX = 96;      /* how far the list can be dragged */
   const PULL_TRIGGER = 48;  /* past here, releasing commits the refresh */
   const PULL_REST = 64;     /* where the list sits while it loads */
-  const SPIN_MS = 1150;     /* a few turns of the spinner before the list changes */
+  const REFRESH_WAIT_MS = 1150; /* the design's held loading interval */
 
   let refreshing = false;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
@@ -2054,7 +2054,7 @@
 
   /* There are two cards waiting, and only the first refresh gets them. Every
      refresh after that is the other half of the state a feed has to show:
-     the spinner runs, nothing new comes back, and the list says so. */
+     the brand loader runs, nothing new comes back, and the list says so. */
   function nextBatch() {
     if (served) return [];
     served = true;
@@ -2075,9 +2075,9 @@
   function setPull(y) {
     track.style.transform = y ? 'translate3d(0,' + y + 'px,0)' : '';
     track.classList.toggle('pulled', y > 0);
-    if (!spinner.classList.contains('spinning')) {
-      spinner.style.opacity = Math.min(1, y / PULL_TRIGGER).toFixed(3);
-      spinner.style.transform = 'rotate(' + (y * 4).toFixed(1) + 'deg)';
+    if (!refreshLoader.classList.contains('spinning')) {
+      refreshLoader.style.opacity = Math.min(1, y / PULL_TRIGGER).toFixed(3);
+      refreshLoader.style.transform = 'rotate(' + (y * 4).toFixed(1) + 'deg)';
     }
   }
 
@@ -2100,11 +2100,11 @@
     feed.scrollTop = 0;
 
     await springTo(PULL_REST);
-    spinner.style.opacity = '1';
-    spinner.style.transform = '';
-    spinner.classList.add('spinning');
+    refreshLoader.style.opacity = '1';
+    refreshLoader.style.transform = '';
+    refreshLoader.classList.add('spinning');
 
-    await wait(SPIN_MS);
+    await wait(REFRESH_WAIT_MS);
 
     const fresh = nextBatch();
 
@@ -2122,16 +2122,16 @@
         /* Measured, so it has to happen after the node is in the document. */
         foldCard(node);
       });
-      spinner.classList.remove('spinning');
-      spinner.style.opacity = '0';
+      refreshLoader.classList.remove('spinning');
+      refreshLoader.style.opacity = '0';
       await springTo(0);
     } else {
       /* Nothing came back, so the answer goes where the question was asked:
-         the spinner hands its place to the sentence, the sentence is readable
+         the loader hands its place to the sentence, the sentence is readable
          for a second, and then the gutter closes. A toast at the other end of
          the screen would be answering somewhere else entirely. */
-      spinner.classList.remove('spinning');
-      spinner.style.opacity = '0';
+      refreshLoader.classList.remove('spinning');
+      refreshLoader.style.opacity = '0';
       refreshNoteText.textContent = 'You’re all caught up';
       refreshNote.classList.add('show');
       await wait(1000);
@@ -2182,7 +2182,7 @@
     }
 
     if (pullY >= PULL_TRIGGER) refresh();
-    else springTo(0).then(() => { spinner.style.opacity = '0'; });
+    else springTo(0).then(() => { refreshLoader.style.opacity = '0'; });
     pullY = 0;
   }
 
@@ -3328,8 +3328,8 @@
     closeSheet(true);
     closeFullChart();
     setPull(0);
-    spinner.classList.remove('spinning');
-    spinner.style.opacity = '0';
+    refreshLoader.classList.remove('spinning');
+    refreshLoader.style.opacity = '0';
     followed.clear();
     followed.add('GOOG');
     followed.add('BABA');

@@ -481,7 +481,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background: var(--bg-b0);
 }
 /* When the pull comes back with nothing, the gutter says so in the place the
-   spinner was standing and then closes a second later. A toast for this is
+   loader was standing and then closes a second later. A toast for this is
    the wrong object: the answer belongs where the question was asked. */
 .refresh-note {
   position: absolute;
@@ -499,18 +499,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .refresh-note .ic { width: 20px; height: 20px; }
 .refresh-note.show { opacity: 1; }
 
-.spinner {
+.refresh-loader {
+  display: block;
   width: 20px;
   height: 20px;
-  border: 2px solid var(--m1-10);
-  border-top-color: var(--m1);
-  border-radius: 50%;
   opacity: 0;
+  transform-origin: center;
 }
-/* The one stroke that is not a hairline: at 20px a 0.5px ring would not
-   read as a spinner, so the indicator keeps a 2px arc. */
-.spinner.spinning { animation: spin .72s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.refresh-loader.spinning { animation: loader-quarter-turn .72s linear infinite; }
+:root[data-theme="dark"] .refresh-loader { filter: invert(1) hue-rotate(180deg); }
 
 /* ── Feed card ── */
 
@@ -2211,4 +2208,5 @@ html.embedded .phone-screen {
     transition-duration: .01ms !important;
     animation-duration: .01ms !important;
   }
+  .refresh-loader.spinning { animation: none !important; }
 }
