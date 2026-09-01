@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=62">
+<link rel="stylesheet" href="mvp.css?v=63">
 </head>
 <body>
 
@@ -67,7 +67,7 @@
 
             <button class="pill" id="newPill" type="button">
               <span class="ic" style="--ic:url(assets/ui-arrow-up-l1.svg)" aria-hidden="true"></span>
-              <span id="newPillText">3 new feeds</span>
+              <span id="newPillText">2 new feeds</span>
             </button>
           </section>
 
@@ -286,9 +286,10 @@
 
         <nav class="tab-bar" id="tabBar" aria-label="Main">
           <div class="tabs" role="tablist">
-            <button class="tab is-active" type="button" role="tab" data-tab="feed" aria-selected="true">
-              <span class="ic ic-off" style="--ic:url(assets/ui-heart-l.svg)" aria-hidden="true"></span>
-              <span class="ic ic-on" style="--ic:url(assets/ui-heart-f.svg)" aria-hidden="true"></span>
+            <button class="tab is-active" type="button" role="tab" data-tab="feed" aria-selected="true" aria-label="For You">
+              <span class="ic ic-off" style="--ic:url(assets/ui-for-you-l.svg)" aria-hidden="true"></span>
+              <span class="ic ic-on" style="--ic:url(assets/ui-for-you-f.svg)" aria-hidden="true"></span>
+              <span class="ic ic-refresh" style="--ic:url(assets/ui-for-you-refresh-f.svg)" aria-hidden="true"></span>
               <span>For You</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
@@ -374,6 +375,6 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=62"></script>
+<script src="mvp.js?v=63"></script>
 </body>
 </html>

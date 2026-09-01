@@ -735,14 +735,11 @@
   /* ──────────────────────────────
      The feed
 
-     Seventeen cards at rest and three more behind the pill. Eleven of the
-     twenty are the hourly Alpha Radar batches Alva published on the morning of
-     26 August 2026, quoted as they ran. The production playbook only produces
-     that one type, so the other nine — five unusual-move cards and four
-     company events — are written for this prototype, and the list is ordered
-     so no more than two cards of a kind ever run together. A feed that is
-     eight source cards deep is not a feed, it is a digest: the three types
-     have to interleave the way they do in a live list.
+     Seventeen cards at rest and two more behind the pill. The four cards that
+     mirror the latest reference screen lead, followed by thirteen vetted
+     source, unusual-move, and company-event cards from the fuller prototype.
+     A feed that is only four cards deep is not a feed, it is a digest: the
+     three types have to interleave the way they do in a live list.
 
      A source card is: the thesis, the passage it stands on, the read, the
      chart. That is the shape of every batch on the production feed, and it
@@ -1132,6 +1129,11 @@
       ],
     },
   ];
+
+  /* The four current reference cards stay first; thirteen already-vetted
+     cards from the fuller prototype follow them. This restores a feed-length
+     list without inventing new market claims or changing the card grammar. */
+  const INITIAL_CARDS = [...CARDS, ...LEGACY_CARDS.slice(0, 13)];
 
   /* What the pill brings in: the 10:58 batch, which is exactly how the
      production playbook behaves — new batches at the top, full history
@@ -1655,6 +1657,7 @@
      ────────────────────────────── */
 
   const feed = document.getElementById('feed');
+  const feedTabButton = document.querySelector('.tab[data-tab="feed"]');
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
   const refreshLoader = document.getElementById('refreshLoader');
@@ -1998,7 +2001,7 @@
        the feed's order rather than of how many times it has been rebuilt. */
     mediaTurn = 0;
     cardsEl.replaceChildren();
-    CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
+    INITIAL_CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
     /* The full cards are in the document before this synchronous pass, but
        the browser has not painted them yet. */
     foldPass();
@@ -2244,6 +2247,9 @@
   function paintBar() {
     const p = Math.min(1, Math.max(0, feed.scrollTop / BAR_TRAVEL));
     app.style.setProperty('--bar-p', p.toFixed(4));
+    const refreshReady = feed.scrollTop >= Math.max(1, feed.clientHeight);
+    feedTabButton.classList.toggle('is-refresh-ready', refreshReady);
+    feedTabButton.setAttribute('aria-label', refreshReady ? 'Refresh For You' : 'For You');
   }
 
   feed.addEventListener('scroll', paintBar, { passive: true });
@@ -3196,44 +3202,65 @@
   let tabTransitionTimer = 0;
   let tabTransitionEnd = null;
 
-  /* Re-selecting a list tab is a navigation shortcut, so the first tap only
-     restores position. Feed refresh is deliberately a second tap at the top:
-     jumping and replacing content in one action would make the reading place
-     impossible to predict. */
+  /* Below one viewport, re-selecting a list tab only restores position. Once
+     For You has exposed the refresh variant, the same tap completes the quick
+     return and then refreshes: the icon makes that stronger action explicit. */
   function quickScrollTop(scroller) {
-    if (!scroller || scroller.scrollTop <= TAB_RESELECT_TOP) return false;
+    return new Promise(resolve => {
+      if (!scroller || scroller.scrollTop <= TAB_RESELECT_TOP) {
+        resolve(false);
+        return;
+      }
 
-    const oldFrame = tabScrollFrames.get(scroller);
-    if (oldFrame) window.cancelAnimationFrame(oldFrame);
+      const oldScroll = tabScrollFrames.get(scroller);
+      if (oldScroll) {
+        window.cancelAnimationFrame(oldScroll.frame);
+        oldScroll.resolve(true);
+      }
 
-    const from = scroller.scrollTop;
-    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      scroller.scrollTop = 0;
-      tabScrollFrames.delete(scroller);
-      return true;
-    }
-
-    const started = performance.now();
-    const step = now => {
-      const progress = Math.min(1, (now - started) / TAB_RESELECT_MS);
-      const eased = 1 - Math.pow(1 - progress, 4);
-      scroller.scrollTop = from * (1 - eased);
-      if (progress < 1) tabScrollFrames.set(scroller, window.requestAnimationFrame(step));
-      else {
+      const from = scroller.scrollTop;
+      const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduced) {
         scroller.scrollTop = 0;
         tabScrollFrames.delete(scroller);
+        resolve(true);
+        return;
       }
-    };
-    tabScrollFrames.set(scroller, window.requestAnimationFrame(step));
-    return true;
+
+      const started = performance.now();
+      const state = { frame: 0, resolve };
+      const step = now => {
+        const progress = Math.min(1, (now - started) / TAB_RESELECT_MS);
+        const eased = 1 - Math.pow(1 - progress, 4);
+        scroller.scrollTop = from * (1 - eased);
+        if (progress < 1) {
+          state.frame = window.requestAnimationFrame(step);
+        } else {
+          scroller.scrollTop = 0;
+          tabScrollFrames.delete(scroller);
+          resolve(true);
+        }
+      };
+      state.frame = window.requestAnimationFrame(step);
+      tabScrollFrames.set(scroller, state);
+    });
   }
 
-  function handleTabReselect(name) {
+  let feedReselectPending = false;
+
+  async function handleTabReselect(name) {
     if (name === 'feed') {
-      if (!quickScrollTop(feed)) refresh();
+      if (feedReselectPending) return;
+      feedReselectPending = true;
+      try {
+        const refreshAfterReturn = feedTabButton.classList.contains('is-refresh-ready');
+        const moved = await quickScrollTop(feed);
+        if (refreshAfterReturn || !moved) await refresh();
+      } finally {
+        feedReselectPending = false;
+      }
     } else if (name === 'market') {
-      quickScrollTop(marketScroll);
+      await quickScrollTop(marketScroll);
     }
   }
 
@@ -3305,7 +3332,7 @@
       const reselected = tab.classList.contains('is-active');
       closeSheet();
       hideToast();
-      if (reselected) handleTabReselect(name);
+      if (reselected) void handleTabReselect(name);
       else showTab(name);
     });
   });

@@ -12,7 +12,7 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 | | | Source |
 | --- | --- | --- |
 | `index.html` · `shell.css` · `shell.js` | **The shell** — the list, the stage, the phone mockup, and hash routing | — |
-| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed (three card types, eight items, a topbar that collapses on scroll), Market, Alva, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Appearance defaults to System, with durable Light and Dark overrides | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat / Alva](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Appearance](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=2932-26436) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=2244-19642) |
+| `mvp.html` · `mvp.css` · `mvp.js` | **MVP** — the whole loop: the For You feed (three card types, seventeen items, a topbar that collapses on scroll), Market, Alva, Me, and the three surfaces a card opens (its sources, a ticker, the chart fullscreen). Appearance defaults to System, with durable Light and Dark overrides | [For You](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1496-32177) · [Sources](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62549) · [Ticker](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=957-18126) · [Chat / Alva](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-62465) · [Me](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=360-37134) · [Appearance](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=2932-26436) · [Fullscreen chart](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=2244-19642) |
 | `mvp-onboarding.html` · `mvp-onboarding.css` · `mvp-onboarding.js` | **MVP onboarding** — welcome, choose what to follow with search/filter, turn on notifications, log in, then hand off to the MVP For You feed | [Welcome](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63760) · [Choose what to follow](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=545-63777) · [Notifications](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=1769-18035) · [Login](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=2585-90370) |
 | `alpha-radar.html` · `alpha-radar.css` · `alpha-radar.js` | **Alpha Radar mobile onboarding** — source selection, radar setup, login, and building states across 8 screens. On the three source-selection screens a collection card opens a member bottom sheet | [Alpha Radar onboarding](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=13241-205457) · [Collection member sheet](https://www.figma.com/design/DJ9Acp13FruTilsTdrE0id/Draft?node-id=14144-48781) |
 | `onboarding.html` · `styles.css` · `app.js` | **Immersive onboarding** — FinTwit Digest path, 6 screens | [Onboarding · Production v4 · FinTwit path](https://www.figma.com/design/A4jIwN4EMWr0fJVVGmCIsr/Mobile?node-id=1355-5243) |
@@ -427,11 +427,20 @@ screen keeps its scroll position while it is parked off to the side. The
 places have to be assigned before the first paint; leave them unset and all
 three sit at `translateX(0)` and the last one in the document wins.
 
+For You also implements the Tab Bar's
+[`Tab=1-Refresh`](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=3062-46266)
+variant. Its normal outlined and filled icons come directly from `for-you-l`
+and `for-you-f`. Once the feed has moved at least one current feed viewport,
+the filled icon becomes `for-you-refresh-f`. Re-selecting it then performs one
+continuous action: 240ms quick return to the top, followed immediately by the
+same refresh sequence as a pull. Below that one-screen threshold a re-select
+only returns to the top; when already at the top it refreshes directly.
+
 ### An answer belongs where the question was asked
 
 Every completed refresh now answers in the gutter where it started. The brand
 loader hands its place either to the actual returned count (`2 new feeds` in
-this demo's first batch) or to "You're all caught up" when the batch is empty.
+this demo's first batch) or to “You’re all caught up” when the batch is empty.
 The result remains readable for one second and then the gutter closes. Same
 gesture, same place, one less floating object.
 
@@ -440,9 +449,9 @@ owns the top rule and the first feed row owns the bottom one. Closing the
 gutter hides its top rule behind the topbar, so the resting feed keeps exactly
 one divider instead of stacking two strokes on the same edge.
 
-The returned count is passive status, so it is `text/n5` gray text only: no
-icon and no success color. The empty-batch confirmation is green and carries
-the library's `check-f2` to its left, at 20 with an 8 gap and 14/22 text.
+The returned count is passive status, so it is Medium 14/22 in `text/n5` gray:
+no icon and no success color. The empty-batch confirmation is Regular 14/22
+in green and carries the library's `check-f2` to its left, at 20 with an 8 gap.
 `check-f2` is a circle with the tick *subtracted* from it, so as a mask it
 paints a green disc and lets the ground show through the tick. That is why it
 works in both modes without a second asset: in Light the tick is white because
