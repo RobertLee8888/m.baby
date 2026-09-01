@@ -497,6 +497,11 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transition: opacity .2s ease;
 }
 .refresh-result .ic { width: 20px; height: 20px; }
+.refresh-result.is-updated {
+  gap: 0;
+  color: var(--n5);
+}
+.refresh-result.is-updated .ic { display: none; }
 .refresh-result.show { opacity: 1; }
 
 .refresh-loader {

@@ -2074,14 +2074,15 @@
 
   const wait = ms => new Promise(r => window.setTimeout(r, ms));
 
-  async function showRefreshResult(message) {
+  async function showRefreshResult(message, resultType) {
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
     refreshResultText.textContent = message;
+    refreshResult.classList.toggle('is-updated', resultType === 'updated');
     refreshResult.classList.add('show');
     await wait(1000);
     await springTo(0);
-    refreshResult.classList.remove('show');
+    refreshResult.classList.remove('show', 'is-updated');
     refreshResultText.textContent = '';
   }
 
@@ -2126,7 +2127,7 @@
       : fresh.length > 1
         ? fresh.length + ' new feeds'
         : 'You’re all caught up';
-    await showRefreshResult(resultMessage);
+    await showRefreshResult(resultMessage, fresh.length ? 'updated' : 'caught-up');
 
     track.classList.remove('pulled');
     refreshing = false;

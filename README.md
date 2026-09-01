@@ -435,14 +435,13 @@ this demo's first batch) or to "You're all caught up" when the batch is empty.
 The result remains readable for one second and then the gutter closes. Same
 gesture, same place, one less floating object.
 
-The sentence is green and carries the library's `check-f2` to its left, at 20
-with an 8 gap and 14/22 text — the Toast component's own success layout,
-because that is exactly what this is: a success message that happens to be
-rendered in a gutter instead of a floating box. `check-f2` is a circle with the
-tick *subtracted* from it, so as a mask it paints a green disc and lets the
-ground show through the tick. That is why it works in both modes without a
-second asset: in Light the tick is white because the gutter is white, and in
-Dark it is near-black because the gutter is.
+The returned count is passive status, so it is `text/n5` gray text only: no
+icon and no success color. The empty-batch confirmation is green and carries
+the library's `check-f2` to its left, at 20 with an 8 gap and 14/22 text.
+`check-f2` is a circle with the tick *subtracted* from it, so as a mask it
+paints a green disc and lets the ground show through the tick. That is why it
+works in both modes without a second asset: in Light the tick is white because
+the gutter is white, and in Dark it is near-black because the gutter is.
 
 ### The read boundary
 
@@ -640,9 +639,10 @@ brand loader runs, nothing new comes back, and the list says so —
 *You're all caught up*. A prototype that always produces content teaches the
 wrong thing about a feed.
 
-Both branches use the same result state: a library `check-f2`, the dynamic
-message, a one-second hold, and the same 420ms spring close. No successful
-refresh can finish without a visible result.
+Both branches use the same result gutter, one-second hold, and 420ms spring
+close. A returned count is gray text only; the caught-up branch uses the
+library `check-f2` with its green message. No successful refresh can finish
+without a visible result.
 
 When the two do arrive, the boundary between them and what you had already
 read is marked once, in place, the way Twitter marks it: a hairline with
