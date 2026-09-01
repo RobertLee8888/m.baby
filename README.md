@@ -26,6 +26,11 @@ that open out of a feed card (its sources, a ticker, the chart fullscreen).
 Everything below is measured off the Figma frames listed in Contents, not
 eyeballed from a screenshot.
 
+Re-selecting the active For You or Market tab returns its list to the top in
+240ms without discarding the current content. Once For You is already at the
+top, another tap runs the same refresh sequence as pull-to-refresh; Market has
+no refresh action on a second tap.
+
 Three things in a card are doors, and each one opens the surface it points at
 rather than a toast:
 

@@ -3161,6 +3161,50 @@
 
   const TAB_ORDER = ['feed', 'chat', 'market', 'me'];
   const tabBar = document.getElementById('tabBar');
+  const TAB_RESELECT_TOP = 2;
+  const TAB_RESELECT_MS = 240;
+  const tabScrollFrames = new WeakMap();
+
+  /* Re-selecting a list tab is a navigation shortcut, so the first tap only
+     restores position. Feed refresh is deliberately a second tap at the top:
+     jumping and replacing content in one action would make the reading place
+     impossible to predict. */
+  function quickScrollTop(scroller) {
+    if (!scroller || scroller.scrollTop <= TAB_RESELECT_TOP) return false;
+
+    const oldFrame = tabScrollFrames.get(scroller);
+    if (oldFrame) window.cancelAnimationFrame(oldFrame);
+
+    const from = scroller.scrollTop;
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) {
+      scroller.scrollTop = 0;
+      tabScrollFrames.delete(scroller);
+      return true;
+    }
+
+    const started = performance.now();
+    const step = now => {
+      const progress = Math.min(1, (now - started) / TAB_RESELECT_MS);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      scroller.scrollTop = from * (1 - eased);
+      if (progress < 1) tabScrollFrames.set(scroller, window.requestAnimationFrame(step));
+      else {
+        scroller.scrollTop = 0;
+        tabScrollFrames.delete(scroller);
+      }
+    };
+    tabScrollFrames.set(scroller, window.requestAnimationFrame(step));
+    return true;
+  }
+
+  function handleTabReselect(name) {
+    if (name === 'feed') {
+      if (!quickScrollTop(feed)) refresh();
+    } else if (name === 'market') {
+      quickScrollTop(marketScroll);
+    }
+  }
 
   function showTab(name) {
     const at = TAB_ORDER.indexOf(name);
@@ -3187,9 +3231,12 @@
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      const name = tab.dataset.tab;
+      const reselected = tab.classList.contains('is-active');
       closeSheet();
       hideToast();
-      showTab(tab.dataset.tab);
+      if (reselected) handleTabReselect(name);
+      else showTab(name);
     });
   });
 
