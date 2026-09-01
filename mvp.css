@@ -63,6 +63,7 @@
   --l12: rgba(0, 0, 0, .12);
   --l2: rgba(0, 0, 0, .2);
   --l3: rgba(0, 0, 0, .3);
+  --lr12: rgba(255, 255, 255, .12);
 
   /* text/* */
   --n2: rgba(0, 0, 0, .2);
@@ -85,9 +86,11 @@
   --m2-10: rgba(33, 150, 243, .1);
   --m3: #2a9b7d;
   --m4: #e05357;
+  --btn-primary-reverse: #ffffff;
 
   /* common/* */
   --white: #ffffff;
+  --common-black-50: rgba(0, 0, 0, .5);
   --amber: #e6a91a;
 
   /* Roles the chart needs. TradingView draws on a canvas, so these are
@@ -146,6 +149,7 @@
   --l12: rgba(255, 255, 255, .12);
   --l2: rgba(255, 255, 255, .2);
   --l3: rgba(255, 255, 255, .3);
+  --lr12: rgba(0, 0, 0, .12);
 
   --g3: #5b5c5f;
 
@@ -156,6 +160,7 @@
   --n9: rgba(255, 255, 255, .9);
   --n10: #ffffff;
   --nr10: #000000;
+  --btn-primary-reverse: #15161a;
 
   --chart-grid: rgba(255, 255, 255, .07);
   --chart-axis: rgba(255, 255, 255, .45);
@@ -668,7 +673,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    the frame's −45 / −135 / −90 are +45 / +135 / +90 here. Same three
    bearings, opposite sign — and getting the sign wrong points every call at
    the wrong quadrant, which is the one mistake this component cannot survive. */
-.stance-dial .ic { width: 8px; height: 8px; color: var(--white); transform: rotate(45deg); }
+.stance-dial .ic { width: 8px; height: 8px; color: var(--btn-primary-reverse); transform: rotate(45deg); }
 .stance-txt { color: var(--m3); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
 
 .stance.bear .stance-dial { background: var(--m4); }
@@ -1580,10 +1585,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   place-items: center;
   width: 24px;
   height: 24px;
-  border: 2px solid var(--white);
+  border: 2px solid var(--bg-container);
   border-radius: 960px;
-  background: var(--bg-b0);
-  color: var(--n5);
+  background: var(--white);
+  color: var(--common-black-50);
 }
 .me-badge .ic { width: 14px; height: 14px; }
 .me-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; }
@@ -1817,7 +1822,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: 32px;
   border-radius: 960px;
   background: var(--b10);
-  box-shadow: inset 0 0 0 var(--hair) var(--l12);
+  box-shadow: inset 0 0 0 var(--hair) var(--lr12);
   object-fit: cover;
 }
 /* The platform badge rides the avatar's own corner (17.5, 17.5 of 32). */
@@ -1831,8 +1836,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: 16px;
   border-radius: 960px;
   background: var(--b10);
-  box-shadow: 0 0 0 var(--hair) var(--l12);
-  color: #000;
+  box-shadow: 0 0 0 var(--hair) var(--lr12);
+  color: var(--n10);
 }
 .src-badge .ic { width: 10px; height: 10px; }
 .src-id { display: flex; flex: 1 1 auto; height: 40px; flex-direction: column; min-width: 0; overflow: hidden; }
