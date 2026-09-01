@@ -436,6 +436,13 @@ continuous action: 240ms quick return to the top, followed immediately by the
 same refresh sequence as a pull. Below that one-screen threshold a re-select
 only returns to the top; when already at the top it refreshes directly.
 
+The two active icons occupy one fixed 22×22 clipped slot and exchange places
+as a vertical track over 240ms. Entering the refresh-ready state pushes the
+filled For You icon up by one icon height while Refresh rises from below;
+leaving that state brings For You back from above and pushes Refresh down. The
+label, hit target, and tab-bar geometry never move. Reduced-motion mode makes
+the same state change effectively instantaneous.
+
 ### An answer belongs where the question was asked
 
 Every completed refresh now answers in the gutter where it started. The brand

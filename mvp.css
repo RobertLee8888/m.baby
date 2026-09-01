@@ -1329,9 +1329,50 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .tab[aria-selected="true"], .tab.is-active { color: var(--n9); }
 .tab[aria-selected="true"] .ic-on, .tab.is-active .ic-on { display: inline-block; }
 .tab[aria-selected="true"] .ic-off, .tab.is-active .ic-off { display: none; }
-.tab[data-tab="feed"][aria-selected="true"].is-refresh-ready .ic-on { display: none; }
-.tab[data-tab="feed"][aria-selected="true"].is-refresh-ready .ic-refresh { display: inline-block; }
 .tab[aria-selected="true"] span, .tab.is-active span { color: var(--n9); font-weight: 500; }
+
+/* For You and Refresh share one clipped icon slot. Crossing the one-screen
+   threshold moves the pair as a vertical track: Refresh enters from below as
+   For You leaves above; reversing the state runs that same track backwards. */
+.tab-icon-slot {
+  position: relative;
+  display: block;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  overflow: hidden;
+}
+.tab[data-tab="feed"] .tab-icon-slot .ic {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  transition: opacity .12s ease, transform .24s var(--ease);
+  will-change: transform;
+}
+.tab[data-tab="feed"] .tab-icon-slot .ic-off {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+.tab[data-tab="feed"] .tab-icon-slot .ic-on {
+  transform: translate3d(0, 0, 0);
+}
+.tab[data-tab="feed"] .tab-icon-slot .ic-refresh {
+  transform: translate3d(0, 100%, 0);
+}
+.tab[data-tab="feed"][aria-selected="true"] .tab-icon-slot .ic-off {
+  opacity: 0;
+}
+.tab[data-tab="feed"][aria-selected="true"] .tab-icon-slot .ic-on,
+.tab[data-tab="feed"][aria-selected="true"] .tab-icon-slot .ic-refresh {
+  opacity: 1;
+}
+.tab[data-tab="feed"][aria-selected="true"].is-refresh-ready .tab-icon-slot .ic-on {
+  transform: translate3d(0, -100%, 0);
+}
+.tab[data-tab="feed"][aria-selected="true"].is-refresh-ready .tab-icon-slot .ic-refresh {
+  transform: translate3d(0, 0, 0);
+}
 
 .home-indicator {
   position: absolute;

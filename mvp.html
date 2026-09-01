@@ -288,9 +288,11 @@
         <nav class="tab-bar" id="tabBar" aria-label="Main">
           <div class="tabs" role="tablist">
             <button class="tab is-active" type="button" role="tab" data-tab="feed" aria-selected="true" aria-label="For You">
-              <span class="ic ic-off" style="--ic:url(assets/ui-for-you-l.svg)" aria-hidden="true"></span>
-              <span class="ic ic-on" style="--ic:url(assets/ui-for-you-f.svg)" aria-hidden="true"></span>
-              <span class="ic ic-refresh" style="--ic:url(assets/ui-for-you-refresh-f.svg)" aria-hidden="true"></span>
+              <span class="tab-icon-slot" aria-hidden="true">
+                <span class="ic ic-off" style="--ic:url(assets/ui-for-you-l.svg)"></span>
+                <span class="ic ic-on" style="--ic:url(assets/ui-for-you-f.svg)"></span>
+                <span class="ic ic-refresh" style="--ic:url(assets/ui-for-you-refresh-f.svg)"></span>
+              </span>
               <span>For You</span>
             </button>
             <button class="tab" type="button" role="tab" data-tab="chat" aria-selected="false">
