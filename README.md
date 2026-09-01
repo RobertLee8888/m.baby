@@ -444,18 +444,20 @@ this demo's first batch) or to “You’re all caught up” when the batch is em
 The result remains readable for one second and then the gutter closes. Same
 gesture, same place, one less floating object.
 
-While the gutter is open it has a hairline on both edges: the refresh surface
-owns the top rule and the first feed row owns the bottom one. Closing the
-gutter hides its top rule behind the topbar, so the resting feed keeps exactly
-one divider instead of stacking two strokes on the same edge.
+While the gutter is open the refresh surface itself owns matching hairlines on
+both edges. The first feed row temporarily gives up its coincident top rule, so
+the lower edge never doubles; when the refresh surface reaches zero height that
+row takes the rule back and the resting feed returns to its original single
+divider. There is no separate pull-only rule pinned below the title.
 
-The title boundary is separate from those travelling gutter edges. It appears
-on the first pulled pixel, even though the title itself is still fully expanded,
-and stays pinned below the title throughout the gesture. The 20px loader is
-centred in the part of the gutter that is actually exposed at every pull
-distance, not in the eventual 64px committed height; result text follows the
-same centre while the gutter springs closed. The floating new-feed pill hides
-for the duration of the gesture, so it cannot occupy or cover that centre.
+The refresh surface is always exactly as tall as the distance exposed by the
+gesture, up to 96px. Its background therefore fills the entire opened module,
+with no second spacer surface above it, and the 20px loader remains at the
+module's true vertical centre even on a long pull. A committed refresh settles
+at 64px and keeps that same height through Loading and the returned text. Scroll
+anchoring is disabled for this scroller, so inserting the new batch cannot move
+that held module between states. The floating new-feed pill hides for the
+duration of the gesture, so it cannot occupy or cover the centre.
 
 The returned count is passive status, so it is Medium 14/22 in `text/n5` gray:
 no icon and no success color. The empty-batch confirmation is Regular 14/22
@@ -645,10 +647,12 @@ on (the refresh gutter lives at `bottom: 100%` of that track, so it comes
 into view with the pull and leaves no gap behind when the list springs back).
 The 20px Alva mark is built clockwise rather than faded in as one image: its
 top-left, top-right, bottom-right, and bottom-left tiles complete over pull
-distances 0–12, 12–24, 24–36, and 36–48px. It does not rotate while the finger
-is down. At exactly 48px the fourth tile becomes complete and one light haptic
-marks Ready. Pulling back to 40px or lower re-arms that feedback, so a later
-crossing can confirm the threshold again without buzzing continuously.
+distances 0–12, 12–24, 24–36, and 36–48px. Every tile is neutral `grey/g3`
+while the finger is down; the mark does not adopt brand colours or rotate until
+the refresh commits. At exactly 48px the fourth tile becomes complete and one
+light haptic marks Ready. Pulling back to 40px or lower re-arms that feedback,
+so a later crossing can confirm the threshold again without buzzing
+continuously.
 
 Releasing at or above 48 commits: the list holds open at 64, and the now-complete
 20px loader switches to the same 1s four-step quarter-turn used by the 40px

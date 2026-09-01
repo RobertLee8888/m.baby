@@ -426,10 +426,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: scaleY(.5);
   transform-origin: top;
 }
-/* Pulling opens a new surface below the expanded title. Its boundary must be
-   present from the first pulled pixel; scroll progress is still zero here, so
-   the normal collapse-driven opacity above cannot reveal it. */
-.screen.is-pulling .bar-rule { opacity: 1; }
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
@@ -454,6 +450,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  overflow-anchor: none;
   touch-action: pan-y;
 }
 
@@ -466,7 +463,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   inherits: true;
   initial-value: 0px;
 }
-.feed-track { position: relative; will-change: transform; }
+.feed-track { position: relative; overflow-anchor: none; will-change: transform; }
 .feed-track.springing { transition: transform .42s var(--ease); }
 /* Animate the exposed-height input with the exact same timing as the track.
    The loader and result therefore keep the true visual centre during both
@@ -495,13 +492,18 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   bottom: 0;
   left: 0;
   display: grid;
-  height: var(--refresh-h);
+  height: var(--pull-y);
+  overflow: hidden;
   place-items: center;
   background: var(--bg-b0);
-  /* The card below owns the gutter's bottom rule. This top rule travels back
-     behind the topbar when the gutter closes, leaving one resting hairline. */
-  box-shadow: inset 0 var(--hair) 0 var(--l12);
+  box-shadow: none;
 }
+/* While the module is open, both edges belong to the module. The first card
+   gives up its coincident top rule, then takes it back when the module closes. */
+.feed-track.pulled .refresh {
+  box-shadow: inset 0 var(--hair) 0 var(--l12), inset 0 calc(-1 * var(--hair)) 0 var(--l12);
+}
+.feed-track.pulled .cards > .card:first-child { box-shadow: none; }
 /* Every refresh resolves in the gutter where it started: either the actual
    number of new feeds or the caught-up message, then it closes one second
    later. A toast would separate the answer from the gesture that asked. */
@@ -519,9 +521,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   letter-spacing: .01em;
   opacity: 0;
   transition: opacity .2s ease;
-  /* The result stays centred in the exposed part of the gutter while that
-     gutter springs closed, rather than travelling toward its lower edge. */
-  transform: translateY(calc((var(--refresh-h) - var(--pull-y)) / 2));
 }
 .refresh-result .ic { width: 20px; height: 20px; }
 .refresh-result.is-updated {
@@ -534,9 +533,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .refresh-loader {
   position: relative;
-  /* At d=24 only 24px of the 64px gutter is visible. Centre the mark in that
-     visible slice; when d reaches 64 the offset naturally becomes zero. */
-  top: calc((var(--refresh-h) - var(--pull-y)) / 2);
   display: block;
   width: 20px;
   height: 20px;
@@ -549,17 +545,23 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   width: 7.5px;
   height: 7.5px;
   border-radius: 2px;
+  background: var(--g3);
+  filter: none;
   opacity: var(--tile-progress);
   transform: scale(calc(.62 + var(--tile-progress) * .38));
   transform-origin: center;
 }
-.refresh-loader .tile-1 { top: 1px; left: 1px; background: var(--m1); }
-.refresh-loader .tile-2 { top: 1px; left: 11.5px; background: var(--n10); filter: opacity(.2); }
-.refresh-loader .tile-3 { top: 11.5px; left: 11.5px; background: var(--n10); filter: opacity(.2); }
-.refresh-loader .tile-4 { top: 11.5px; left: 1px; background: var(--m1); filter: opacity(.5); }
+.refresh-loader .tile-1 { top: 1px; left: 1px; }
+.refresh-loader .tile-2 { top: 1px; left: 11.5px; }
+.refresh-loader .tile-3 { top: 11.5px; left: 11.5px; }
+.refresh-loader .tile-4 { top: 11.5px; left: 1px; }
 /* Same four-beat brand motion as the 40px startup loader, at half size. */
 .refresh-loader.spinning { animation: loader-quarter-turn 1s steps(4, end) infinite; }
 .refresh-loader.spinning .refresh-loader-tile { opacity: 1; transform: scale(1); }
+.refresh-loader.spinning .tile-1 { background: var(--m1); }
+.refresh-loader.spinning .tile-2,
+.refresh-loader.spinning .tile-3 { background: var(--n10); filter: opacity(.2); }
+.refresh-loader.spinning .tile-4 { background: var(--m1); filter: opacity(.5); }
 
 /* ── Feed card ── */
 
