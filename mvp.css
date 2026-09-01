@@ -421,6 +421,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: scaleY(.5);
   transform-origin: top;
 }
+/* Pulling opens a new surface below the expanded title. Its boundary must be
+   present from the first pulled pixel; scroll progress is still zero here, so
+   the normal collapse-driven opacity above cannot reveal it. */
+.screen.is-pulling .bar-rule { opacity: 1; }
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
@@ -452,8 +456,17 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    gutter can live directly above the first card (`bottom: 100%`) and come
    into view with it — no gap left behind when the list springs back. */
 
+@property --pull-y {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
 .feed-track { position: relative; will-change: transform; }
 .feed-track.springing { transition: transform .42s var(--ease); }
+/* Animate the exposed-height input with the exact same timing as the track.
+   The loader and result therefore keep the true visual centre during both
+   commit and cancel springs, not only while they are attached to the finger. */
+.feed-track.springing .refresh { transition: --pull-y .42s var(--ease); }
 
 /* The scroller starts under the status bar, and a spacer the height of the
    expanded topbar stands where the topbar is. That is what lets the bar
@@ -471,6 +484,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    is what makes both of them read as gaps rather than as rows. */
 .lead { position: relative; height: var(--topbar-h); background: var(--bg-b0); }
 .refresh {
+  --pull-y: 0px;
   position: absolute;
   right: 0;
   bottom: 0;
@@ -493,13 +507,16 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--m3);
+  color: var(--m1);
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
-  letter-spacing: 0;
+  letter-spacing: .01em;
   opacity: 0;
   transition: opacity .2s ease;
+  /* The result stays centred in the exposed part of the gutter while that
+     gutter springs closed, rather than travelling toward its lower edge. */
+  transform: translateY(calc((var(--refresh-h) - var(--pull-y)) / 2));
 }
 .refresh-result .ic { width: 20px; height: 20px; }
 .refresh-result.is-updated {
@@ -512,6 +529,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 
 .refresh-loader {
   position: relative;
+  /* At d=24 only 24px of the 64px gutter is visible. Centre the mark in that
+     visible slice; when d reaches 64 the offset naturally becomes zero. */
+  top: calc((var(--refresh-h) - var(--pull-y)) / 2);
   display: block;
   width: 20px;
   height: 20px;
@@ -1046,6 +1066,14 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   opacity: 0;
   pointer-events: none;
   transform: translateX(-50%) translateY(-8px) scale(.96);
+}
+/* Pulling uses the same centre line as the floating new-feed affordance. Hide
+   the pill for the duration of the gesture so it never covers the loader. */
+.screen.is-pulling .pill {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(-8px) scale(.96);
+  transition: none;
 }
 
 /* ── Market tab ── */

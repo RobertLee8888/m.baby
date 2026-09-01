@@ -1657,10 +1657,12 @@
      ────────────────────────────── */
 
   const feed = document.getElementById('feed');
+  const feedScreen = document.getElementById('screenFeed');
   const feedTabButton = document.querySelector('.tab[data-tab="feed"]');
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
   const refreshLoader = document.getElementById('refreshLoader');
+  const refreshSurface = refreshLoader.closest('.refresh');
   const refreshTiles = Array.from(refreshLoader.querySelectorAll('.refresh-loader-tile'));
   const refreshResult = document.getElementById('refreshResult');
   const refreshResultText = document.getElementById('refreshResultText');
@@ -2063,6 +2065,8 @@
   function setPull(y) {
     track.style.transform = y ? 'translate3d(0,' + y + 'px,0)' : '';
     track.classList.toggle('pulled', y > 0);
+    feedScreen.classList.toggle('is-pulling', y > 0 || track.classList.contains('springing'));
+    refreshSurface.style.setProperty('--pull-y', y.toFixed(2) + 'px');
     if (!refreshLoader.classList.contains('spinning')) {
       const progress = Math.max(0, Math.min(1, y / PULL_TRIGGER));
       refreshLoader.style.opacity = y > 0 ? '1' : '0';
@@ -2083,7 +2087,11 @@
     return new Promise(resolve => {
       track.classList.add('springing');
       setPull(y);
-      window.setTimeout(() => { track.classList.remove('springing'); resolve(); }, 430);
+      window.setTimeout(() => {
+        track.classList.remove('springing');
+        if (y === 0) feedScreen.classList.remove('is-pulling');
+        resolve();
+      }, 430);
     });
   }
 

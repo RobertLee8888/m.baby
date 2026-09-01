@@ -449,9 +449,18 @@ owns the top rule and the first feed row owns the bottom one. Closing the
 gutter hides its top rule behind the topbar, so the resting feed keeps exactly
 one divider instead of stacking two strokes on the same edge.
 
+The title boundary is separate from those travelling gutter edges. It appears
+on the first pulled pixel, even though the title itself is still fully expanded,
+and stays pinned below the title throughout the gesture. The 20px loader is
+centred in the part of the gutter that is actually exposed at every pull
+distance, not in the eventual 64px committed height; result text follows the
+same centre while the gutter springs closed. The floating new-feed pill hides
+for the duration of the gesture, so it cannot occupy or cover that centre.
+
 The returned count is passive status, so it is Medium 14/22 in `text/n5` gray:
 no icon and no success color. The empty-batch confirmation is Regular 14/22
-in green and carries the library's `check-f2` to its left, at 20 with an 8 gap.
+in `main/m1` green and carries the library's `check-f2` to its left, at 20 with
+an 8 gap. Both labels use the library text style's 1% tracking.
 `check-f2` is a circle with the tick *subtracted* from it, so as a mask it
 paints a green disc and lets the ground show through the tick. That is why it
 works in both modes without a second asset: in Light the tick is white because
