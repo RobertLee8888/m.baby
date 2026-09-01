@@ -641,9 +641,10 @@ is down. At exactly 48px the fourth tile becomes complete and one light haptic
 marks Ready. Pulling back to 40px or lower re-arms that feedback, so a later
 crossing can confirm the threshold again without buzzing continuously.
 
-Releasing at or above 48 commits: the list holds open at 64, the now-complete
-loader switches to its 720ms linear loop for 1150ms, and the result replaces
-it in the same 64px gutter. The web demo requests one 8ms vibration when the
+Releasing at or above 48 commits: the list holds open at 64, and the now-complete
+20px loader switches to the same 1s four-step quarter-turn used by the 40px
+startup loader. It runs for 1150ms before the result replaces it in the same
+64px gutter. The web demo requests one 8ms vibration when the
 browser supports it; production maps the same event to iOS light impact and
 Android `GESTURE_THRESHOLD_ACTIVATE`, both of which honor system haptic
 settings. New cards land while the list is still held; the actual count or

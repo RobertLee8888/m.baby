@@ -532,7 +532,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .refresh-loader .tile-2 { top: 1px; left: 11.5px; background: var(--n10); filter: opacity(.2); }
 .refresh-loader .tile-3 { top: 11.5px; left: 11.5px; background: var(--n10); filter: opacity(.2); }
 .refresh-loader .tile-4 { top: 11.5px; left: 1px; background: var(--m1); filter: opacity(.5); }
-.refresh-loader.spinning { animation: loader-quarter-turn .72s linear infinite; }
+/* Same four-beat brand motion as the 40px startup loader, at half size. */
+.refresh-loader.spinning { animation: loader-quarter-turn 1s steps(4, end) infinite; }
 .refresh-loader.spinning .refresh-loader-tile { opacity: 1; transform: scale(1); }
 
 /* ── Feed card ── */
