@@ -1136,7 +1136,7 @@
   /* What the pill brings in: the 10:58 batch, which is exactly how the
      production playbook behaves — new batches at the top, full history
      below. Two cards, one and two sources, because that is what new means. */
-  const LEGACY_NEW_CARDS = [
+  const NEW_CARDS = [
     {
       type: 'source',
       tickers: [TSM],
@@ -1168,24 +1168,7 @@
         { type: 'media' },
       ],
     },
-    {
-      type: 'source',
-      tickers: [NBIS, PLTR],
-      age: '4m ago',
-      sources: SRC_INFERENCE_VOLUME,
-      blocks: [
-        { type: 'title', text: 'Cheaper Models Expand Inference Volume' },
-        { type: 'quote', src: SRC_INFERENCE_VOLUME[0] },
-        {
-          type: 'text',
-          text: 'Cheaper adequate models can convert lower application COGS into more production inference rather than merely lower customer bills. NBIS is the strongest infrastructure expression because it directly captures the resulting model-serving utilization, while PLTR offers a distinct application-margin route but weaker direct exposure.',
-        },
-        { type: 'media' },
-      ],
-    },
   ];
-
-  const NEW_CARDS = [];
 
   /* ──────────────────────────────
      Building blocks
@@ -1675,8 +1658,8 @@
   const track = document.getElementById('feedTrack');
   const cardsEl = document.getElementById('cards');
   const refreshLoader = document.getElementById('refreshLoader');
-  const refreshNote = document.getElementById('refreshNote');
-  const refreshNoteText = document.getElementById('refreshNoteText');
+  const refreshResult = document.getElementById('refreshResult');
+  const refreshResultText = document.getElementById('refreshResultText');
   const pill = document.getElementById('newPill');
   const pillText = document.getElementById('newPillText');
   const toastEl = document.getElementById('toast');
@@ -2091,6 +2074,17 @@
 
   const wait = ms => new Promise(r => window.setTimeout(r, ms));
 
+  async function showRefreshResult(message) {
+    refreshLoader.classList.remove('spinning');
+    refreshLoader.style.opacity = '0';
+    refreshResultText.textContent = message;
+    refreshResult.classList.add('show');
+    await wait(1000);
+    await springTo(0);
+    refreshResult.classList.remove('show');
+    refreshResultText.textContent = '';
+  }
+
   async function refresh() {
     if (refreshing) return;
     refreshing = true;
@@ -2122,23 +2116,17 @@
         /* Measured, so it has to happen after the node is in the document. */
         foldCard(node);
       });
-      refreshLoader.classList.remove('spinning');
-      refreshLoader.style.opacity = '0';
-      await springTo(0);
-    } else {
-      /* Nothing came back, so the answer goes where the question was asked:
-         the loader hands its place to the sentence, the sentence is readable
-         for a second, and then the gutter closes. A toast at the other end of
-         the screen would be answering somewhere else entirely. */
-      refreshLoader.classList.remove('spinning');
-      refreshLoader.style.opacity = '0';
-      refreshNoteText.textContent = 'You’re all caught up';
-      refreshNote.classList.add('show');
-      await wait(1000);
-      await springTo(0);
-      refreshNote.classList.remove('show');
-      refreshNoteText.textContent = '';
     }
+
+    /* The answer always replaces the loader in place. The count comes from
+       the returned batch, so production data can use the same state without
+       a second branch or a fixed demo label. */
+    const resultMessage = fresh.length === 1
+      ? '1 new feed'
+      : fresh.length > 1
+        ? fresh.length + ' new feeds'
+        : 'You’re all caught up';
+    await showRefreshResult(resultMessage);
 
     track.classList.remove('pulled');
     refreshing = false;
@@ -3330,6 +3318,8 @@
     setPull(0);
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
+    refreshResult.classList.remove('show');
+    refreshResultText.textContent = '';
     followed.clear();
     followed.add('GOOG');
     followed.add('BABA');

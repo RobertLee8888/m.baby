@@ -119,7 +119,7 @@ day change and six-week range, taken as they ran:
 | 10 | CBRS | Cerebras Converts Ultrafast Demand Into Capacity |
 | 11 | NBIS · PLTR | Cheaper Models Expand Inference Volume |
 
-The three newest batches are held back behind the pill, because that is what
+The two newest cards are held back behind the pill, because that is what
 the production playbook does — new batches at the top, full history below — so
 the refresh brings in the hour that has actually just landed rather than cards
 invented to have something to arrive. The pill counts them rather than naming
@@ -429,11 +429,11 @@ three sit at `translateX(0)` and the last one in the document wins.
 
 ### An answer belongs where the question was asked
 
-A pull that comes back with nothing used to raise a toast at the bottom of
-the screen, which is answering somewhere else. Now the brand loader hands its
-place in the refresh gutter to the sentence — "You're all caught up" — the sentence
-is readable for a second, and then the gutter closes. Same gesture, same
-place, one less floating object.
+Every completed refresh now answers in the gutter where it started. The brand
+loader hands its place either to the actual returned count (`2 new feeds` in
+this demo's first batch) or to "You're all caught up" when the batch is empty.
+The result remains readable for one second and then the gutter closes. Same
+gesture, same place, one less floating object.
 
 The sentence is green and carries the library's `check-f2` to its left, at 20
 with an 8 gap and 14/22 text — the Toast component's own success layout,
@@ -623,9 +623,10 @@ on (the refresh gutter lives at `bottom: 100%` of that track, so it comes
 into view with the pull and leaves no gap behind when the list springs
 back), the 20px Alva brand loader fades in and turns with the finger, and past
 48 the release commits: the list holds open at 64, the loader runs at 720ms
-linear for 1150ms, the new cards land while it is still held, and only then
-does the list close over them. A list that changed under the eye would be
-worse than one that waited.
+linear for 1150ms, and the result replaces it in the same 64px gutter. New
+cards land while the list is still held; the actual count or caught-up message
+stays for one second, then the list closes. A list that changed under the eye
+would be worse than one that waited.
 
 `Pill · New cards` is that same refresh with a number on it. It sits 8 below
 the topbar, centred, on `main/m1` with the library's `Shadow L (10 20 8)` —
@@ -638,6 +639,10 @@ refresh after that is the other half of the state a feed has to show: the
 brand loader runs, nothing new comes back, and the list says so —
 *You're all caught up*. A prototype that always produces content teaches the
 wrong thing about a feed.
+
+Both branches use the same result state: a library `check-f2`, the dynamic
+message, a one-second hold, and the same 420ms spring close. No successful
+refresh can finish without a visible result.
 
 When the two do arrive, the boundary between them and what you had already
 read is marked once, in place, the way Twitter marks it: a hairline with

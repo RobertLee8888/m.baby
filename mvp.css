@@ -480,10 +480,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   place-items: center;
   background: var(--bg-b0);
 }
-/* When the pull comes back with nothing, the gutter says so in the place the
-   loader was standing and then closes a second later. A toast for this is
-   the wrong object: the answer belongs where the question was asked. */
-.refresh-note {
+/* Every refresh resolves in the gutter where it started: either the actual
+   number of new feeds or the caught-up message, then it closes one second
+   later. A toast would separate the answer from the gesture that asked. */
+.refresh-result {
   position: absolute;
   inset: 0;
   display: flex;
@@ -496,8 +496,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   opacity: 0;
   transition: opacity .2s ease;
 }
-.refresh-note .ic { width: 20px; height: 20px; }
-.refresh-note.show { opacity: 1; }
+.refresh-result .ic { width: 20px; height: 20px; }
+.refresh-result.show { opacity: 1; }
 
 .refresh-loader {
   display: block;
