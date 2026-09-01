@@ -458,6 +458,7 @@ the same state change effectively instantaneous.
 Every completed refresh now answers in the gutter where it started. The brand
 loader hands its place either to the actual returned count (`2 new feeds` in
 this demo's first batch) or to “You’re all caught up” when the batch is empty.
+The returned count uses brand green; the caught-up copy uses secondary gray.
 The result remains readable for one second and then the gutter closes. Same
 gesture, same place, one less floating object.
 

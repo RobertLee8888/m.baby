@@ -518,7 +518,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--m1);
+  color: var(--n5);
   font-size: 14px;
   font-weight: 400;
   line-height: 22px;
@@ -526,10 +526,14 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   opacity: 0;
   transition: opacity .2s ease;
 }
-.refresh-result .ic { width: 20px; height: 20px; }
+.refresh-result .ic {
+  width: 20px;
+  height: 20px;
+  color: var(--m1);
+}
 .refresh-result.is-updated {
   gap: 0;
-  color: var(--n5);
+  color: var(--m1);
   font-weight: 500;
 }
 .refresh-result.is-updated .ic { display: none; }
