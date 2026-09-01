@@ -3163,7 +3163,17 @@
   const tabBar = document.getElementById('tabBar');
   const TAB_RESELECT_TOP = 2;
   const TAB_RESELECT_MS = 240;
+  const TAB_TRANSITION_MS = 340;
+  const TAB_MOTION_CLASSES = [
+    'tab-exiting', 'tab-entering',
+    'tab-exit-left', 'tab-exit-right',
+    'tab-enter-right', 'tab-enter-left',
+  ];
   const tabScrollFrames = new WeakMap();
+  let activeTab = null;
+  let tabTransitionToken = 0;
+  let tabTransitionTimer = 0;
+  let tabTransitionEnd = null;
 
   /* Re-selecting a list tab is a navigation shortcut, so the first tap only
      restores position. Feed refresh is deliberately a second tap at the top:
@@ -3206,19 +3216,58 @@
     }
   }
 
-  function showTab(name) {
-    const at = TAB_ORDER.indexOf(name);
+  function clearTabTransitionWait() {
+    window.clearTimeout(tabTransitionTimer);
+    if (tabTransitionEnd) {
+      tabTransitionEnd.screen.removeEventListener('animationend', tabTransitionEnd.handler);
+      tabTransitionEnd = null;
+    }
+  }
+
+  function finishTabTransition(name, token) {
+    if (token !== tabTransitionToken) return;
+    clearTabTransitionWait();
+    screens.forEach((screen, key) => {
+      screen.classList.remove(...TAB_MOTION_CLASSES);
+      screen.classList.toggle('current', key === name);
+    });
+  }
+
+  function showTab(name, animate = true) {
+    if (!screens.has(name) || name === activeTab) return;
+    const previous = activeTab;
+    const from = previous ? screens.get(previous) : null;
+    const to = screens.get(name);
+    const direction = previous && TAB_ORDER.indexOf(name) < TAB_ORDER.indexOf(previous) ? -1 : 1;
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    activeTab = name;
+    const token = ++tabTransitionToken;
+    clearTabTransitionWait();
+
     tabs.forEach(t => {
       const active = t.dataset.tab === name;
       t.setAttribute('aria-selected', String(active));
       t.classList.toggle('is-active', active);
     });
-    screens.forEach((screen, key) => {
-      screen.classList.toggle('current', key === name);
-      /* Where this screen sits on the track, in screen-widths from the one
-         being shown. The transition on the transform does the sliding. */
-      screen.style.setProperty('--sx', String(TAB_ORDER.indexOf(key) - at));
-    });
+
+    screens.forEach(screen => screen.classList.remove(...TAB_MOTION_CLASSES, 'current'));
+    to.classList.add('current');
+
+    if (animate && !reduced && from) {
+      from.classList.add('tab-exiting', direction > 0 ? 'tab-exit-left' : 'tab-exit-right');
+      to.classList.add('tab-entering', direction > 0 ? 'tab-enter-right' : 'tab-enter-left');
+      const complete = event => {
+        if (event && event.target !== to) return;
+        finishTabTransition(name, token);
+      };
+      to.addEventListener('animationend', complete);
+      tabTransitionEnd = { screen: to, handler: complete };
+      tabTransitionTimer = window.setTimeout(() => complete(), TAB_TRANSITION_MS + 80);
+    } else {
+      finishTabTransition(name, token);
+    }
+
     /* Chat's composer already draws the edge above the tab bar. */
     tabBar.classList.toggle('flat', name === 'chat');
     if (name === 'market') {
@@ -3314,10 +3363,7 @@
   });
 
   setAppearance(readAppearance());
-  /* The screens live on a track now, so their places have to be assigned
-     before the first paint — otherwise all four sit at translateX(0) and the
-     last one in the document wins. */
-  showTab('feed');
+  showTab('feed', false);
   render();
   renderMarket();
   setMarketIndicator(marketTabButtons.find(tab => tab.classList.contains('is-active')), false);

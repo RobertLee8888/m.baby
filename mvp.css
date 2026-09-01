@@ -296,19 +296,43 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   background: var(--b10);
 }
 .screens { position: absolute; inset: 0; }
-/* Tabs slide rather than cut. Each screen holds its place on a horizontal
-   track — one screen-width per step from the current one — so switching is a
-   move, not a repaint, and a screen keeps its scroll position while it is
-   off to the side. */
+/* A tab change is always a two-screen exchange. Non-participating screens
+   stay hidden, so jumping from For You to Me never sweeps Alva and Market
+   through the viewport. Direction still follows the tab order. */
 .screen {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  visibility: hidden;
   background: var(--b10);
   pointer-events: none;
-  transform: translate3d(calc(var(--sx, 0) * 100%), 0, 0);
-  transition: transform .34s var(--ease);
+  transform: translate3d(0, 0, 0);
 }
-.screen.current { pointer-events: auto; }
+.screen.current { z-index: 1; visibility: visible; pointer-events: auto; }
+.screen.tab-exiting,
+.screen.tab-entering { visibility: visible; pointer-events: none; will-change: transform; }
+.screen.tab-exiting { z-index: 1; }
+.screen.tab-entering { z-index: 2; }
+.screen.tab-exit-left { animation: tab-exit-left .34s var(--ease) both; }
+.screen.tab-exit-right { animation: tab-exit-right .34s var(--ease) both; }
+.screen.tab-enter-right { animation: tab-enter-right .34s var(--ease) both; }
+.screen.tab-enter-left { animation: tab-enter-left .34s var(--ease) both; }
+@keyframes tab-exit-left {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-100%, 0, 0); }
+}
+@keyframes tab-exit-right {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(100%, 0, 0); }
+}
+@keyframes tab-enter-right {
+  from { transform: translate3d(100%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
+@keyframes tab-enter-left {
+  from { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(0, 0, 0); }
+}
 
 /* ── iOS status bar ── */
 
