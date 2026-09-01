@@ -435,6 +435,11 @@ this demo's first batch) or to "You're all caught up" when the batch is empty.
 The result remains readable for one second and then the gutter closes. Same
 gesture, same place, one less floating object.
 
+While the gutter is open it has a hairline on both edges: the refresh surface
+owns the top rule and the first feed row owns the bottom one. Closing the
+gutter hides its top rule behind the topbar, so the resting feed keeps exactly
+one divider instead of stacking two strokes on the same edge.
+
 The returned count is passive status, so it is `text/n5` gray text only: no
 icon and no success color. The empty-batch confirmation is green and carries
 the library's `check-f2` to its left, at 20 with an 8 gap and 14/22 text.

@@ -479,6 +479,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   height: var(--refresh-h);
   place-items: center;
   background: var(--bg-b0);
+  /* The card below owns the gutter's bottom rule. This top rule travels back
+     behind the topbar when the gutter closes, leaving one resting hairline. */
+  box-shadow: inset 0 var(--hair) 0 var(--l12);
 }
 /* Every refresh resolves in the gutter where it started: either the actual
    number of new feeds or the caught-up message, then it closes one second
