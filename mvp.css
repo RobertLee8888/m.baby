@@ -430,6 +430,9 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: scaleY(.5);
   transform-origin: top;
 }
+/* During a pull the refresh module owns both edges. Hiding the collapsed
+   bar's rule prevents it from stacking on the module's top stroke. */
+.screen.is-pulling .bar-rule { opacity: 0; }
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
