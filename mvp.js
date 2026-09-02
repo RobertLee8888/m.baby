@@ -1682,7 +1682,7 @@
   const PULL_REARM = 40;    /* hysteresis prevents repeated threshold haptics */
   const PULL_REST = 64;     /* where the list sits while it loads */
   const REFRESH_WAIT_MS = 1150; /* the design's held loading interval */
-  const PULL_LOADER_MIN_OPACITY = 0.28;
+  const PULL_LOADER_MIN_OPACITY = 0.08;
   const PULL_LOADER_OPACITY_END = PULL_REST;
 
   let refreshing = false;
@@ -2080,7 +2080,7 @@
       const progress = Math.max(0, Math.min(1, y / PULL_TRIGGER));
       const loaderScale = 0.6 + progress * 0.4;
       const opacityProgress = Math.max(0, Math.min(1, y / PULL_LOADER_OPACITY_END));
-      const loaderOpacity = PULL_LOADER_MIN_OPACITY + opacityProgress * (1 - PULL_LOADER_MIN_OPACITY);
+      const loaderOpacity = PULL_LOADER_MIN_OPACITY + opacityProgress * opacityProgress * (1 - PULL_LOADER_MIN_OPACITY);
       refreshLoader.style.opacity = y > 0 ? loaderOpacity.toFixed(3) : '0';
       refreshLoader.style.setProperty('--loader-scale', loaderScale.toFixed(3));
       refreshLoader.classList.toggle('is-ready', progress >= 1);
