@@ -89,6 +89,13 @@
     return getComputedStyle(root).getPropertyValue(name).trim();
   }
 
+  /* Time labels are sentence-like metadata. Keep numeric abbreviations such
+     as "1h ago" unchanged, but normalize word-led labels at the render edge. */
+  function displayTime(value) {
+    const text = String(value == null ? '' : value);
+    return /^[a-z]/i.test(text) ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+  }
+
   /* ──────────────────────────────
      The names
 
@@ -1419,7 +1426,7 @@
     auto.appendChild(img(A + 'feed-dot-green.svg'));
     auto.appendChild(el('span', null, card.automation || AUTOMATION[card.type] || AUTOMATION.event));
     meta.appendChild(auto);
-    meta.appendChild(el('span', 'card-age', card.age));
+    meta.appendChild(el('span', 'card-age', displayTime(card.age)));
     node.appendChild(meta);
 
     const head = el('div', 'card-head');
@@ -2472,7 +2479,7 @@
     who.appendChild(id);
     head.appendChild(who);
 
-    head.appendChild(el('span', 'src-time', s.time));
+    head.appendChild(el('span', 'src-time', displayTime(s.time)));
 
     row.appendChild(head);
     const body = el('div', 'src-body');
@@ -2554,7 +2561,7 @@
     co.appendChild(el('span', null, t.sym + ' · ' + t.mkt));
     wrap.appendChild(co);
 
-    if (t.when) wrap.appendChild(el('div', 'tk-when', t.when));
+    if (t.when) wrap.appendChild(el('div', 'tk-when', displayTime(t.when)));
 
     const price = el('div', 'tk-price');
     price.appendChild(el('b', null, '$' + money(t.price)));
@@ -2568,7 +2575,7 @@
       pre.appendChild(el('b', null, '$' + money(t.pre.price)));
       pre.appendChild(el('span', 'tk-chg ' + (t.pre.chg >= 0 ? 'up' : 'down'),
         ' ' + signed(t.pre.chg) + ' ' + pct(t.pre.pct)));
-      pre.appendChild(el('span', null, ' · ' + t.pre.when));
+      pre.appendChild(el('span', null, ' · ' + displayTime(t.pre.when)));
       wrap.appendChild(pre);
     }
 
@@ -2581,7 +2588,7 @@
     const sec = el('div', 'anom-sec');
     sec.appendChild(el('p', 'anom-body', t.anomaly.body));
     const f = el('div', 'anom-foot');
-    f.appendChild(el('span', 'anom-when', t.anomaly.when));
+    f.appendChild(el('span', 'anom-when', displayTime(t.anomaly.when)));
     const more = btn('anom-more');
     more.appendChild(el('span', null, 'Show more'));
     more.appendChild(icon('ui-arrow-up-l2.svg'));
