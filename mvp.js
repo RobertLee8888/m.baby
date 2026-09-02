@@ -1682,6 +1682,7 @@
   const PULL_REARM = 40;    /* hysteresis prevents repeated threshold haptics */
   const PULL_REST = 64;     /* where the list sits while it loads */
   const REFRESH_WAIT_MS = 1150; /* the design's held loading interval */
+  const PULL_LOADER_MIN_OPACITY = 0.28;
 
   let refreshing = false;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
@@ -2077,7 +2078,8 @@
     if (!refreshLoader.classList.contains('spinning')) {
       const progress = Math.max(0, Math.min(1, y / PULL_TRIGGER));
       const loaderScale = 0.6 + progress * 0.4;
-      refreshLoader.style.opacity = y > 0 ? '1' : '0';
+      const loaderOpacity = PULL_LOADER_MIN_OPACITY + progress * (1 - PULL_LOADER_MIN_OPACITY);
+      refreshLoader.style.opacity = y > 0 ? loaderOpacity.toFixed(3) : '0';
       refreshLoader.style.setProperty('--loader-scale', loaderScale.toFixed(3));
       refreshLoader.classList.toggle('is-ready', progress >= 1);
       refreshTiles.forEach((tile, index) => {
