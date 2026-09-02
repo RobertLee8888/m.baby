@@ -529,7 +529,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .refresh-result .ic {
   width: 20px;
   height: 20px;
-  color: var(--m1);
+  color: var(--n5);
 }
 .refresh-result.is-updated {
   gap: 0;
