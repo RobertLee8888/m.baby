@@ -540,7 +540,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .refresh-result.show { opacity: 1; }
 
 .refresh-loader {
-  --loader-scale: .72;
+  --loader-scale: .6;
   position: relative;
   display: block;
   width: 20px;

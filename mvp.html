@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=69">
+<link rel="stylesheet" href="mvp.css?v=70">
 <link rel="stylesheet" href="device-chrome.css?v=1">
 </head>
 <body>
@@ -384,7 +384,7 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=67"></script>
+<script src="mvp.js?v=68"></script>
 <script src="press-feedback.js?v=1"></script>
 </body>
 </html>
