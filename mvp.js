@@ -3054,8 +3054,8 @@
   const fsClose = document.getElementById('fsClose');
   const fsPrev = document.getElementById('fsPrev');
   const fsNext = document.getElementById('fsNext');
+  const fsEntity = document.getElementById('fsEntity');
   const fsTicker = document.getElementById('fsTicker');
-  const fsDetails = document.getElementById('fsDetails');
   const FS_ENTER_MS = 460;
   const FS_LOAD_MS = 1000;
   let fsChart = null;
@@ -3075,7 +3075,7 @@
 
   function paintFsTicker(t) {
     fsTicker.replaceChildren(img(t.logo, 'fs-ticker-logo'), el('span', 'fs-ticker-name', t.sym));
-    fsDetails.setAttribute('aria-label', 'View ' + t.sym + ' details');
+    fsEntity.setAttribute('aria-label', 'View ' + t.sym + ' live chart details');
 
     const multiple = fsItems.length > 1;
     [fsPrev, fsNext].forEach(control => {
@@ -3161,7 +3161,7 @@
     if (fsItems.length < 2 || fsSwitching) return;
     fsSwitching = true;
     const direction = delta > 0 ? 'next' : 'prev';
-    const motionNodes = [fsTicker, fsDetails];
+    const motionNodes = [fsEntity];
     fs.classList.add('is-switching');
     motionNodes.forEach(node => node.classList.add('is-exiting-' + direction));
 
@@ -3194,7 +3194,7 @@
     fs.classList.remove('is-loading');
     fs.classList.remove('is-switching');
     fs.setAttribute('aria-busy', 'false');
-    [fsTicker, fsDetails].forEach(node => {
+    [fsEntity].forEach(node => {
       node.classList.remove('is-exiting-next', 'is-entering-next', 'is-exiting-prev', 'is-entering-prev');
     });
     fs.setAttribute('aria-hidden', 'true');
@@ -3213,7 +3213,7 @@
     paintFsChartType();
     if (!fs.classList.contains('is-loading')) drawFullChart();
   });
-  fsDetails.addEventListener('click', () => {
+  fsEntity.addEventListener('click', () => {
     const t = currentFsTicker();
     if (!t) return;
     closeFullChart();

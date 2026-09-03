@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=71">
+<link rel="stylesheet" href="mvp.css?v=72">
 <link rel="stylesheet" href="device-chrome.css?v=1">
 </head>
 <body>
@@ -352,17 +352,18 @@
             </button>
           </header>
           <nav class="fs-context" aria-label="Chart controls">
+            <div class="fs-grabber" aria-hidden="true"><span></span></div>
             <div class="fs-switch-row">
               <button class="fs-switch" id="fsPrev" type="button" aria-label="Previous chart">
                 <span class="ic" style="--ic:url(assets/ui-chart-arrow-left.svg)" aria-hidden="true"></span>
               </button>
-              <div class="fs-ticker" id="fsTicker"></div>
+              <button class="fs-entity" id="fsEntity" type="button">
+                <span class="fs-ticker" id="fsTicker"></span>
+                <span class="fs-details">Tap to view live chart</span>
+              </button>
               <button class="fs-switch" id="fsNext" type="button" aria-label="Next chart">
                 <span class="ic" style="--ic:url(assets/ui-chart-arrow-right.svg)" aria-hidden="true"></span>
               </button>
-            </div>
-            <div class="fs-cta-row">
-              <button class="fs-details" id="fsDetails" type="button">View details</button>
             </div>
             <div class="fs-home" aria-hidden="true"><span></span></div>
           </nav>
@@ -384,7 +385,7 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=71"></script>
+<script src="mvp.js?v=72"></script>
 <script src="press-feedback.js?v=1"></script>
 </body>
 </html>

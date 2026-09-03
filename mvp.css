@@ -2118,11 +2118,11 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   will-change: transform;
 }
 .fs.show { pointer-events: auto; transform: none; }
-/* 2594:56629: the chart owns only the space between the 56px topbar and the
-   146px context block. Its labels can no longer sit under floating controls. */
+/* 3531:32240: the chart owns only the space between the 56px topbar and the
+   compact 78px footer plus the selected device's system indicator. */
 .fs-plot {
   position: absolute;
-  inset: calc(var(--status-h) + 56px) 0 146px 0;
+  inset: calc(var(--status-h) + 56px) 0 calc(78px + var(--home-h)) 0;
   opacity: 1;
   transition: opacity .16s ease;
 }
@@ -2142,7 +2142,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .fs-chart-type {
   position: absolute;
   z-index: 4;
-  bottom: 158px;
+  bottom: calc(147px + var(--home-h));
   left: 16px;
   display: grid;
   width: 40px;
@@ -2188,8 +2188,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   bottom: 0;
   left: 0;
   display: flex;
-  height: 146px;
-  padding-top: 8px;
+  height: calc(78px + var(--home-h));
   flex-direction: column;
   background: var(--b10);
 }
@@ -2204,42 +2203,67 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: scaleY(.5);
   transform-origin: top;
 }
+.fs-grabber {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  flex: 0 0 12px;
+}
+.fs-grabber span {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 36px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--br07);
+  transform: translateX(-50%);
+}
 .fs-switch-row {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
   width: 100%;
-  height: 48px;
-  padding: 0 16px;
+  height: 66px;
+  padding: 12px 16px;
 }
 .fs-switch {
   display: flex;
   align-items: center;
   width: 40px;
-  height: 48px;
+  height: 42px;
   color: var(--n10);
   transition: opacity .16s ease, transform .2s var(--ease);
 }
 .fs-switch-row .fs-switch:first-child { justify-content: flex-start; }
 .fs-switch-row .fs-switch:last-child { justify-content: flex-end; }
 .fs-switch .ic { width: 16px; height: 16px; }
-.fs-switch:focus, .fs-details:focus { outline: none; }
+.fs-switch:focus, .fs-entity:focus { outline: none; }
 .fs-switch:active { opacity: .55; }
 .fs-switch.is-hidden { visibility: hidden; pointer-events: none; }
 
-.fs-ticker {
+.fs-entity {
   display: flex;
+  min-width: 114px;
+  height: 42px;
+  flex-direction: column;
   align-items: center;
   justify-self: center;
   justify-content: center;
-  gap: 8px;
-  min-width: 0;
-  height: 24px;
+  color: var(--n9);
 }
-.fs-ticker.is-exiting-next, .fs-details.is-exiting-next { animation: fs-ticker-out-next .14s ease-in both; }
-.fs-ticker.is-entering-next, .fs-details.is-entering-next { animation: fs-ticker-in-next .2s var(--ease) both; }
-.fs-ticker.is-exiting-prev, .fs-details.is-exiting-prev { animation: fs-ticker-out-prev .14s ease-in both; }
-.fs-ticker.is-entering-prev, .fs-details.is-entering-prev { animation: fs-ticker-in-prev .2s var(--ease) both; }
+.fs-ticker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  height: 22px;
+}
+.fs-entity.is-exiting-next { animation: fs-ticker-out-next .14s ease-in both; }
+.fs-entity.is-entering-next { animation: fs-ticker-in-next .2s var(--ease) both; }
+.fs-entity.is-exiting-prev { animation: fs-ticker-out-prev .14s ease-in both; }
+.fs-entity.is-entering-prev { animation: fs-ticker-in-prev .2s var(--ease) both; }
 @keyframes fs-ticker-out-next { to { opacity: 0; transform: translate3d(-20px, 0, 0); } }
 @keyframes fs-ticker-in-next {
   from { opacity: 0; transform: translate3d(20px, 0, 0); }
@@ -2251,7 +2275,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   to { opacity: 1; transform: none; }
 }
 .fs.is-switching .fs-switch { pointer-events: none; }
-.fs-ticker-logo { width: 24px; height: 24px; border-radius: 960px; object-fit: cover; }
+.fs-ticker-logo { width: 20px; height: 20px; border-radius: 960px; object-fit: cover; }
 .fs-ticker-name {
   max-width: 160px;
   overflow: hidden;
@@ -2262,26 +2286,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.fs-cta-row { width: 100%; height: 56px; padding: 8px 16px; overflow: hidden; }
 .fs-details {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 40px;
-  padding: 9px 20px;
-  overflow: hidden;
-  border: var(--hair) solid var(--l3);
-  border-radius: 6px;
-  color: var(--n9);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
+  height: 20px;
+  color: var(--n5);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 20px;
   text-align: center;
   white-space: nowrap;
-  transition: background .16s ease, transform .2s var(--ease);
 }
-.fs-details:active { background: var(--br05); }
 
 .fs-home {
   position: relative;

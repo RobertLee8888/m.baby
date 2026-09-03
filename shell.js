@@ -70,7 +70,7 @@
     {
       title: 'MVP',
       subtitle: 'The MVP end to end: the For You feed, Market, Alva and Me, plus the three things a card opens — its sources, a ticker, and the chart fullscreen. One switch puts all of it in dark mode.',
-      edited: '2026-08-25',
+      edited: '2026-09-03',
       href: 'mvp.html',
       meta: 'Mobile · 4 screens · 3 overlays',
       figma: {
