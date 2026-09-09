@@ -7,6 +7,27 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 
 ### ▶︎ [Open the live prototypes](https://robertlee8888.github.io/m.baby/)
 
+## MVP update: Sources and ticker filters (2026-09-09)
+
+[Open MVP directly](https://robertlee8888.github.io/m.baby/#/mvp).
+Current references: [Sources/People coverage](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4074-41944)
+and [ticker filters A1-A5](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4888-43205).
+This update supersedes the older quote, badge and header-divider notes below.
+
+- `mvp-sources.js` owns both source-list rows and gray feed quotations. Shared source data carries names, role subtitles, summaries, nested references and original destinations. Person avatars are 24px in quotes and 32px in Sources. Nested quotes use reading rails; Sources uses outlined nested rows. The former platform badges and decorative quotation marks are removed.
+- `mvp-source-data.js` contains all 14 approved P01-P07 / S01-S07 examples, with supplied event dates, roles, source URLs and Figma-exported bitmap media. Historical examples stay in history and do not count as recent mentions. Legacy excerpts with no original URL render a domain label, not a pretend external link.
+- `mvp-feed-model.js` owns symbol normalization, matching, 48-hour counts and latest-mention ordering. Chips include only followed tickers mentioned within 48 hours and filter the feed in place. Counts derive from loaded cards rather than copied screenshot numbers.
+- The 56px filter row stays pinned when the 58px title leaves. The divider belongs to the filter row; the old `bar-rule` is removed. Its fixed 32px arrow opens the same full-screen Following tickers page as Me. The searchable list supports browser back/forward and intentionally omits counts and times according to the design note.
+- Selecting an older ticker inserts a temporary count-free chip after All; All removes it. TSM history comes from A5. Refresh supplies the existing new TSM card, turning it into a counted recent chip. Expanded cards survive filter changes.
+- Native mobile browsers receive no simulated status/home bars. Below 360px, a 360px logical viewport scales uniformly; larger widths use flexible layout. Desktop device previews retain their selected device chrome.
+
+Verification: `node --test tests/feed-model.test.cjs` covers data contracts.
+`tests/mvp-browser.cjs` covers all source variants, 320/360/393/430px layouts,
+Light/Dark, search, history, temporary chips, expansion, refresh and asset loads.
+It requires an external Playwright installation and a static HTTP preview;
+set `PLAYWRIGHT_MODULE`, `CHROME_PATH`, `DEMO_URL` and `QA_OUTPUT` as needed.
+No production dependency or build step is added.
+
 ## Contents
 
 | | | Source |
@@ -103,8 +124,7 @@ it.
 | `text` | Markdown/M | Regular 14/22 |
 | `lead` | Markdown/M | Medium 14/22 — the one-line "what happened" |
 | `title` | Markdown/M | Medium 16/26 — a named thesis |
-| `quote` | Markdown - Quote `Type=正文` | `content/br03` tile, radius 8, passage at Regular 14/22, speaker at 24px, the mark hanging 5 above the top-right corner |
-| `quote` | Markdown - Quote `Type=标题` | no tile, passage at Medium 14/22, speaker underneath at 24px in `text/n5` |
+| `quote` | Sources/People gray quote | `content/br03`, radius 8, 12px padding, 24px avatar, name/role at 12/20, body at Regular 14/22; nested references share the ground and use a 2px `content/br1` rail |
 | `media` (one ticker) | Media = 1 | gutter to gutter, 240 × 135, one of the design's two pictures |
 | `media` (two or three) | Media > 1 | 240 × 135 tiles, 8 apart, the two pictures alternating |
 

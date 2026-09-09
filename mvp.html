@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=72">
+<link rel="stylesheet" href="mvp.css?v=73">
 <link rel="stylesheet" href="device-chrome.css?v=1">
 </head>
 <body>
@@ -38,7 +38,14 @@
           <!-- ═══ For You ═══════════════════════════════════════ -->
           <section class="screen current" id="screenFeed" data-tab="feed" aria-label="For You">
             <header class="topbar"><h1>For You</h1></header>
-            <div class="bar-rule" aria-hidden="true"></div>
+            <nav class="feed-filters" aria-label="Filter feed by ticker">
+              <div class="feed-filter-viewport">
+                <div class="feed-filter-list" id="feedFilters" role="tablist" aria-label="Recent tickers"></div>
+              </div>
+              <button class="feed-filter-all" id="allTickers" type="button" aria-label="Following tickers" aria-haspopup="dialog" aria-expanded="false">
+                <span class="ic" style="--ic:url(assets/ui-arrow-down-l2.svg)" aria-hidden="true"></span>
+              </button>
+            </nav>
 
             <!-- The feed scrolls; the track inside it is what the pull moves,
                  so the refresh gutter can sit just above the first card and
@@ -64,7 +71,7 @@
                     </span>
                   </div>
                 </div>
-                <div class="cards is-booting" id="cards"></div>
+                <div class="cards is-booting" id="cards" role="tabpanel" aria-label="All feeds"></div>
               </div>
             </div>
 
@@ -208,7 +215,7 @@
 
               <p class="me-group">Library</p>
 
-              <button class="row" type="button" data-hint="Your 2 followed tickers live here">
+              <button class="row" id="followingRow" type="button">
                 <span class="ic ic-lead" style="--ic:url(assets/ui-k-line-l.svg)" aria-hidden="true"></span>
                 <span class="row-label">Following tickers</span>
                 <span class="row-count" id="followCount">2</span>
@@ -385,7 +392,10 @@
 </div>
 
 <script src="assets/vendor/lightweight-charts.js"></script>
-<script src="mvp.js?v=72"></script>
+<script src="mvp-source-data.js?v=73"></script>
+<script src="mvp-sources.js?v=73"></script>
+<script src="mvp-feed-model.js?v=73"></script>
+<script src="mvp.js?v=73"></script>
 <script src="press-feedback.js?v=1"></script>
 </body>
 </html>

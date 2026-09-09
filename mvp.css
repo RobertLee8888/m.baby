@@ -57,6 +57,7 @@
   --br03: rgba(0, 0, 0, .03);
   --br05: rgba(0, 0, 0, .05);
   --br07: rgba(0, 0, 0, .07);
+  --br1: rgba(0, 0, 0, .1);
 
   /* line/* — the strokes, all of them 0.5 wide */
   --l07: rgba(0, 0, 0, .07);
@@ -120,6 +121,7 @@
   --hair: .5px;
   --status-h: 59px;    /* the shell writes the chosen device's inset here */
   --topbar-h: 58px;    /* 16 + 34 + 8 */
+  --filter-h: 56px;    /* 12 + 32 + 12 */
   --sheet-top-h: 56px; /* Topbar/Mweb inside a sheet */
   --tab-h: 48px;       /* 8 + 22 + 2 + 16 */
   --home-h: 34px;
@@ -146,6 +148,7 @@
   --br03: rgba(255, 255, 255, .03);
   --br05: rgba(255, 255, 255, .05);
   --br07: rgba(255, 255, 255, .07);
+  --br1: rgba(255, 255, 255, .1);
 
   --l07: rgba(255, 255, 255, .1);
   --l12: rgba(255, 255, 255, .12);
@@ -401,38 +404,69 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding: 0 0 0 var(--gutter);
   background: var(--b10);
 }
-/* At rest the bar needs no hairline of its own: the frame switches that stroke
-   off (1496:32179), because the line under it *is* the first card's top rule,
-   sitting exactly at the bar's bottom edge by construction. One line, owned by
-   the thing that scrolls.
-
-   The moment the list moves, that stops being true — the card's rule travels
-   up under the bar and the text below runs into the chrome with nothing
-   between them. So the rule exists but is tied to the scroll: it is pinned to
-   `status + bar-h`, which is the bottom of whatever is left of the bar and,
-   once the bar has closed, the bottom of the status bar itself. It fades in
-   over the first three pixels of scroll, so it has taken over by the time the
-   card's own rule has left, and the two are never both visible.
-
-   It is its own element and not an inset shadow on the bar, because an inset
-   shadow has nothing to paint on once the bar's height reaches 0 — which is
-   exactly the state that needs the line most. */
-.bar-rule {
+/* A方案 / Tab/Ticker: the title scrolls away; the 56px filter stays pinned. */
+.feed-filters {
   position: absolute;
   z-index: 13;
   top: calc(var(--status-h) + var(--bar-h));
   right: 0;
   left: 0;
-  height: 1px;
-  background: var(--l12);
-  opacity: clamp(0, calc(var(--bar-p) * 20), 1);
-  pointer-events: none;
-  transform: scaleY(.5);
-  transform-origin: top;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--filter-h);
+  padding: 12px var(--gutter);
+  background: var(--bg-container);
+  box-shadow: 0 var(--hair) 0 var(--l12);
+  letter-spacing: 0;
 }
-/* During a pull the refresh module owns both edges. Hiding the collapsed
-   bar's rule prevents it from stacking on the module's top stroke. */
-.screen.is-pulling .bar-rule { opacity: 0; }
+.feed-filter-viewport { position: relative; flex: 1; min-width: 0; }
+.feed-filter-viewport::after {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 24px;
+  background: linear-gradient(to right, transparent, var(--bg-container));
+  content: '';
+  pointer-events: none;
+}
+.feed-filter-list {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 24px 8px 0;
+  margin-block: -8px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  touch-action: pan-x;
+}
+.feed-filter-list::-webkit-scrollbar { display: none; }
+.feed-filter, .feed-filter-all {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border-radius: 960px;
+  background: var(--bg-container);
+  box-shadow: inset 0 0 0 var(--hair) var(--l2), 0 4px 15px var(--lift-subtle);
+  color: var(--n9);
+  transition: background .16s ease, color .16s ease;
+}
+.feed-filter { gap: 8px; padding: 0 12px 0 8px; white-space: nowrap; font-size: 12px; font-weight: 500; line-height: 20px; }
+.feed-filter.is-all { padding-inline: 16px; }
+.feed-filter.is-active { background: var(--n10); box-shadow: none; color: var(--nr10); }
+.feed-filter-label { display: flex; align-items: center; gap: 4px; }
+.feed-filter-logo { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 960px; object-fit: cover; }
+.feed-filter-count { font-variant-numeric: tabular-nums; }
+.feed-filter-count.bull { color: var(--m3); }
+.feed-filter-count.bear { color: var(--m4); }
+.feed-filter-count.flat { color: var(--n5); }
+.feed-filter.is-active .feed-filter-count.flat { color: var(--g3); }
+.feed-filter-all { width: 32px; }
+.feed-filter-all .ic { width: 16px; height: 16px; }
+.feed-filter:disabled, .feed-filter-all:disabled { cursor: default; }
+.feed-filter:focus-visible, .feed-filter-all:focus-visible { outline: 2px solid var(--m1); outline-offset: 2px; }
 .topbar h1 {
   overflow: hidden;
   color: var(--n9);
@@ -491,7 +525,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
    a pull opens above the list, and the seam where the new batch meets what you
    had already read. b0 is the app's floor, and letting the floor show through
    is what makes both of them read as gaps rather than as rows. */
-.lead { position: relative; height: var(--topbar-h); background: var(--bg-b0); }
+.lead { position: relative; height: calc(var(--topbar-h) + var(--filter-h)); background: var(--bg-b0); }
 .refresh {
   --pull-y: 0px;
   position: absolute;
@@ -836,25 +870,25 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .showmore:active { opacity: .55; }
 
-/* Quote: br03 tile, 12 in from three sides and 8 at the foot, with the
-   mark riding the top-right corner (1129:60241) */
-
-/* No `overflow: hidden` here. The mark's box sits at y −5 in the frame — it
-   hangs above the tile's top edge on purpose, and Figma renders the component
-   193 tall against its own 188 to prove it. Clipping the tile sheared the top
-   off both bars. Nothing else inside overflows, so there is nothing to clip. */
-.quote {
+/* Sources/People coverage (4074:41944), gray quotation variant. Nested
+   references share the outer surface and use a 2px reading rail. */
+.quote, .quote-nested {
   position: relative;
   display: flex;
   width: 100%;
+  min-width: 0;
   flex-direction: column;
   gap: 8px;
-  padding: 12px 12px 8px;
+  letter-spacing: 0;
+}
+.quote {
+  padding: 12px;
   border-radius: 8px;
   background: var(--br03);
-  transition: transform .2s var(--ease);
 }
-.quote-head { display: flex; align-items: center; gap: 8px; }
+.quote-nested { padding-left: 12px; box-shadow: inset 2px 0 0 var(--br1); }
+.quote-copy { display: block; width: 100%; min-width: 0; }
+.quote-head, .quote-who { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .quote-avatar {
   flex: 0 0 auto;
   width: 24px;
@@ -863,41 +897,27 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   border-radius: 960px;
   object-fit: cover;
 }
+.quote-id { display: flex; min-width: 0; flex-direction: column; overflow-wrap: anywhere; }
 .quote-name { color: var(--n9); font-size: 12px; font-weight: 500; line-height: 20px; }
-.quote-body { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; }
-/* The mark's own box in the frame is 29 × 46 at x=327 of 361 and y=-5 — so it
-   hangs 5 above the tile and sits 5 in from the right, and the 46 line box on
-   a 64 glyph is what lifts it that far up inside itself. */
-.quote-mark {
-  position: absolute;
-  top: -5px;
-  right: 5px;
-  width: 29px;
-  color: var(--m3);
-  font-size: 64px;
-  font-weight: 600;
-  line-height: 46px;
-  opacity: .6;
-  pointer-events: none;
+.quote-name:has(+ .quote-role) { margin-bottom: -4px; }
+.quote-role { color: var(--n7); font-size: 12px; font-weight: 400; line-height: 20px; }
+.quote-body { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; overflow-wrap: anywhere; cursor: pointer; }
+.quote-more { display: inline; color: var(--m1); font-weight: 500; }
+.card:not(:has(.card-head)) .card-body { padding-top: 12px; }
+.source-media {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  background: var(--br03);
 }
-
-/* Type=标题 (1642:17067). When the card carries no title of its own the
-   quote *is* the title, so it drops the tile and takes the title's type, and
-   the speaker moves underneath as a byline. Same block, same source object —
-   only its job in the card has changed, which is exactly what the component
-   description says the variant is for. */
-.quote-h2 {
-  gap: 8px;
-  padding: 0;
-  border-radius: 0;
-  background: none;
-}
-.quote-h2 .quote-body { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
-/* The byline follows the quote here, and flex order says so without the
-   markup having to be built twice. */
-.quote-h2 .quote-head { order: 2; }
-.quote-h2 .quote-name { color: var(--n5); }
-.quote-h2 .quote-mark { display: none; }
+.source-media::after { position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 var(--hair) var(--l2); content: ''; pointer-events: none; }
+.source-media > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.source-media-compact { width: 240px; max-width: 100%; border-radius: 6px; }
+.source-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 960px; background: var(--common-black-50); color: var(--white); transform: translate(-50%, -50%); }
+.source-play .ic { width: 20px; height: 20px; }
 
 /* Media. One tile fills the gutter-to-gutter width; two or more become a
    scroller of 240 × 135 tiles that runs off the right edge of the card.
@@ -1080,7 +1100,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .pill {
   position: absolute;
   z-index: 14;
-  top: calc(var(--status-h) + var(--bar-h) + 8px);
+  top: calc(var(--status-h) + var(--bar-h) + var(--filter-h) + 8px);
   left: 50%;
   display: flex;
   align-items: center;
@@ -1876,10 +1896,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   padding-bottom: var(--home-h);
 }
 
-/* ── List / Source item · 来源+节选 (1180:20235) ──
-   16 all round, 8 between the two rows, and the hairline under each item.
-   The avatar carries the platform badge on its own corner, so the row does
-   not need a second column just to say where this came from. */
+/* List / Source item (4074:41944): 32px identity, optional subtitle,
+   14/22 excerpt, and outlined nested references. */
 
 .src {
   display: flex;
@@ -1887,11 +1905,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: 8px;
   padding: var(--gutter);
   box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12);
+  letter-spacing: 0;
 }
-.src-head { display: flex; align-items: flex-start; gap: 12px; overflow: hidden; }
-.src-who { display: flex; flex: 1 1 auto; align-self: stretch; align-items: center; gap: 8px; min-width: 0; overflow: hidden; }
-.src-av { position: relative; flex: 0 0 auto; width: 32px; height: 32px; }
-.src-av > img {
+.src-nested { box-shadow: inset 0 0 0 var(--hair) var(--l12); border-radius: 8px; }
+.src-nested .src-nested { border-radius: 6px; }
+.src:not(.src-nested) > .src-nested, .src > .source-media { margin-top: 8px; }
+.src-head { display: flex; align-items: flex-start; gap: 12px; }
+.src-who { display: flex; flex: 1 1 auto; align-items: center; gap: 8px; min-width: 0; }
+.src-avatar {
+  flex: 0 0 32px;
   width: 32px;
   height: 32px;
   border-radius: 960px;
@@ -1899,24 +1921,10 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   box-shadow: inset 0 0 0 var(--hair) var(--lr12);
   object-fit: cover;
 }
-/* The platform badge rides the avatar's own corner (17.5, 17.5 of 32). */
-.src-badge {
-  position: absolute;
-  top: 17.5px;
-  left: 17.5px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 960px;
-  background: var(--b10);
-  box-shadow: 0 0 0 var(--hair) var(--lr12);
-  color: var(--n10);
-}
-.src-badge .ic { width: 10px; height: 10px; }
-.src-id { display: flex; flex: 1 1 auto; height: 40px; flex-direction: column; min-width: 0; overflow: hidden; }
-.src-name { flex: 1 1 0; min-height: 0; margin-bottom: -2px; overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; text-overflow: ellipsis; white-space: nowrap; }
-.src-handle { overflow: hidden; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+.src-id { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.src-name { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.src-name:has(+ .src-handle) { margin-bottom: -2px; }
+.src-handle { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
 .src-time { flex: 0 0 auto; color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; white-space: nowrap; }
 /* Excerpt and destination are one reading block, like body + Show more in the
    feed. Every 14/22 n7 domain uses the component's dotted text treatment;
@@ -1937,7 +1945,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   white-space: nowrap;
   transition: opacity .16s ease;
 }
-.src-open > span:first-child {
+a.src-open > span:first-child {
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-thickness: from-font;
@@ -1947,6 +1955,44 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .src-open:active { opacity: .55; }
 /* 14/22 as of the updated frame (I1180:20235;1178:20248) — it was 12/20. */
 .src-quote { color: var(--n9); font-size: 14px; font-weight: 400; line-height: 22px; letter-spacing: 0; }
+
+/* Following tickers reuses the Settings destination, not a bottom sheet.
+   Only this page scrolls; the search and back navigation remain available. */
+.following-page {
+  position: absolute;
+  z-index: 40;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--status-h);
+  padding-bottom: var(--home-h);
+  overflow: hidden;
+  background: var(--bg-container);
+  letter-spacing: 0;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition: transform .28s var(--ease), visibility 0s .28s;
+}
+.following-page.is-open { visibility: visible; transform: translateX(0); transition-delay: 0s; }
+.following-top { display: flex; flex: 0 0 56px; align-items: center; padding: 0 16px 0 6px; }
+.following-top h1 { color: var(--n9); font-size: 16px; font-weight: 400; line-height: 26px; }
+.following-back { display: grid; place-items: center; flex: 0 0 40px; height: 40px; color: var(--n9); }
+.following-back .ic { width: 20px; height: 20px; }
+.following-content { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 12px; padding: 4px 16px 0; }
+.following-search { display: flex; flex: 0 0 40px; align-items: center; gap: 8px; padding: 0 12px; border-radius: 6px; box-shadow: inset 0 0 0 var(--hair) var(--l3); }
+.following-search .ic { flex: 0 0 16px; height: 16px; color: var(--n5); }
+.following-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--n9); font: inherit; font-size: 16px; line-height: 22px; }
+.following-search input::placeholder { color: var(--n5); font-size: 14px; }
+.following-search:focus-within { box-shadow: inset 0 0 0 1px var(--m1); }
+.following-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.following-item { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 66px; padding: 12px 0; box-shadow: inset 0 calc(var(--hair) * -1) 0 var(--l12); }
+.following-item:active { background: var(--br03); }
+.following-logo { flex: 0 0 32px; width: 32px; height: 32px; object-fit: cover; border-radius: 960px; }
+.following-identity { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+.following-symbol { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+.following-company { overflow: hidden; color: var(--n5); font-size: 11px; font-weight: 400; line-height: 18px; text-overflow: ellipsis; white-space: nowrap; }
+.following-empty { display: flex; align-items: center; flex-direction: column; gap: 8px; padding: 48px 16px; color: var(--n5); font-size: 14px; line-height: 22px; }
+.following-clear { color: var(--m1); }
 
 /* ── Ticker sheet body ── */
 
@@ -2365,10 +2411,21 @@ html.embedded .phone-screen {
 }
 
 @media (max-width: 520px), (max-height: 700px) and (pointer: coarse) {
+  :root:not([data-device-platform]) { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
+  html:not([data-device-platform]) :is(.system-bar, .home-indicator) { display: none; }
   .desk { display: block; background: var(--b10); }
   .phone { width: 100%; height: 100%; padding: 0; border-radius: 0; background: none; box-shadow: none; }
   .phone-buttons, .stage-controls { display: none; }
   .phone-screen { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
+}
+
+@media (max-width: 359px) {
+  .phone-screen, html.embedded .phone-screen {
+    width: 360px;
+    height: calc(100% / var(--mobile-scale, 1));
+    transform: scale(var(--mobile-scale, 1));
+    transform-origin: top left;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

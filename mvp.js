@@ -347,6 +347,10 @@
   const META = TICKERS.META, BABA = TICKERS.BABA, AAOI = TICKERS.AAOI;
   const AVGO = TICKERS.AVGO, AMD = TICKERS.AMD;
   const NBIS = TICKERS.NBIS, PLTR = TICKERS.PLTR;
+  const feedModel = window.AlvaFeedModel;
+  const SOURCE_SAMPLES = window.AlvaSourceSamples;
+  const DEFAULT_FOLLOWED = ['GOOG', 'NVDA', 'META', 'BABA', 'AAOI', 'MSFT', 'TSLA', 'MU', 'AMD', 'TSM', 'AVGO', 'COIN', 'HOOD', 'AMZN'];
+  const followed = new Set(DEFAULT_FOLLOWED);
 
   /* ──────────────────────────────
      What kind of thing a card is
@@ -485,13 +489,6 @@
     for (const [re, name] of PLATFORM) if (re.test(handle)) return name;
     return null;
   };
-  const BADGE = {
-    x: 'ui-social-x.svg',
-    podcast: 'ui-social-podcast.svg',
-    youtube: 'ui-social-youtube.svg',
-    reddit: 'ui-social-reddit.svg',
-  };
-
   /* Sources show only the destination's first-level address. Platform posts
      resolve to the platform; first-party publications resolve to the
      publisher. Paths are deliberately absent because the row already carries
@@ -530,7 +527,8 @@
     || '';
 
   const src = (name, handle, time, avatar, quote) =>
-    ({ name, handle, time, badge: platformOf(handle), img: avatar, quote });
+    ({ name, handle, time, badge: platformOf(handle), img: avatar, quote,
+      role: Object.values(SOURCE_SAMPLES).find(sample => sample.name === name)?.role || '' });
 
   /* ──────────────────────────────
      Sources
@@ -999,14 +997,8 @@
     },
   ];
 
-  const REAL_GAVIN = src(
-    'Gavin Baker', '@gavin_baker · X', '1h ago', A + 'feed-source-gavin-baker.png',
-    'Cheaper models would increase the ROI on AI spend, driving incremental token demand. Margin dollars would get redistributed to AI infrastructure providers.'
-  );
-  const REAL_REUTERS = src(
-    'Reuters', 'reuters.com', '1h ago', A + 'feed-source-reuters-small.png',
-    'Merck and Moderna said their personalized mRNA therapy met its primary and secondary endpoints in a late-stage melanoma trial—the first positive Phase 3 result for an mRNA cancer vaccine.'
-  );
+  const REAL_GAVIN = SOURCE_SAMPLES.P01;
+  const REAL_REUTERS = SOURCE_SAMPLES.S01;
   const REAL_BENZINGA = src(
     'Benzinga', 'benzinga.com', '1h ago', A + 'feed-source-benzinga.png',
     'Merck and Moderna said their personalized mRNA therapy met its primary and secondary endpoints in a late-stage melanoma trial—the first positive Phase 3 result for an mRNA cancer vaccine.'
@@ -1137,10 +1129,39 @@
     },
   ];
 
-  /* The four current reference cards stay first; thirteen already-vetted
-     cards from the fuller prototype follow them. This restores a feed-length
-     list without inventing new market claims or changing the card grammar. */
-  const INITIAL_CARDS = [...CARDS, ...LEGACY_CARDS.slice(0, 13)];
+  /* Source variants from 4074:41944. Historical dates stay historical and
+     never contribute to the rolling 48-hour filter counts. */
+  const SOURCE_HISTORY = [
+    ['P02', [MSFT]], ['P04', [MSFT]], ['P05', [AMZN, GOOGL]],
+    ['P06', [MSFT]], ['S02', [NVDA]], ['S03', [GOOGL, META]],
+    ['S04', [NVDA]], ['S07', [NVDA]],
+    ['P03', []], ['P07', []], ['S05', []], ['S06', []],
+  ].map(([key, tickers]) => ({
+    id: 'source-' + key,
+    type: 'source',
+    tickers,
+    age: SOURCE_SAMPLES[key].time || SOURCE_SAMPLES[key].reference.time,
+    sources: [SOURCE_SAMPLES[key]],
+    blocks: [{ type: 'quote', src: SOURCE_SAMPLES[key] }],
+  }));
+  const TSM_ARCHIVE = [
+    {
+      id: 'tsm-archive-revenue', type: 'event', tickers: [TSM], age: '2d ago',
+      sources: [src('Bloomberg', 'bloomberg.com', '2d ago', AV.bloomberg,
+        'TSMC reported August revenue of NT$335.8 billion, up 33.8% year over year, as advanced-node demand from AI accelerator customers stayed strong. Management kept full-year growth guidance in the mid-30s percent range in US dollar terms, with N3 and N2 capacity described as tight through next year.')],
+    },
+    {
+      id: 'tsm-archive-n2', type: 'source', tickers: [TSM], age: '5d ago',
+      title: '2nm Ramp Stays on Schedule for Second Half',
+      sources: [src('Olivia Moore', 'X', '5d ago', AV.olivia,
+        'TSMC said N2 volume production remains on track for the second half, with early wafer starts allocated to smartphone and HPC customers. The company is holding 2026 capex plans steady and expects overseas fabs in Arizona and Kumamoto to dilute gross margin by two to three points during ramp.')],
+    },
+  ].map(card => ({ ...card, blocks: [
+    ...(card.title ? [{ type: 'title', text: card.title }] : []),
+    { type: 'text', text: card.sources[0].quote },
+  ] }));
+  // A5 (4888:43379) supplies the older TSM state; refresh later brings its new card.
+  const INITIAL_CARDS = [...CARDS, ...LEGACY_CARDS.slice(0, 13).filter(card => !card.tickers.includes(TSM)), ...TSM_ARCHIVE, ...SOURCE_HISTORY];
 
   /* What the pill brings in: the 10:58 batch, which is exactly how the
      production playbook behaves — new batches at the top, full history
@@ -1213,6 +1234,7 @@
     if (label) n.setAttribute('aria-label', label);
     return n;
   };
+  const sourceUI = window.createAlvaSources({ el, img, btn, icon, onOpen: openSources, siteFor: sourceSite });
 
   const TAB_EDGE_INSET = 16;
 
@@ -1375,27 +1397,7 @@
        production feed behaves, and it is the only reading that makes the
        block mean anything: you are looking at a source, tapping it should
        show you the source. */
-    if (b.type === 'quote') {
-      const src = b.src;
-      /* Markdown - Quote has two variants and the card decides which:
-         a card that already carries a title of its own gets the tile with the
-         passage at Regular/14, and a card that does not gets the passage *as*
-         the title — Medium/14, no tile, speaker underneath. Reading it off the
-         card's own blocks rather than off a flag means the two can never
-         disagree about whether the card has a title. */
-      const h2 = !card.blocks.some(o => o.type === 'title' || o.type === 'lead');
-      const q = btn('quote' + (h2 ? ' quote-h2' : ''), 'Sources');
-      const head = el('div', 'quote-head');
-      head.appendChild(img(src.img, 'quote-avatar'));
-      head.appendChild(el('span', 'quote-name', src.name));
-      q.appendChild(head);
-      /* The typographic pair belongs to the H2 variant only: in the tile the
-         mark in the corner is already doing that job. */
-      q.appendChild(el('p', 'quote-body', h2 ? '\u201c' + src.quote + '\u201d' : src.quote));
-      q.appendChild(el('span', 'quote-mark', '\u201d'));
-      q.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
-      return q;
-    }
+    if (b.type === 'quote') return sourceUI.quote(b.src, card);
 
     /* One tile per ticker, and the *count* picks the layout — which is what
        the frame's own two component names say: `Media = 1` is the full-width
@@ -1419,6 +1421,8 @@
 
   function cardNode(card) {
     const node = el('article', 'card');
+    node.dataset.tickers = card.tickers.map(t => feedModel.symbol(t.sym)).join(' ');
+    if (card.id) node.dataset.cardId = card.id;
 
     /* Feed Card - Meta (1629:17047): who made this and how old it is. */
     const meta = el('div', 'card-meta');
@@ -1434,7 +1438,7 @@
       if (i) head.appendChild(el('span', 'head-rule'));
       head.appendChild(tickerChip(t));
     });
-    node.appendChild(head);
+    if (card.tickers.length) node.appendChild(head);
 
     const body = el('div', 'card-body');
     card.blocks.forEach(b => body.appendChild(block(b, card)));
@@ -1687,6 +1691,191 @@
 
   let refreshing = false;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
+  let selectedTicker = 'All';
+  let loadedCards = INITIAL_CARDS.slice();
+  const cardNodes = new Map();
+  const feedFilters = document.getElementById('feedFilters');
+  const allTickers = document.getElementById('allTickers');
+  let followingOpen = false;
+  let followingFocus = null;
+  let followingSearch = '';
+  const followingPage = el('section', 'following-page');
+  followingPage.setAttribute('role', 'dialog');
+  followingPage.setAttribute('aria-modal', 'true');
+  followingPage.setAttribute('aria-label', 'Following tickers');
+  followingPage.setAttribute('aria-hidden', 'true');
+  followingPage.inert = true;
+  const followingHeader = el('header', 'following-top');
+  const followingBack = btn('following-back', 'Back');
+  followingBack.appendChild(icon('onboarding-arrow-left-l1.svg'));
+  followingHeader.append(followingBack, el('h1', null, 'Following tickers'));
+  const followingContent = el('div', 'following-content');
+  const searchLabel = el('label', 'following-search');
+  const followingInput = el('input');
+  followingInput.type = 'search';
+  followingInput.placeholder = 'Search all tickers';
+  followingInput.setAttribute('aria-label', 'Search all tickers');
+  followingInput.autocomplete = 'off';
+  searchLabel.append(icon('onboarding-search-l.svg'), followingInput);
+  const followingList = el('div', 'following-list');
+  followingContent.append(searchLabel, followingList);
+  followingPage.append(followingHeader, followingContent);
+  document.getElementById('mvpApp').appendChild(followingPage);
+
+  const tickerDirectory = new Map(Object.values(TICKERS).map(t => [feedModel.symbol(t.sym), t]));
+  [
+    ['TSLA', 'Tesla, Inc.', 'market-logo-tsla.svg'],
+    ['MU', 'Micron Technology, Inc.', 'market-logo-mu.png'],
+    ['COIN', 'Coinbase Global, Inc.', 'filter-logo-coin.svg'],
+    ['HOOD', 'Robinhood Markets, Inc.', 'filter-logo-hood.svg'],
+  ].forEach(([sym, co, logo]) => tickerDirectory.set(sym, { sym, co, logo: A + logo }));
+  const followingNames = {
+    GOOG: 'Alphabet Inc.', NVDA: 'NVIDIA Corporation', META: 'Meta Platforms, Inc.',
+    BABA: 'Alibaba Group Holding Ltd.', AAOI: 'Applied Optoelectronics, Inc.',
+    MSFT: 'Microsoft Corporation', AMD: 'Advanced Micro Devices, Inc.',
+    TSM: 'Taiwan Semiconductor Manufacturing', AVGO: 'Broadcom Inc.', AMZN: 'Amazon.com, Inc.',
+  };
+
+  function recentTickers() {
+    return feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
+  }
+
+  function paintFilters() {
+    const recent = recentTickers();
+    const entries = [{ sym: 'All' }, ...recent];
+    if (selectedTicker !== 'All' && !recent.some(item => item.sym === selectedTicker)) {
+      entries.splice(1, 0, { sym: selectedTicker, ticker: tickerDirectory.get(selectedTicker) });
+    }
+    feedFilters.replaceChildren(...entries.map(item => {
+      const active = item.sym === selectedTicker;
+      const button = btn('feed-filter' + (active ? ' is-active' : '') + (item.sym === 'All' ? ' is-all' : ''));
+      button.dataset.ticker = item.sym;
+      button.id = 'filter-' + item.sym;
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-selected', String(active));
+      button.setAttribute('aria-controls', 'cards');
+      button.disabled = refreshing;
+      button.tabIndex = active ? 0 : -1;
+      if (item.ticker) button.appendChild(img(item.ticker.logo, 'feed-filter-logo'));
+      const label = el('span', 'feed-filter-label');
+      label.appendChild(el('span', null, item.sym));
+      if (item.count) label.appendChild(el('span', 'feed-filter-count ' + (item.balance > 0 ? 'bull' : item.balance < 0 ? 'bear' : 'flat'), String(item.count)));
+      button.appendChild(label);
+      button.addEventListener('click', () => selectTicker(item.sym));
+      return button;
+    }));
+    cardsEl.setAttribute('aria-labelledby', 'filter-' + selectedTicker);
+    cardsEl.setAttribute('aria-label', selectedTicker === 'All' ? 'All feeds' : selectedTicker + ' feeds');
+    const followCount = document.getElementById('followCount');
+    if (followCount) followCount.textContent = String(followed.size);
+  }
+
+  function selectTicker(sym) {
+    if (refreshing) return false;
+    selectedTicker = feedModel.symbol(sym);
+    render();
+    paintFilters();
+    feed.scrollTop = 0;
+    paintBar();
+    const button = feedFilters.querySelector('[aria-selected="true"]');
+    if (button) {
+      const right = button.offsetLeft + button.offsetWidth;
+      if (button.offsetLeft < feedFilters.scrollLeft) feedFilters.scrollLeft = button.offsetLeft;
+      else if (right > feedFilters.scrollLeft + feedFilters.clientWidth) feedFilters.scrollLeft = right - feedFilters.clientWidth + 24;
+    }
+    updateNewPill();
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cardsEl.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 160, easing: 'ease-out' });
+    }
+  }
+
+  feedFilters.addEventListener('keydown', event => {
+    const buttons = [...feedFilters.querySelectorAll('[role="tab"]')];
+    const current = buttons.indexOf(event.target);
+    if (current < 0 || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const index = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+    selectTicker(buttons[index].dataset.ticker);
+    feedFilters.querySelector('[aria-selected="true"]').focus({ preventScroll: true });
+  });
+
+  function renderFollowing() {
+    const ranked = feedModel.tickerStats(loadedCards, followed).map(item => item.sym);
+    const symbols = [...new Set([...ranked, ...followed])];
+    const query = followingSearch.trim().toLowerCase();
+    const items = symbols.map(sym => ({ ...tickerDirectory.get(sym), sym, co: followingNames[sym] || tickerDirectory.get(sym)?.co || sym })).filter(t => !query || (t.sym + ' ' + t.co).toLowerCase().includes(query));
+    followingList.replaceChildren(...items.map(ticker => {
+      const row = btn('following-item', ticker.sym + ' ' + ticker.co);
+      row.dataset.ticker = ticker.sym;
+      row.appendChild(img(ticker.logo, 'following-logo'));
+      const text = el('span', 'following-identity');
+      text.append(el('span', 'following-symbol', ticker.sym), el('span', 'following-company', ticker.co));
+      row.appendChild(text);
+      row.addEventListener('click', () => {
+        if (selectTicker(ticker.sym) === false) return;
+        showTab('feed', false);
+        closeFollowing();
+      });
+      return row;
+    }));
+    if (!items.length) {
+      const empty = el('div', 'following-empty');
+      empty.appendChild(el('p', null, 'No matches'));
+      const clear = btn('following-clear', 'Clear filters');
+      clear.textContent = 'Clear filters';
+      clear.addEventListener('click', () => { followingInput.value = ''; followingSearch = ''; renderFollowing(); followingInput.focus(); });
+      empty.appendChild(clear);
+      followingList.appendChild(empty);
+    }
+  }
+
+  function openFollowing(addHistory = true) {
+    if (followingOpen) return;
+    followingFocus = document.activeElement;
+    followingOpen = true;
+    followingSearch = '';
+    followingInput.value = '';
+    renderFollowing();
+    followingList.scrollTop = 0;
+    followingPage.inert = false;
+    followingPage.classList.add('is-open');
+    followingPage.setAttribute('aria-hidden', 'false');
+    allTickers.setAttribute('aria-expanded', 'true');
+    document.getElementById('screens').inert = true;
+    document.getElementById('tabBar').inert = true;
+    followingBack.focus({ preventScroll: true });
+    if (addHistory) history.pushState({ ...history.state, mvpFollowing: true }, '');
+  }
+
+  function closeFollowing(fromHistory = false) {
+    if (!followingOpen) return;
+    followingOpen = false;
+    followingInput.blur();
+    followingPage.classList.remove('is-open');
+    followingPage.setAttribute('aria-hidden', 'true');
+    followingPage.inert = true;
+    allTickers.setAttribute('aria-expanded', 'false');
+    document.getElementById('screens').inert = false;
+    document.getElementById('tabBar').inert = false;
+    const focus = followingFocus?.closest('.screen')?.classList.contains('current') ? followingFocus : allTickers;
+    focus?.focus({ preventScroll: true });
+    if (!fromHistory && history.state?.mvpFollowing) history.back();
+  }
+
+  allTickers.addEventListener('click', () => openFollowing());
+  document.getElementById('followingRow').addEventListener('click', () => openFollowing());
+  followingBack.addEventListener('click', () => closeFollowing());
+  followingInput.addEventListener('input', () => { followingSearch = followingInput.value; renderFollowing(); followingList.scrollTop = 0; });
+  followingPage.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { event.stopPropagation(); closeFollowing(); }
+    if (event.key === 'Tab') {
+      const targets = [...followingPage.querySelectorAll('button, input')];
+      const first = targets[0], last = targets.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+  });
+  window.addEventListener('popstate', event => { if (event.state?.mvpFollowing) openFollowing(false); else closeFollowing(true); });
 
   /* ──────────────────────────────
      Collapse and expand (1796:19551)
@@ -2008,14 +2197,37 @@
   }
 
   function render() {
-    /* Reset the media turn with the list, so the alternation is a property of
-       the feed's order rather than of how many times it has been rebuilt. */
     mediaTurn = 0;
-    cardsEl.replaceChildren();
-    INITIAL_CARDS.forEach(c => cardsEl.appendChild(cardNode(c)));
-    /* The full cards are in the document before this synchronous pass, but
-       the browser has not painted them yet. */
+    const visible = loadedCards.filter(card => feedModel.matches(card, selectedTicker));
+    const nodes = visible.map(card => {
+      if (!cardNodes.has(card)) {
+        const node = cardNode(card);
+        cardNodes.set(card, node);
+        wireRowDrag(node);
+      }
+      return cardNodes.get(card);
+    });
+    if (served) {
+      const boundary = visible.findIndex(card => !NEW_CARDS.includes(card));
+      if (boundary > 0) nodes.splice(boundary, 0, seenLine());
+    }
+    cardsEl.replaceChildren(...nodes);
+    if (!nodes.length) {
+      const empty = el('div', 'following-empty');
+      empty.appendChild(el('p', null, 'No matches'));
+      const clear = btn('following-clear', 'Clear filters');
+      clear.textContent = 'Clear filters';
+      clear.addEventListener('click', () => selectTicker('All'));
+      empty.appendChild(clear);
+      cardsEl.appendChild(empty);
+    }
     foldPass();
+  }
+
+  function updateNewPill() {
+    const pending = served ? [] : NEW_CARDS.filter(card => feedModel.matches(card, selectedTicker));
+    pillText.textContent = pending.length + (pending.length === 1 ? ' new feed' : ' new feeds');
+    setPill(!refreshing && pending.length > 0);
   }
 
   const startupLoader = document.getElementById('startupLoader');
@@ -2125,6 +2337,8 @@
   async function refresh() {
     if (refreshing) return;
     refreshing = true;
+    allTickers.disabled = true;
+    feedFilters.querySelectorAll('button').forEach(button => { button.disabled = true; });
 
     setPill(false);
     hideToast();
@@ -2137,35 +2351,29 @@
     await wait(REFRESH_WAIT_MS);
 
     const fresh = nextBatch();
-
+    const matchingFresh = fresh.filter(card => feedModel.matches(card, selectedTicker));
     if (fresh.length) {
-      /* The new cards land while the list is still held open, so they are
-         already there when it closes — the list never jumps under the eye.
-         The line goes in first, above what was already read. */
-      if (!cardsEl.querySelector('[data-seen]')) {
-        cardsEl.insertBefore(seenLine(), cardsEl.firstElementChild);
-      }
-      fresh.reverse().forEach(card => {
-        const node = cardNode(card);
-        node.classList.add('enter');
-        cardsEl.insertBefore(node, cardsEl.firstElementChild);
-        /* Measured, so it has to happen after the node is in the document. */
-        foldCard(node);
-      });
+      loadedCards = [...fresh, ...loadedCards];
+      render();
+      paintFilters();
+      matchingFresh.forEach(card => cardNodes.get(card)?.classList.add('enter'));
     }
 
     /* The answer always replaces the loader in place. The count comes from
        the returned batch, so production data can use the same state without
        a second branch or a fixed demo label. */
-    const resultMessage = fresh.length === 1
+    const resultMessage = matchingFresh.length === 1
       ? '1 new feed'
-      : fresh.length > 1
-        ? fresh.length + ' new feeds'
+      : matchingFresh.length > 1
+        ? matchingFresh.length + ' new feeds'
         : 'You’re all caught up';
-    await showRefreshResult(resultMessage, fresh.length ? 'updated' : 'caught-up');
+    await showRefreshResult(resultMessage, matchingFresh.length ? 'updated' : 'caught-up');
 
     track.classList.remove('pulled');
     refreshing = false;
+    allTickers.disabled = false;
+    paintFilters();
+    updateNewPill();
   }
 
   /* ── the gesture: touch, and a mouse drag so it works on a desktop too ── */
@@ -2296,7 +2504,7 @@
      ────────────────────────────── */
 
   function wireRowDrag(rootEl) {
-    rootEl.querySelectorAll('.media-row').forEach(row => {
+    rootEl.querySelectorAll('.media-row, .feed-filter-list').forEach(row => {
       if (row.dataset.wired) return;
       row.dataset.wired = '1';
 
@@ -2337,6 +2545,7 @@
 
   const rowWatcher = new MutationObserver(() => wireRowDrag(cardsEl));
   rowWatcher.observe(cardsEl, { childList: true });
+  wireRowDrag(document.querySelector('.feed-filters'));
 
   /* ──────────────────────────────
      Toast
@@ -2369,12 +2578,15 @@
 
   let sheetOpen = false;
   let sheetTeardown = null;
+  let sheetCloseTimer = 0;
 
   /* opts.full  — take the whole ceiling and lay the body out as a column with
                    one flexible row in it (the ticker sheet).
      opts.ruled — hairline under the topbar (the sources sheet). */
   function openSheet(header, nodes, opts) {
     const o = opts || {};
+    window.clearTimeout(sheetCloseTimer);
+    if (!sheetOpen && sheetTeardown) { sheetTeardown(); sheetTeardown = null; }
     closeSheet(true);
     sheet.classList.toggle('full', !!o.full);
     sheetTop.className = 'sheet-top' + (o.ruled ? ' ruled' : '');
@@ -2393,7 +2605,7 @@
     sheet.setAttribute('aria-hidden', 'false');
     app.classList.add('dim');
     /* one frame, so the transform transition has a "from" to run out of */
-    requestAnimationFrame(() => { scrim.classList.add('show'); sheet.classList.add('show'); });
+    requestAnimationFrame(() => { if (sheetOpen) { scrim.classList.add('show'); sheet.classList.add('show'); } });
   }
 
   function closeSheet(immediate) {
@@ -2409,7 +2621,7 @@
       if (sheetTeardown) { sheetTeardown(); sheetTeardown = null; }
       if (!sheetOpen) { sheetTop.replaceChildren(); sheetBody.replaceChildren(); }
     };
-    if (immediate) done(); else window.setTimeout(done, 420);
+    if (immediate) done(); else sheetCloseTimer = window.setTimeout(done, 420);
   }
 
   scrim.addEventListener('click', () => closeSheet());
@@ -2459,63 +2671,26 @@
 
   /* ── Sources sheet (545:62549) ── */
 
-  function sourceRow(s) {
-    const row = el('div', 'src');
-
-    const head = el('div', 'src-head');
-
-    /* Avatar and byline are one group 8 apart. Time owns the top-right corner;
-       the destination moves below the excerpt so metadata and action no
-       longer compete in the identity row. */
-    const who = el('span', 'src-who');
-    const av = el('span', 'src-av');
-    av.appendChild(img(s.img));
-    if (s.badge && BADGE[s.badge]) {
-      const badge = el('span', 'src-badge');
-      badge.appendChild(icon(BADGE[s.badge]));
-      av.appendChild(badge);
-    }
-    who.appendChild(av);
-
-    const id = el('span', 'src-id');
-    id.appendChild(el('span', 'src-name', s.name));
-    id.appendChild(el('span', 'src-handle', s.handle));
-    who.appendChild(id);
-    head.appendChild(who);
-
-    head.appendChild(el('span', 'src-time', displayTime(s.time)));
-
-    row.appendChild(head);
-    const body = el('div', 'src-body');
-    body.appendChild(el('p', 'src-quote', s.quote));
-    const site = sourceSite(s);
-    if (site) {
-      const open = btn('src-open', 'Open ' + site);
-      open.appendChild(el('span', null, site));
-      open.appendChild(icon('ui-popout-l.svg'));
-      open.addEventListener('click', () => toast(site + ' opens outside Alva'));
-      body.appendChild(open);
-    }
-    row.appendChild(body);
-    return row;
-  }
-
-  function openSources(card) {
+  function openSources(card, selectedSource) {
     const list = card.sources || [];
     const header = [sheetClose(), el('h2', null, 'Sources · ' + list.length)];
-    openSheet(header, list.map(sourceRow), { ruled: true });
+    openSheet(header, list.map(source => sourceUI.row(source)), { ruled: true, label: 'Sources' });
+    if (selectedSource) {
+      const key = selectedSource.id || selectedSource.name;
+      const target = [...sheetBody.querySelectorAll('[data-source-id]')].find(node => node.dataset.sourceId === key);
+      if (target) sheetBody.scrollTop = Math.max(0, target.offsetTop - sheetBody.offsetTop - 16);
+    }
   }
 
   /* ── Ticker sheet (957:18126) ── */
 
   const TK_TABS = ['Overview', 'Narratives', 'Anomalies', 'News & Social', 'Smart Events',
     'Filings', 'Options', 'Ownership', 'Peers'];
-  const followed = new Set(['GOOGL', 'NVDA']);   /* the two the Me screen counts */
 
   function starButton(t) {
     const b = btn('sheet-btn right', 'Follow ' + t.sym);
     const paint = () => {
-      const on = followed.has(t.sym);
+      const on = followed.has(feedModel.symbol(t.sym));
       b.replaceChildren(icon(on ? 'ui-star-f.svg' : 'ui-star-l.svg', on ? 'ic-star-f' : ''));
       b.setAttribute('aria-pressed', String(on));
     };
@@ -2523,11 +2698,12 @@
     /* The star is its own feedback — it goes solid and amber. A toast on top
        of that is the same news twice. */
     b.addEventListener('click', () => {
-      if (followed.has(t.sym)) followed.delete(t.sym);
-      else followed.add(t.sym);
+      const sym = feedModel.symbol(t.sym);
+      if (followed.has(sym)) followed.delete(sym);
+      else { followed.add(sym); tickerDirectory.set(sym, t); }
       paint();
-      const count = document.getElementById('followCount');
-      if (count) count.textContent = String(followed.size);
+      if (!followed.has(selectedTicker) && selectedTicker !== 'All') selectTicker('All');
+      else paintFilters();
     });
     return b;
   }
@@ -3423,23 +3599,26 @@
 
   function restart() {
     refreshing = false;
+    allTickers.disabled = false;
     served = false;
     closeSheet(true);
     closeFullChart();
+    closeFollowing();
     setPull(0);
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
     refreshResult.classList.remove('show');
     refreshResultText.textContent = '';
     followed.clear();
-    followed.add('GOOG');
-    followed.add('BABA');
+    DEFAULT_FOLLOWED.forEach(sym => followed.add(sym));
+    selectedTicker = 'All';
+    loadedCards = INITIAL_CARDS.slice();
+    cardNodes.clear();
     const count = document.getElementById('followCount');
     if (count) count.textContent = String(followed.size);
     render();
-    wireRowDrag(cardsEl);
-    pillText.textContent = NEW_CARDS.length + ' new feeds';
-    setPill(NEW_CARDS.length > 0);
+    paintFilters();
+    updateNewPill();
     feed.scrollTop = 0;
     paintBar();
     showTab('feed');
@@ -3455,6 +3634,7 @@
      ────────────────────────────── */
 
   function fitPhone() {
+    root.style.setProperty('--mobile-scale', String(Math.min(1, window.innerWidth / 360)));
     const phone = document.getElementById('phone');
     if (!phone) return;
     if (root.classList.contains('embedded') || window.innerWidth <= 520) {
@@ -3475,11 +3655,10 @@
   setAppearance(readAppearance());
   showTab('feed', false);
   render();
+  paintFilters();
   renderMarket();
   setMarketIndicator(marketTabButtons.find(tab => tab.classList.contains('is-active')), false);
-  wireRowDrag(cardsEl);
-  pillText.textContent = NEW_CARDS.length + ' new feeds';
-  setPill(NEW_CARDS.length > 0);
+  updateNewPill();
   paintBar();
   fitPhone();
   runStartupLoading();
