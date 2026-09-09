@@ -190,14 +190,14 @@ fs.mkdirSync(output, { recursive: true });
     }
     await reset();
     await page.setViewportSize({ width: 320, height: 740 });
-    const preview = page.locator('.quote[data-source-id="P06"] .quote-body');
+    const preview = page.locator('[data-card-id="source-P01"] .feed-preview');
     await preview.scrollIntoViewIfNeeded();
-    await preview.locator('.quote-more').click();
+    await preview.locator('.feed-preview-more').click();
     const expansion = await preview.evaluate(n => ({ target: n.scrollHeight, frame: n.getAnimations()[0]?.effect.getKeyframes().at(-1).height }));
     assert.equal(parseFloat(expansion.frame), expansion.target);
     await pause(250);
     assert.equal(await preview.evaluate(n => n.scrollHeight <= n.clientHeight), true);
-    checks.push('long words, CJK and scaled quotation expansion');
+    checks.push('long words, CJK and scaled inline body expansion');
 
     await page.setViewportSize({ width: 393, height: 852 });
     for (const phase of [100, 800, 1750, 2300]) {

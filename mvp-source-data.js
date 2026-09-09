@@ -126,8 +126,7 @@ window.AlvaSourceSamples = {
     "quote": "said · Azure surpassed $75 billion in annual revenue, up 34%. Microsoft added more than two gigawatts of datacenter capacity over the previous 12 months and now had over 400 datacenters across 70 regions.",
     "summary": "Azure surpassed $75 billion in annual revenue, up 34%. Microsoft added more than two gigawatts of datacenter capacity over the previous 12 months and now had over 400 datacenters across 70 regions.",
     "attribution": "Satya Nadella said",
-    "url": "https://www.microsoft.com/en-us/investor/events/fy-2025/earnings-fy-2025-q4",
-    "preview": "Azure annual revenue surpassed $75B, up 34%."
+    "url": "https://www.microsoft.com/en-us/investor/events/fy-2025/earnings-fy-2025-q4"
   },
   "P07": {
     "id": "P07",

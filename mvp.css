@@ -772,6 +772,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 /* The two lines overlap by 4 in the frame — 22 + 20 − 4 is the 38 the header
    measures, and the pair reads as one two-line block rather than two rows. */
 .ticker-name { margin-bottom: -4px; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
+/* 4361:42268 uses a 40px ticker identity: 22 + 20 - 2. */
+.card[data-figma-node] .ticker-name { margin-bottom: calc(-1 * var(--space-xxxs)); }
 
 /* ── Ticker / Stance (1664:17174) ──
    Tailwind, Headwind, Context and Anomaly describe the evidence's relationship
@@ -834,6 +836,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 }
 .blk-lead { font-weight: 500; }
 .blk-title { padding-top: 2px; font-size: 16px; font-weight: 500; line-height: 26px; }
+.feed-preview { overflow: hidden; }
+.feed-preview-more { color: var(--m1); font-weight: 500; white-space: nowrap; }
 
 /* ── Body + Show more (1796:18622) ──
    The read folds and everything else stays whole. The body and row are a block

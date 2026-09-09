@@ -110,6 +110,10 @@
      ────────────────────────────── */
 
   const TICKERS = {
+    'BRK.B': {
+      sym: 'BRK.B', co: 'Berkshire Hathaway',
+      logo: A + 'source-berkshire.png', stance: 'flat',
+    },
     TSM: {
       sym: 'TSM', logo: A + 'feed-logo-tsm.png', stance: 'bull',
       co: 'Taiwan Semiconductor', mkt: 'NYSE', price: 417.41, chg: 7.3, pct: 1.78,
@@ -740,11 +744,8 @@
   /* ──────────────────────────────
      The feed
 
-     Seventeen cards at rest and two more behind the pill. The four cards that
-     mirror the latest reference screen lead, followed by thirteen vetted
-     source, unusual-move, and company-event cards from the fuller prototype.
-     A feed that is only four cards deep is not a feed, it is a digest: the
-     three types have to interleave the way they do in a live list.
+     Complete reference cards lead, followed by source, unusual-move and
+     company-event cards from the fuller prototype. Two more await refresh.
 
      A source card is: the thesis, the passage it stands on, the read, the
      chart. That is the shape of every batch on the production feed, and it
@@ -1129,6 +1130,28 @@
     },
   ];
 
+  const REFERENCE_CARDS = window.AlvaFeedReferences.map(reference => {
+    const existing = CARDS.find(card => card.sources[0].id === reference.source);
+    const source = SOURCE_SAMPLES[reference.source];
+    return {
+      id: 'source-' + reference.source,
+      referenceNodeId: reference.nodeId,
+      type: 'source', automation: reference.automation, age: reference.age,
+      ask: 'Dig Deeper', sources: [source],
+      tickers: reference.tickers.map(([symbol, stance]) => ({ ...TICKERS[symbol], stance })),
+      blocks: [
+        { type: 'lead', text: reference.title },
+        { type: 'quote', src: source },
+        { type: 'text', text: reference.body || existing.blocks.find(b => b.type === 'text').text,
+          preview: reference.preview, collapsible: false },
+        ...(reference.charts ? [{ type: 'media', items: reference.charts.map(symbol => ({
+          ticker: TICKERS[symbol], src: A + 'feed-reference-' + symbol.toLowerCase() + '.png',
+        })) }] : []),
+      ],
+    };
+  });
+  const referenceSources = new Set(window.AlvaFeedReferences.map(card => card.source));
+
   /* Source variants from 4074:41944. Historical dates stay historical and
      never contribute to the rolling 48-hour filter counts. */
   const SOURCE_HISTORY = [
@@ -1136,7 +1159,7 @@
     ['P06', [MSFT]], ['S02', [NVDA]], ['S03', [GOOGL, META]],
     ['S04', [NVDA]], ['S07', [NVDA]],
     ['P03', []], ['P07', []], ['S05', []], ['S06', []],
-  ].map(([key, tickers]) => ({
+  ].filter(([key]) => !referenceSources.has(key)).map(([key, tickers]) => ({
     id: 'source-' + key,
     type: 'source',
     tickers,
@@ -1161,7 +1184,12 @@
     { type: 'text', text: card.sources[0].quote },
   ] }));
   // A5 (4888:43379) supplies the older TSM state; refresh later brings its new card.
-  const INITIAL_CARDS = [...CARDS, ...LEGACY_CARDS.slice(0, 13).filter(card => !card.tickers.includes(TSM)), ...TSM_ARCHIVE, ...SOURCE_HISTORY];
+  const INITIAL_CARDS = [
+    ...REFERENCE_CARDS,
+    ...CARDS.filter(card => !referenceSources.has(card.sources[0].id)),
+    ...LEGACY_CARDS.slice(0, 13).filter(card => !card.tickers.includes(TSM)),
+    ...TSM_ARCHIVE, ...SOURCE_HISTORY,
+  ];
 
   /* What the pill brings in: the 10:58 batch, which is exactly how the
      production playbook behaves — new batches at the top, full history
@@ -1358,6 +1386,23 @@
   }
 
   function block(b, card) {
+    if (b.type === 'text' && b.preview) {
+      const body = el('p', 'blk-text feed-preview', b.preview + ' ');
+      const more = btn('feed-preview-more', 'Show more');
+      more.textContent = 'Show more';
+      more.addEventListener('click', () => {
+        const before = body.offsetHeight;
+        body.textContent = b.text;
+        body.dataset.expanded = 'true';
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          body.animate([{ height: before + 'px' }, { height: body.offsetHeight + 'px' }],
+            { duration: 200, easing: 'ease-out' });
+        }
+      });
+      body.appendChild(more);
+      return body;
+    }
+    if (b.type === 'text' && b.collapsible === false) return el('p', 'blk-text', b.text);
     /* The read is the only block that ever folds, so it comes wrapped: the
        Show more row joins it inside the wrapper rather than beside it in the
        content column, which is what puts the row directly on the body's last
@@ -1423,6 +1468,7 @@
     const node = el('article', 'card');
     node.dataset.tickers = card.tickers.map(t => feedModel.symbol(t.sym)).join(' ');
     if (card.id) node.dataset.cardId = card.id;
+    if (card.referenceNodeId) node.dataset.figmaNode = card.referenceNodeId;
 
     /* Feed Card - Meta (1629:17047): who made this and how old it is. */
     const meta = el('div', 'card-meta');
@@ -1453,11 +1499,12 @@
        card came from. */
     const lead = btn('foot-lead', 'Sources');
     const stack = el('div', 'sources');
-    card.sources.slice(0, card.sourceFaces || 3).forEach(src => stack.appendChild(img(src.img)));
+    const contributors = card.referenceNodeId ? sourceUI.contributors(card.sources) : card.sources;
+    contributors.slice(0, card.sourceFaces || 3).forEach(src => stack.appendChild(img(src.img)));
     lead.appendChild(stack);
     const copy = el('span', 'foot-copy');
     copy.appendChild(el('span', 'foot-src', card.footerName || card.sources[0].name));
-    const rest = card.sources.length - 1;
+    const rest = contributors.length - 1;
     if (rest > 0) copy.appendChild(el('span', 'foot-more', '+' + rest));
     lead.appendChild(copy);
     lead.addEventListener('click', e => { e.stopPropagation(); openSources(card); });
@@ -2763,7 +2810,8 @@
 
   function openSources(card, selectedSource) {
     const list = card.sources || [];
-    const header = [sheetClose(), el('h2', null, 'Sources · ' + list.length)];
+    const count = card.referenceNodeId ? sourceUI.contributors(list).length : list.length;
+    const header = [sheetClose(), el('h2', null, 'Sources · ' + count)];
     openSheet(header, list.map(source => sourceUI.row(source)), { ruled: true, label: 'Sources' });
     if (selectedSource) {
       const key = selectedSource.id || selectedSource.name;

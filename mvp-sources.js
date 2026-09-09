@@ -102,5 +102,16 @@ window.createAlvaSources = function ({ el, img, btn, icon, onOpen, siteFor }) {
     return item;
   }
 
-  return { quote, row };
+  function contributors(sources) {
+    const people = new Map();
+    function visit(source) {
+      const key = source.name + '\n' + source.img;
+      if (!people.has(key)) people.set(key, source);
+      if (source.reference) visit(source.reference);
+    }
+    sources.forEach(visit);
+    return [...people.values()];
+  }
+
+  return { quote, row, contributors };
 };

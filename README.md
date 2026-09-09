@@ -46,6 +46,29 @@ immediately. Connect intentionally has no click action, as requested.
 `tests/mvp-portfolio-entry.cjs` checks geometry at four mobile widths, SVG loading,
 progressive collapse, state persistence, interrupted exits and reduced motion.
 
+## Complete Feed Reference Cards
+
+[For You / gray quotations, 4361:42268](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4361-42268)
+now supplies the first 11 content cards, after the dismissible portfolio entry.
+`mvp-feed-reference.js` owns their order, titles, body copy, publication ages and
+per-card ticker stances. Nine formerly quotation-only examples are complete cards;
+the two existing matching cards are reused. Unrelated older cards remain below,
+without repeating these source-only entries.
+
+Source identities, original dates, nested references and video posters remain in
+`mvp-source-data.js`. Recent-filter counts use card publication age, not the date
+of an older source cited by a new card. BRK.B can be followed and filtered, with
+no fabricated price. Nested source contributors supply footer avatars and counts
+without duplicating rows in Sources. The two designed inline Show more previews
+expand into the existing complete body text; the other nine bodies stay whole.
+
+`tests/mvp-feed-reference.cjs` verifies all 11 cards, order and deduplication,
+320/360/393/430px layouts, Sources, contributor counts, inline expansion, BRK.B
+follow/filter, and Chat navigation. At 393px, ten card heights match Figma;
+P01's zero-tracking web heading fits one line instead of two, making that card
+22px shorter. Screenshots also retain normal font-related word-wrap differences;
+these checks do not claim pixel-identical text rendering.
+
 ## Contents
 
 | | | Source |

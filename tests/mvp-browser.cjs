@@ -6,12 +6,13 @@ const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.env.DEMO_URL || 'http://localhost:4173/mvp.html';
 const output = process.env.QA_OUTPUT || '/tmp/alva-mvp-qa';
-// Reference heights from 4074:41944. Report visual differences separately
+// Source heights from 4074:41944; feed quotes updated by 4361:42268.
+// Report visual differences separately
 // from functional assertions; a passing interaction test is not pixel QA.
 const figmaHeights = {
-  P01: [156, 172], P02: [348, 466], P03: [309, 500.0625], P04: [230, 312],
-  P05: [277, 391.0625], P06: [112, 194], P07: [277, 391.0625],
-  S01: [166, 194], S02: [287, 413.0625], S03: [265, 391.0625], S04: [122, 172],
+  P01: [134, 172], P02: [348, 466], P03: [309, 500.0625], P04: [208, 312],
+  P05: [277, 391.0625], P06: [156, 194], P07: [255, 391.0625],
+  S01: [144, 194], S02: [287, 413.0625], S03: [265, 391.0625], S04: [122, 172],
   S05: [122, 172], S06: [265, 413.0625], S07: [144, 194],
 };
 fs.mkdirSync(output, { recursive: true });
@@ -122,9 +123,8 @@ fs.mkdirSync(output, { recursive: true });
     }
     const earnings = page.locator('.quote[data-source-id="P06"]');
     await expose(earnings);
-    const preview = await earnings.innerText();
-    await earnings.locator('.quote-more').click();
-    assert.ok((await earnings.innerText()).length > preview.length);
+    assert.ok((await earnings.innerText()).includes('over 400 datacenters across 70 regions'));
+    assert.equal(await earnings.locator('.quote-more').count(), 0);
     assert.equal(await page.locator('#sheet').getAttribute('aria-hidden'), 'true');
     await pick('MSFT');
     assert.equal(await earnings.locator('.quote-more').count(), 0);
