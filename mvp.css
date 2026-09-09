@@ -1999,7 +1999,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   white-space: nowrap;
   transition: opacity .16s ease;
 }
-a.src-open > span:first-child {
+.src-open > span:first-child {
   text-decoration-line: underline;
   text-decoration-style: dotted;
   text-decoration-thickness: from-font;
