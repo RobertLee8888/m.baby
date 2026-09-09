@@ -1309,7 +1309,7 @@
 
   function tickerChip(t) {
     const wrap = btn('ticker', t.sym + ' · ' + STANCE[t.stance || 'bull']);
-    wrap.appendChild(img(t.logo, 'ticker-logo'));
+    wrap.appendChild(stockLogo(t, 'ticker-logo'));
     const text = el('div', 'ticker-text');
     text.appendChild(el('span', 'ticker-name', t.sym));
     text.appendChild(stanceNode(t.stance));
@@ -1566,6 +1566,12 @@
     return wrap;
   }
 
+  function stockLogo(ticker, className) {
+    const logo = ticker.crypto ? marketLogo(ticker) : img(ticker.logo);
+    if (className) logo.classList.add(className);
+    return logo;
+  }
+
   function marketRow(rowData) {
     const row = btn('market-row', rowData.sym + ' details');
     row.dataset.ticker = feedModel.symbol(rowData.sym);
@@ -1773,7 +1779,7 @@
       button.setAttribute('aria-controls', 'cards');
       button.disabled = refreshing;
       button.tabIndex = active ? 0 : -1;
-      if (item.ticker) button.appendChild(img(tickerDirectory.get(item.sym)?.logo || item.ticker.logo, 'feed-filter-logo'));
+      if (item.ticker) button.appendChild(stockLogo(tickerDirectory.get(item.sym) || item.ticker, 'feed-filter-logo'));
       const label = el('span', 'feed-filter-label');
       label.appendChild(el('span', null, item.sym));
       if (item.count) label.appendChild(el('span', 'feed-filter-count ' + (item.balance > 0 ? 'bull' : item.balance < 0 ? 'bear' : 'flat'), String(item.count)));
@@ -1824,7 +1830,7 @@
     followingList.replaceChildren(...items.map(ticker => {
       const row = btn('following-item', ticker.sym + ' ' + ticker.co);
       row.dataset.ticker = ticker.sym;
-      row.appendChild(img(ticker.logo, 'following-logo'));
+      row.appendChild(stockLogo(ticker, 'following-logo'));
       const text = el('span', 'following-identity');
       text.append(el('span', 'following-symbol', ticker.sym), el('span', 'following-company', ticker.co));
       row.appendChild(text);
@@ -2791,7 +2797,7 @@
     wrap.dataset.tickerTitle = '';
 
     const co = el('div', 'tk-co');
-    co.appendChild(img(t.logo));
+    co.appendChild(stockLogo(t));
     co.appendChild(el('b', null, t.co));
     co.appendChild(el('span', null, t.sym + (t.mkt ? ' · ' + t.mkt : '')));
     wrap.appendChild(co);
@@ -3309,7 +3315,7 @@
   }
 
   function paintFsTicker(t) {
-    fsTicker.replaceChildren(img(t.logo, 'fs-ticker-logo'), el('span', 'fs-ticker-name', t.sym));
+    fsTicker.replaceChildren(stockLogo(t, 'fs-ticker-logo'), el('span', 'fs-ticker-name', t.sym));
     fsEntity.setAttribute('aria-label', 'View ' + t.sym + ' live chart details');
 
     const multiple = fsItems.length > 1;

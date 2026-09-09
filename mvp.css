@@ -92,6 +92,7 @@
   --m4: #e05357;
   --price-up: #2a9b7d;
   --price-down: #e05357;
+  --stock-btc: #f7931a;
   --btn-primary-reverse: #ffffff;
 
   /* common/* */
@@ -480,7 +481,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .feed-filter.is-all { padding-inline: var(--space-m); }
 .feed-filter.is-active { background: var(--br10); box-shadow: none; color: var(--nr10); }
 .feed-filter-label { display: flex; align-items: center; gap: var(--space-xxs); }
-.feed-filter-logo { width: 20px; height: 20px; flex: 0 0 20px; border-radius: var(--radius-ct-max); object-fit: cover; }
+.feed-filter-logo { --stock-logo-size: 20px; width: 20px; height: 20px; flex: 0 0 20px; border-radius: var(--radius-ct-max); object-fit: cover; }
 .feed-filter-count { font-variant-numeric: tabular-nums; }
 .feed-filter-count.bull { color: var(--price-up); }
 .feed-filter-count.bear { color: var(--price-down); }
@@ -742,7 +743,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   gap: 8px;
   border-radius: 8px;
 }
-.ticker-logo { width: 36px; height: 36px; border-radius: 100px; }
+.ticker-logo { --stock-logo-size: 36px; width: 36px; height: 36px; border-radius: 100px; }
 .ticker-text { display: flex; flex-direction: column; justify-content: center; }
 /* The two lines overlap by 4 in the frame — 22 + 20 − 4 is the 38 the header
    measures, and the pair reads as one two-line block rather than two rows. */
@@ -1347,7 +1348,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .market-logo-wrap { position: relative; flex: 0 0 32px; width: 32px; height: 32px; overflow: hidden; border-radius: 100px; }
 .market-logo-wrap img { position: absolute; inset: 0; width: 32px; height: 32px; object-fit: cover; }
 .market-logo-wrap .market-logo-mark { object-fit: contain; }
-.market-logo-wrap.market-logo-btc { display: grid; place-items: center; background: #f7931a; color: var(--white); font-size: 14px; font-weight: 500; line-height: 22px; }
+.market-logo-wrap.market-logo-btc { display: grid; place-items: center; width: var(--stock-logo-size, 32px); height: var(--stock-logo-size, 32px); flex-basis: var(--stock-logo-size, 32px); background: var(--stock-btc); color: var(--white); font-size: calc(var(--stock-logo-size, 32px) * .4375); font-weight: 500; line-height: calc(var(--stock-logo-size, 32px) * .6875); }
 .market-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; overflow: hidden; }
 .market-symbol { overflow: hidden; color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; letter-spacing: .01em; text-overflow: ellipsis; white-space: nowrap; }
 .market-company { overflow: hidden; color: var(--n5); font-size: 11px; font-weight: 400; line-height: 18px; letter-spacing: .01em; text-overflow: ellipsis; white-space: nowrap; }
@@ -2024,6 +2025,7 @@ a.src-open > span:first-child {
 .tk-name { flex: 0 0 auto; padding: 12px var(--gutter); }
 .tk-co { display: flex; align-items: center; gap: 6px; height: 20px; }
 .tk-co img { width: 16px; height: 16px; border-radius: 960px; }
+.tk-co > .market-logo-wrap { --stock-logo-size: 16px; }
 .tk-co b { color: var(--n9); font-size: 14px; font-weight: 500; line-height: 22px; }
 .tk-co span { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
 .tk-when { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
@@ -2346,7 +2348,7 @@ a.src-open > span:first-child {
   to { opacity: 1; transform: none; }
 }
 .fs.is-switching .fs-switch { pointer-events: none; }
-.fs-ticker-logo { width: 20px; height: 20px; border-radius: 960px; object-fit: cover; }
+.fs-ticker-logo { --stock-logo-size: 20px; width: 20px; height: 20px; border-radius: 960px; object-fit: cover; }
 .fs-ticker-name {
   max-width: 160px;
   overflow: hidden;
