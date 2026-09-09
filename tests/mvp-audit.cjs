@@ -200,7 +200,7 @@ fs.mkdirSync(output, { recursive: true });
     checks.push('long words, CJK and scaled quotation expansion');
 
     await page.setViewportSize({ width: 393, height: 852 });
-    for (const phase of [100, 800, 1950, 2650]) {
+    for (const phase of [100, 800, 1750, 2300]) {
       await reset();
       await page.locator('#newPill').click();
       await pause(phase);

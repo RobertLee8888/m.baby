@@ -1689,8 +1689,6 @@
   const refreshLoader = document.getElementById('refreshLoader');
   const refreshSurface = refreshLoader.closest('.refresh');
   const refreshTiles = Array.from(refreshLoader.querySelectorAll('.refresh-loader-tile'));
-  const refreshResult = document.getElementById('refreshResult');
-  const refreshResultText = document.getElementById('refreshResultText');
   const pill = document.getElementById('newPill');
   const pillText = document.getElementById('newPillText');
   const toastEl = document.getElementById('toast');
@@ -2292,9 +2290,8 @@
     Array.prototype.forEach.call(cardsEl.querySelectorAll('.card'), foldCard);
   }
 
-  /* There are two cards waiting, and only the first refresh gets them. Every
-     refresh after that is the other half of the state a feed has to show:
-     the brand loader runs, nothing new comes back, and the list says so. */
+  /* Only the first refresh returns the pending batch. Empty refreshes use
+     the same loading and closing sequence without a result message. */
   function nextBatch() {
     if (served) return [];
     served = true;
@@ -2353,20 +2350,6 @@
 
   const wait = ms => new Promise(r => window.setTimeout(r, ms));
 
-  async function showRefreshResult(message, resultType, epoch) {
-    refreshLoader.classList.remove('spinning');
-    refreshLoader.style.opacity = '0';
-    refreshResultText.textContent = message;
-    refreshResult.classList.toggle('is-updated', resultType === 'updated');
-    refreshResult.classList.add('show');
-    await wait(1000);
-    if (epoch !== refreshEpoch) return;
-    await springTo(0, epoch);
-    if (epoch !== refreshEpoch) return;
-    refreshResult.classList.remove('show', 'is-updated');
-    refreshResultText.textContent = '';
-  }
-
   async function refresh() {
     if (refreshing) return;
     const epoch = ++refreshEpoch;
@@ -2395,15 +2378,9 @@
       matchingFresh.forEach(card => cardNodes.get(card)?.classList.add('enter'));
     }
 
-    /* The answer always replaces the loader in place. The count comes from
-       the returned batch, so production data can use the same state without
-       a second branch or a fixed demo label. */
-    const resultMessage = matchingFresh.length === 1
-      ? '1 new feed'
-      : matchingFresh.length > 1
-        ? matchingFresh.length + ' new feeds'
-        : 'You’re all caught up';
-    await showRefreshResult(resultMessage, matchingFresh.length ? 'updated' : 'caught-up', epoch);
+    refreshLoader.classList.remove('spinning');
+    refreshLoader.style.opacity = '0';
+    await springTo(0, epoch);
     if (epoch !== refreshEpoch) return;
 
     track.classList.remove('pulled');
@@ -3678,8 +3655,6 @@
     setPull(0);
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
-    refreshResult.classList.remove('show', 'is-updated');
-    refreshResultText.textContent = '';
     followed.clear();
     DEFAULT_FOLLOWED.forEach(sym => followed.add(sym));
     selectedTicker = 'All';

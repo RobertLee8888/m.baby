@@ -31,6 +31,8 @@ No production dependency or build step is added.
 Follow-up audit: [findings, fixes and remaining visual differences](docs/mvp-audit-2026-09-09.md).
 `tests/mvp-audit.cjs` adds semantic-token checks, short viewports, reload/return,
 shared follow state, dialog focus, scaled expansion and reset-during-refresh cases.
+`tests/mvp-refresh.cjs` checks that loading transitions directly to closing,
+without a result message or extra hold, for touch, pill and tab refresh entry points.
 
 ## Contents
 
@@ -477,15 +479,13 @@ leaving that state brings For You back from above and pushes Refresh down. The
 label, hit target, and tab-bar geometry never move. Reduced-motion mode makes
 the same state change effectively instantaneous.
 
-### An answer belongs where the question was asked
+### Refresh finishes with loading
 
-Every completed refresh now answers in the gutter where it started. The brand
-loader hands its place either to the actual returned count (`2 new feeds` in
-this demo's first batch) or to “You’re all caught up” when the batch is empty.
-The returned count uses brand green; the caught-up copy and check icon use
-secondary gray.
-The result remains readable for one second and then the gutter closes. Same
-gesture, same place, one less floating object.
+When loading ends, insert any returned cards and immediately close the gutter
+with the existing 420ms spring. There is no result message, result icon, toast
+or extra one-second hold, whether the batch contains new cards or is empty.
+The pending-new-feed pill before refresh is unchanged. Pulling, tapping that
+pill and re-selecting For You all use this same sequence.
 
 While the gutter is open the refresh surface itself owns matching hairlines on
 both edges. The first feed row temporarily gives up its coincident top rule, so
@@ -701,13 +701,11 @@ threshold again without buzzing continuously.
 
 Releasing at or above 48 commits: the list holds open at 64, and the now-complete
 20px loader switches to the same 1s four-step quarter-turn used by the 40px
-startup loader. It runs for 1150ms before the result replaces it in the same
-64px gutter. The web demo requests one 8ms vibration when the
+startup loader. It runs for 1150ms, then stops as the gutter starts closing.
+The web demo requests one 8ms vibration when the
 browser supports it; production maps the same event to iOS light impact and
 Android `GESTURE_THRESHOLD_ACTIVATE`, both of which honor system haptic
-settings. New cards land while the list is still held; the actual count or
-caught-up message stays for one second, then the list closes. A list that
-changed under the eye would be worse than one that waited.
+settings. New cards land when loading ends, before the spring closes the list.
 
 The cards container clips new-card entrance motion at its own top edge. New
 cards can still fade and move into place, but their initial `-10px` transform
@@ -721,15 +719,8 @@ that is floating. Tapping it runs the identical sequence rather than a second
 one.
 
 **There are two cards waiting, and only the first refresh gets them.** Every
-refresh after that is the other half of the state a feed has to show: the
-brand loader runs, nothing new comes back, and the list says so —
-*You're all caught up*. A prototype that always produces content teaches the
-wrong thing about a feed.
-
-Both branches use the same result gutter, one-second hold, and 420ms spring
-close. A returned count is gray text only; the caught-up branch uses the
-library `check-f2` with its green message. No successful refresh can finish
-without a visible result.
+refresh after that runs the same loader and closes without changing the cards.
+Both branches finish with the same 420ms spring close, with no result message.
 
 When the two do arrive, the boundary between them and what you had already
 read is marked once, in place, the way Twitter marks it: a hairline with
