@@ -9,6 +9,24 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 
 ## MVP update: Sources and ticker filters (2026-09-09)
 
+### Social-feed exploration
+
+[Open Social Feed](https://robertlee8888.github.io/m.baby/#/mvp-social) is a separate
+homepage based on [5031:94702](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5031-94702).
+The original MVP is unchanged. Eleven source-first posts retain the supplied
+copy, role subtitles, nested quotes, original media, inline Alva analysis,
+ticker tags and social actions. Likes, reposts, replies and tracking persist
+locally only; no social network or notification service is connected. Alva
+follow-ups simulate thinking and use the supplied post analysis/source text.
+Share opens the native share sheet, with a clipboard/link fallback and a
+direct link to the selected post.
+
+`mvp-social.js`, `mvp-social-data.js` and `mvp-social.css` own the opt-in variant.
+Source content, filtering, navigation, Sources, ticker details and charts are
+shared with MVP. No copied controller or additional production dependency.
+See [social-feed acceptance notes](docs/mvp-social-2026-09-09.md) for coverage
+and deliberate differences from the static frame.
+
 [Open MVP directly](https://robertlee8888.github.io/m.baby/#/mvp).
 Current references: [Sources/People coverage](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4074-41944)
 and [ticker filters A1-A5](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4888-43205).

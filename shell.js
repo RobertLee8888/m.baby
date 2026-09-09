@@ -35,6 +35,18 @@
 
   const PROTOTYPES = [
     {
+      title: 'Social Feed',
+      subtitle: 'Source-first feed with Alva analysis, nested quotes and social interactions.',
+      edited: '2026-09-09',
+      slug: 'mvp-social',
+      href: 'mvp.html?feed=social',
+      meta: 'Mobile · 11 posts · social feed exploration',
+      figma: {
+        label: 'Feed Mobile MVP · Social source first',
+        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5031-94702',
+      },
+    },
+    {
       title: 'MVP onboarding',
       subtitle: 'Pick the tickers, themes, and people you want Alva to follow, then land in the MVP feed with context-ready alerts.',
       edited: '2026-08-31',

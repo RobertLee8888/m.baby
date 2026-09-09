@@ -21,8 +21,11 @@
      any chart           → the fullscreen chart (1076:48248)
    ═══════════════════════════════════════════════════════════ */
 
-(function () {
+(async function () {
   'use strict';
+  const socialModule = document.documentElement.dataset.feedVariant === 'social'
+    ? await import('./mvp-social.js?v=1') : null;
+  let socialUI = null;
 
   const A = 'assets/';
   /* ──────────────────────────────
@@ -1151,6 +1154,7 @@
     };
   });
   const referenceSources = new Set(window.AlvaFeedReferences.map(card => card.source));
+  const socialCards = socialModule ? socialModule.createCards(REFERENCE_CARDS) : null;
 
   /* Source variants from 4074:41944. Historical dates stay historical and
      never contribute to the rolling 48-hour filter counts. */
@@ -1479,6 +1483,12 @@
     meta.appendChild(el('span', 'card-age', displayTime(card.age)));
     node.appendChild(meta);
 
+    if (card.social) {
+      node.classList.add('social-card');
+      node.appendChild(socialUI.content(card));
+      return node;
+    }
+
     const head = el('div', 'card-head');
     card.tickers.forEach((t, i) => {
       if (i) head.appendChild(el('span', 'head-rule'));
@@ -1752,7 +1762,7 @@
   let refreshEpoch = 0;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
   let selectedTicker = 'All';
-  let loadedCards = INITIAL_CARDS.slice();
+  let loadedCards = (socialCards || INITIAL_CARDS).slice();
   const cardNodes = new Map();
   let portfolioEntryDismissed = false;
   let portfolioEntryNode = null;
@@ -1856,7 +1866,12 @@
   });
 
   function recentTickers() {
-    return feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
+    const recent = feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
+    if (socialModule) {
+      const order = sym => DEFAULT_FOLLOWED.includes(sym) ? DEFAULT_FOLLOWED.indexOf(sym) : DEFAULT_FOLLOWED.length;
+      recent.sort((a, b) => order(a.sym) - order(b.sym));
+    }
+    return recent;
   }
 
   function paintFilters() {
@@ -2336,7 +2351,7 @@
       const boundary = visible.findIndex(card => !NEW_CARDS.includes(card));
       if (boundary > 0) nodes.splice(boundary, 0, seenLine());
     }
-    if (selectedTicker === 'All' && !portfolioEntryDismissed) {
+    if (!socialModule && selectedTicker === 'All' && !portfolioEntryDismissed) {
       if (!portfolioEntryNode) portfolioEntryNode = createPortfolioEntry();
       nodes.unshift(portfolioEntryNode);
     }
@@ -2354,7 +2369,7 @@
   }
 
   function updateNewPill() {
-    const pending = served ? [] : NEW_CARDS.filter(card => feedModel.matches(card, selectedTicker));
+    const pending = served || socialModule ? [] : NEW_CARDS.filter(card => feedModel.matches(card, selectedTicker));
     pillText.textContent = pending.length + (pending.length === 1 ? ' new feed' : ' new feeds');
     setPill(!refreshing && pending.length > 0);
   }
@@ -2395,7 +2410,7 @@
   /* Only the first refresh returns the pending batch. Empty refreshes use
      the same loading and closing sequence without a result message. */
   function nextBatch() {
-    if (served) return [];
+    if (served || socialModule) return [];
     served = true;
     return NEW_CARDS.slice();
   }
@@ -2757,7 +2772,7 @@
   scrim.addEventListener('click', () => closeSheet());
   sheet.addEventListener('keydown', event => {
     if (event.key !== 'Tab' || fs.classList.contains('show')) return;
-    const targets = [...sheet.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]')].filter(node => node.getClientRects().length);
+    const targets = [...sheet.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), [tabindex="0"]')].filter(node => node.getClientRects().length);
     const first = targets[0], last = targets.at(-1);
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -3761,7 +3776,8 @@
     followed.clear();
     DEFAULT_FOLLOWED.forEach(sym => followed.add(sym));
     selectedTicker = 'All';
-    loadedCards = INITIAL_CARDS.slice();
+    loadedCards = (socialCards || INITIAL_CARDS).slice();
+    socialUI?.reset();
     cardNodes.clear();
     portfolioEntryDismissed = false;
     portfolioEntryNode = null;
@@ -3804,6 +3820,10 @@
     foldResizeFrame = window.requestAnimationFrame(foldPass);
   });
 
+  socialUI = socialModule?.createSocialFeed({
+    el, img, btn, icon, sourceUI, block, stockLogo,
+    openSources, openTicker, openSheet, sheetClose, toast,
+  });
   setAppearance(readAppearance());
   showTab('feed', false);
   render();
@@ -3814,6 +3834,7 @@
   paintBar();
   fitPhone();
   runStartupLoading();
+  socialUI?.openLinkedPost();
   if (history.state?.mvpFollowing) {
     showTab(TAB_ORDER.includes(history.state.mvpFollowingOrigin) ? history.state.mvpFollowingOrigin : 'feed', false);
     openFollowing(false);
