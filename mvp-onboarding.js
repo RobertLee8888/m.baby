@@ -7,9 +7,7 @@
   let loginBackTarget = 'welcome';
   let notificationFlowCompleted = false;
   let splashFinished = false;
-  let splashRevealStarted = false;
   let splashFallback;
-  let splashAnimation;
   const MIN_PICKS = 3;
   const MAX_PICKS = 8;
   const selected = new Set(['NVDA', 'MU', 'HBM']);
@@ -52,38 +50,22 @@
     go('welcome');
     screens.get('splash').classList.remove('is-revealing');
     screens.get('welcome').classList.remove('is-under-splash');
-    window.setTimeout(() => splashAnimation?.destroy(), 0);
-  }
-
-  function revealSplash() {
-    if (splashRevealStarted || splashFinished) return;
-    splashRevealStarted = true;
-    screens.get('splash').classList.add('is-revealing');
   }
 
   function startSplash() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !window.lottie) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       window.requestAnimationFrame(finishSplash);
       return;
     }
 
-    splashFallback = window.setTimeout(finishSplash, 5000);
+    const splash = screens.get('splash');
+    splash.addEventListener('animationend', finishSplash, { once: true });
+    splashFallback = window.setTimeout(finishSplash, 1200);
     screens.get('welcome').classList.add('is-under-splash');
-    splashAnimation = window.lottie.loadAnimation({
-      container: document.getElementById('splashAnimation'),
-      renderer: 'svg',
-      loop: false,
-      autoplay: true,
-      initialSegment: [0, 60],
-      path: A + 'onboarding-splash.json?v=2',
-      rendererSettings: { preserveAspectRatio: 'xMidYMid slice' },
-    });
-    splashAnimation.addEventListener('enterFrame', event => {
-      if (event.currentTime >= 45) revealSplash();
-    });
-    splashAnimation.addEventListener('complete', finishSplash);
-    splashAnimation.addEventListener('data_failed', finishSplash);
-    splashAnimation.addEventListener('error', finishSplash);
+    // Paint the static wordmark, then uncover the ready page in one motion.
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
+      if (!splashFinished) splash.classList.add('is-revealing');
+    }));
   }
 
   function goLogin(backTarget) {
@@ -180,5 +162,7 @@
 
   renderPicks('');
   updateSelection();
-  startSplash();
+  // The prototype shell reveals its iframe on load; start after it is visible.
+  if (document.readyState === 'complete') startSplash();
+  else window.addEventListener('load', startSplash, { once: true });
 })();
