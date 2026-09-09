@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="MSFT SVG" clip-path="url(#clip0_0_490)">
+<path id="Vector" d="M0 0H15.2107V15.2107H0V0Z" fill="#F25022"/>
+<path id="Vector_2" d="M16.792 0H32V15.2107H16.792V0Z" fill="#7FBA00"/>
+<path id="Vector_3" d="M0 16.792H15.2107V32H0V16.792Z" fill="#00A4EF"/>
+<path id="Vector_4" d="M16.792 16.792H32V32H16.792V16.792Z" fill="#FFB900"/>
+</g>
+<defs>
+<clipPath id="clip0_0_490">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

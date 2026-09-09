@@ -6,6 +6,14 @@ const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.env.DEMO_URL || 'http://localhost:4173/mvp.html';
 const output = process.env.QA_OUTPUT || '/tmp/alva-mvp-qa';
+// Reference heights from 4074:41944. Report visual differences separately
+// from functional assertions; a passing interaction test is not pixel QA.
+const figmaHeights = {
+  P01: [156, 172], P02: [348, 466], P03: [309, 500.0625], P04: [230, 312],
+  P05: [277, 391.0625], P06: [112, 194], P07: [277, 391.0625],
+  S01: [166, 194], S02: [287, 413.0625], S03: [265, 391.0625], S04: [122, 172],
+  S05: [122, 172], S06: [265, 413.0625], S07: [144, 194],
+};
 fs.mkdirSync(output, { recursive: true });
 
 (async () => {
@@ -100,7 +108,9 @@ fs.mkdirSync(output, { recursive: true });
       assert.equal(await source.getAttribute('data-source-id'), id);
       assert.equal((await source.boundingBox()).width, 393);
       await source.screenshot({ path: path.join(output, 'source-' + id + '.png') });
-      results.push({ id, quoteHeight: size.height, sourceHeight: (await source.boundingBox()).height });
+      const sourceHeight = (await source.boundingBox()).height;
+      results.push({ id, quoteHeight: size.height, sourceHeight,
+        quoteDelta: size.height - figmaHeights[id][0], sourceDelta: sourceHeight - figmaHeights[id][1] });
       if (id === 'P02') {
         assert.equal(await source.locator('.src-nested').count(), 2);
         assert.equal((await source.boundingBox()).height, 466);
@@ -170,7 +180,8 @@ fs.mkdirSync(output, { recursive: true });
     const broken = await page.locator('img').evaluateAll(ns => ns.filter(n => !n.complete || !n.naturalWidth).map(n => n.src));
     assert.deepEqual(broken, []);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ passed: true, references: results, errors, output }, null, 2));
+    console.log(JSON.stringify({ functionalPassed: true, references: results,
+      visualDifferences: results.filter(row => row.quoteDelta || row.sourceDelta), errors, output }, null, 2));
   } finally {
     await browser.close();
   }

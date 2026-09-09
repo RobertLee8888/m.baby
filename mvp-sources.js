@@ -58,11 +58,11 @@ window.createAlvaSources = function ({ el, img, btn, icon, onOpen, siteFor }) {
       more.setAttribute('aria-expanded', 'false');
       more.addEventListener('click', event => {
         event.stopPropagation();
-        const before = body.getBoundingClientRect().height;
+        const before = body.offsetHeight;
         body.textContent = text;
-        const after = body.getBoundingClientRect().height;
+        const after = body.offsetHeight;
         if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          body.animate([{ maxHeight: before + 'px' }, { maxHeight: after + 'px' }], { duration: 200, easing: 'ease-out' });
+          body.animate([{ height: before + 'px', overflow: 'hidden' }, { height: after + 'px', overflow: 'hidden' }], { duration: 200, easing: 'ease-out' });
         }
         more.remove();
         copy.focus({ preventScroll: true });

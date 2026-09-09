@@ -28,6 +28,10 @@ It requires an external Playwright installation and a static HTTP preview;
 set `PLAYWRIGHT_MODULE`, `CHROME_PATH`, `DEMO_URL` and `QA_OUTPUT` as needed.
 No production dependency or build step is added.
 
+Follow-up audit: [findings, fixes and remaining visual differences](docs/mvp-audit-2026-09-09.md).
+`tests/mvp-audit.cjs` adds semantic-token checks, short viewports, reload/return,
+shared follow state, dialog focus, scaled expansion and reset-during-refresh cases.
+
 ## Contents
 
 | | | Source |

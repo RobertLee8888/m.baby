@@ -1568,6 +1568,7 @@
 
   function marketRow(rowData) {
     const row = btn('market-row', rowData.sym + ' details');
+    row.dataset.ticker = feedModel.symbol(rowData.sym);
     row.appendChild(marketLogo(rowData));
 
     const copy = el('span', 'market-copy');
@@ -1575,7 +1576,7 @@
     copy.appendChild(el('span', 'market-company', rowData.co));
     row.appendChild(copy);
 
-    row.appendChild(img(rowData.chart, 'market-chart'));
+    row.appendChild(rowData.chart ? img(rowData.chart, 'market-chart') : el('span', 'market-chart'));
     const quote = el('span', 'market-quote');
     quote.appendChild(el('span', 'market-price', rowData.priceLabel));
     quote.appendChild(el('span', 'market-change ' + rowData.tone, rowData.changeLabel));
@@ -1604,7 +1605,14 @@
 
   function renderMarket(options = {}) {
     if (!marketEl) return;
-    const source = marketMode === 'trending' ? MARKET_TRENDING : MARKET_FOLLOWING;
+    const source = marketMode === 'trending' ? MARKET_TRENDING : [...followed].map(sym => {
+      const quote = [...MARKET_FOLLOWING, ...MARKET_TRENDING].find(row => feedModel.symbol(row.sym) === sym);
+      if (quote) return quote;
+      const ticker = tickerDirectory.get(sym);
+      // Some approved Following examples have no market snapshot. Keep the
+      // identity and follow action, without fabricating prices or a chart.
+      return { ...ticker, sym, priceLabel: '\u2014', changeLabel: '', tone: 'flat' };
+    });
     const query = (marketInput?.value || '').trim().toLowerCase();
     const rows = query ? source.filter(row => (row.sym + ' ' + row.co).toLowerCase().includes(query)) : source;
     const nextPane = marketPane(rows);
@@ -1690,6 +1698,7 @@
   const PULL_LOADER_OPACITY_END = PULL_REST;
 
   let refreshing = false;
+  let refreshEpoch = 0;
   let served = false;   /* the feed has one batch to give; after that it is caught up */
   let selectedTicker = 'All';
   let loadedCards = INITIAL_CARDS.slice();
@@ -1722,7 +1731,7 @@
   followingPage.append(followingHeader, followingContent);
   document.getElementById('mvpApp').appendChild(followingPage);
 
-  const tickerDirectory = new Map(Object.values(TICKERS).map(t => [feedModel.symbol(t.sym), t]));
+  const tickerDirectory = new Map(Object.values(TICKERS).map(t => [feedModel.symbol(t.sym), { ...t }]));
   [
     ['TSLA', 'Tesla, Inc.', 'market-logo-tsla.svg'],
     ['MU', 'Micron Technology, Inc.', 'market-logo-mu.png'],
@@ -1735,6 +1744,14 @@
     MSFT: 'Microsoft Corporation', AMD: 'Advanced Micro Devices, Inc.',
     TSM: 'Taiwan Semiconductor Manufacturing', AVGO: 'Broadcom Inc.', AMZN: 'Amazon.com, Inc.',
   };
+  // Logo/Stock instances from 4888:43299. Feed-card artwork is a separate
+  // variant and must not determine the filter or Following logo's framing.
+  ['GOOG', 'MSFT', 'TSLA', 'AMD', 'AVGO', 'AMZN'].forEach(sym => {
+    tickerDirectory.get(sym).logo = A + 'filter-logo-' + sym.toLowerCase() + '.svg';
+  });
+  ['BABA', 'AAOI', 'MU', 'TSM'].forEach(sym => {
+    tickerDirectory.get(sym).logo = A + 'filter-logo-' + sym.toLowerCase() + '.png';
+  });
 
   function recentTickers() {
     return feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
@@ -1756,7 +1773,7 @@
       button.setAttribute('aria-controls', 'cards');
       button.disabled = refreshing;
       button.tabIndex = active ? 0 : -1;
-      if (item.ticker) button.appendChild(img(item.ticker.logo, 'feed-filter-logo'));
+      if (item.ticker) button.appendChild(img(tickerDirectory.get(item.sym)?.logo || item.ticker.logo, 'feed-filter-logo'));
       const label = el('span', 'feed-filter-label');
       label.appendChild(el('span', null, item.sym));
       if (item.count) label.appendChild(el('span', 'feed-filter-count ' + (item.balance > 0 ? 'bull' : item.balance < 0 ? 'bear' : 'flat'), String(item.count)));
@@ -1841,10 +1858,9 @@
     followingPage.classList.add('is-open');
     followingPage.setAttribute('aria-hidden', 'false');
     allTickers.setAttribute('aria-expanded', 'true');
-    document.getElementById('screens').inert = true;
-    document.getElementById('tabBar').inert = true;
+    syncModalBackground();
     followingBack.focus({ preventScroll: true });
-    if (addHistory) history.pushState({ ...history.state, mvpFollowing: true }, '');
+    if (addHistory) history.pushState({ ...history.state, mvpFollowing: true, mvpFollowingOrigin: activeTab }, '');
   }
 
   function closeFollowing(fromHistory = false) {
@@ -1855,8 +1871,7 @@
     followingPage.setAttribute('aria-hidden', 'true');
     followingPage.inert = true;
     allTickers.setAttribute('aria-expanded', 'false');
-    document.getElementById('screens').inert = false;
-    document.getElementById('tabBar').inert = false;
+    syncModalBackground();
     const focus = followingFocus?.closest('.screen')?.classList.contains('current') ? followingFocus : allTickers;
     focus?.focus({ preventScroll: true });
     if (!fromHistory && history.state?.mvpFollowing) history.back();
@@ -1939,7 +1954,8 @@
      below the topbar when a person first meets the card. */
   function visibleCardHeight() {
     const lead = document.querySelector('#screenFeed .lead');
-    return Math.max(0, feed.clientHeight - (lead ? lead.offsetHeight : 0));
+    const densityCap = parseFloat(token('--feed-density-cap'));
+    return Math.max(0, Math.min(densityCap, feed.clientHeight - (lead ? lead.offsetHeight : 0)));
   }
 
   function lineHeightOf(node) {
@@ -1971,22 +1987,27 @@
      long token. Binary search keeps this cheap even for Premium-length text. */
   function ellipsizeToLines(body, text, maxLines, lineHeight) {
     const wordBreaks = Array.from(text.matchAll(/\s+/g), match => match.index).filter(Boolean);
-    const breaks = wordBreaks.length > 1
-      ? wordBreaks.concat(text.length)
-      : Array.from({ length: text.length }, (_, i) => i + 1);
-    let low = 0;
-    let high = breaks.length - 1;
-    let best = '…';
-
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const probe = text.slice(0, breaks[mid]).trimEnd() + '…';
-      if (fitsLines(body, probe, maxLines, lineHeight)) {
-        best = probe;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
+    const search = breaks => {
+      let low = 0, high = breaks.length - 1, best = '';
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        const probe = text.slice(0, breaks[mid]).trimEnd() + '…';
+        if (fitsLines(body, probe, maxLines, lineHeight)) {
+          best = probe;
+          low = mid + 1;
+        } else high = mid - 1;
       }
+      return best;
+    };
+    let best = wordBreaks.length ? search(wordBreaks.concat(text.length)) : '';
+    // A long first word must not leave an ellipsis-only preview. Grapheme
+    // boundaries also keep combined characters intact in non-English text.
+    if (!best) {
+      const segments = typeof Intl.Segmenter === 'function'
+        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), part => part.segment)
+        : Array.from(text);
+      let offset = 0;
+      best = search(segments.map(part => (offset += part.length)));
     }
     body.textContent = best;
     return best;
@@ -2308,13 +2329,15 @@
     try { navigator.vibrate(8); } catch (error) { /* unsupported prototype host */ }
   }
 
-  function springTo(y) {
+  function springTo(y, epoch = refreshEpoch) {
     return new Promise(resolve => {
       track.classList.add('springing');
       setPull(y);
       window.setTimeout(() => {
-        track.classList.remove('springing');
-        if (y === 0) feedScreen.classList.remove('is-pulling');
+        if (epoch === refreshEpoch) {
+          track.classList.remove('springing');
+          if (y === 0) feedScreen.classList.remove('is-pulling');
+        }
         resolve();
       }, 430);
     });
@@ -2322,20 +2345,23 @@
 
   const wait = ms => new Promise(r => window.setTimeout(r, ms));
 
-  async function showRefreshResult(message, resultType) {
+  async function showRefreshResult(message, resultType, epoch) {
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
     refreshResultText.textContent = message;
     refreshResult.classList.toggle('is-updated', resultType === 'updated');
     refreshResult.classList.add('show');
     await wait(1000);
-    await springTo(0);
+    if (epoch !== refreshEpoch) return;
+    await springTo(0, epoch);
+    if (epoch !== refreshEpoch) return;
     refreshResult.classList.remove('show', 'is-updated');
     refreshResultText.textContent = '';
   }
 
   async function refresh() {
     if (refreshing) return;
+    const epoch = ++refreshEpoch;
     refreshing = true;
     allTickers.disabled = true;
     feedFilters.querySelectorAll('button').forEach(button => { button.disabled = true; });
@@ -2344,11 +2370,13 @@
     hideToast();
     feed.scrollTop = 0;
 
-    await springTo(PULL_REST);
+    await springTo(PULL_REST, epoch);
+    if (epoch !== refreshEpoch) return;
     refreshLoader.style.opacity = '1';
     refreshLoader.classList.add('spinning');
 
     await wait(REFRESH_WAIT_MS);
+    if (epoch !== refreshEpoch) return;
 
     const fresh = nextBatch();
     const matchingFresh = fresh.filter(card => feedModel.matches(card, selectedTicker));
@@ -2367,7 +2395,8 @@
       : matchingFresh.length > 1
         ? matchingFresh.length + ' new feeds'
         : 'You’re all caught up';
-    await showRefreshResult(resultMessage, matchingFresh.length ? 'updated' : 'caught-up');
+    await showRefreshResult(resultMessage, matchingFresh.length ? 'updated' : 'caught-up', epoch);
+    if (epoch !== refreshEpoch) return;
 
     track.classList.remove('pulled');
     refreshing = false;
@@ -2579,6 +2608,13 @@
   let sheetOpen = false;
   let sheetTeardown = null;
   let sheetCloseTimer = 0;
+  let sheetFocus = null;
+  sheet.inert = true;
+
+  function syncModalBackground() {
+    document.getElementById('screens').inert = followingOpen || sheetOpen;
+    document.getElementById('tabBar').inert = followingOpen || sheetOpen;
+  }
 
   /* opts.full  — take the whole ceiling and lay the body out as a column with
                    one flexible row in it (the ticker sheet).
@@ -2588,6 +2624,7 @@
     window.clearTimeout(sheetCloseTimer);
     if (!sheetOpen && sheetTeardown) { sheetTeardown(); sheetTeardown = null; }
     closeSheet(true);
+    sheetFocus = document.activeElement;
     sheet.classList.toggle('full', !!o.full);
     sheetTop.className = 'sheet-top' + (o.ruled ? ' ruled' : '');
     sheetBody.className = (o.full ? 'tk-body' : 'sheet-scroll') + (o.bodyClass ? ' ' + o.bodyClass : '');
@@ -2602,7 +2639,10 @@
     sheetBody.scrollTop = 0;
     sheetTeardown = o.teardown || null;
     sheetOpen = true;
+    sheet.inert = false;
     sheet.setAttribute('aria-hidden', 'false');
+    syncModalBackground();
+    sheetTop.querySelector('button')?.focus({ preventScroll: true });
     app.classList.add('dim');
     /* one frame, so the transform transition has a "from" to run out of */
     requestAnimationFrame(() => { if (sheetOpen) { scrim.classList.add('show'); sheet.classList.add('show'); } });
@@ -2614,6 +2654,9 @@
     sheet.classList.remove('show');
     scrim.classList.remove('show');
     sheet.setAttribute('aria-hidden', 'true');
+    sheet.inert = true;
+    syncModalBackground();
+    if (sheetFocus?.isConnected) sheetFocus.focus({ preventScroll: true });
     app.classList.remove('dim');
     const appearanceRow = document.getElementById('appearanceRow');
     if (appearanceRow) appearanceRow.setAttribute('aria-expanded', 'false');
@@ -2625,6 +2668,13 @@
   }
 
   scrim.addEventListener('click', () => closeSheet());
+  sheet.addEventListener('keydown', event => {
+    if (event.key !== 'Tab' || fs.classList.contains('show')) return;
+    const targets = [...sheet.querySelectorAll('button:not(:disabled), a[href], input:not(:disabled), [tabindex="0"]')].filter(node => node.getClientRects().length);
+    const first = targets[0], last = targets.at(-1);
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+  });
 
   function sheetClose() {
     const b = btn('sheet-btn', 'Close');
@@ -2693,6 +2743,7 @@
       const on = followed.has(feedModel.symbol(t.sym));
       b.replaceChildren(icon(on ? 'ui-star-f.svg' : 'ui-star-l.svg', on ? 'ic-star-f' : ''));
       b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', (on ? 'Unfollow ' : 'Follow ') + t.sym);
     };
     paint();
     /* The star is its own feedback — it goes solid and amber. A toast on top
@@ -2700,10 +2751,14 @@
     b.addEventListener('click', () => {
       const sym = feedModel.symbol(t.sym);
       if (followed.has(sym)) followed.delete(sym);
-      else { followed.add(sym); tickerDirectory.set(sym, t); }
+      else {
+        followed.add(sym);
+        if (!tickerDirectory.has(sym)) tickerDirectory.set(sym, { ...t });
+      }
       paint();
       if (!followed.has(selectedTicker) && selectedTicker !== 'All') selectTicker('All');
       else paintFilters();
+      renderMarket();
     });
     return b;
   }
@@ -2738,15 +2793,15 @@
     const co = el('div', 'tk-co');
     co.appendChild(img(t.logo));
     co.appendChild(el('b', null, t.co));
-    co.appendChild(el('span', null, t.sym + ' · ' + t.mkt));
+    co.appendChild(el('span', null, t.sym + (t.mkt ? ' · ' + t.mkt : '')));
     wrap.appendChild(co);
 
     if (t.when) wrap.appendChild(el('div', 'tk-when', displayTime(t.when)));
 
     const price = el('div', 'tk-price');
-    price.appendChild(el('b', null, '$' + money(t.price)));
+    price.appendChild(el('b', null, Number.isFinite(t.price) ? '$' + money(t.price) : '\u2014'));
     const dir = t.chg >= 0 ? 'up' : 'down';
-    price.appendChild(el('span', 'tk-chg ' + dir, signed(t.chg) + ' ' + pct(t.pct)));
+    if (Number.isFinite(t.chg) && Number.isFinite(t.pct)) price.appendChild(el('span', 'tk-chg ' + dir, signed(t.chg) + ' ' + pct(t.pct)));
     wrap.appendChild(price);
 
     if (t.pre) {
@@ -2781,6 +2836,10 @@
 
   function openTicker(t) {
     const header = [sheetClose(), el('h2', null, ''), starButton(t)];
+    if (!Number.isFinite(t.price)) {
+      openSheet(header, [tkName(t)], { label: t.sym });
+      return;
+    }
     const chart = chartModule(t);
     /* Identity is a stable sibling of the tab list and its panels. Switching
        away from Overview must never replace or hide the ticker title/price. */
@@ -3598,22 +3657,27 @@
      ────────────────────────────── */
 
   function restart() {
+    refreshEpoch++;
     refreshing = false;
+    pulling = false;
+    pullY = 0;
     allTickers.disabled = false;
     served = false;
     closeSheet(true);
     closeFullChart();
     closeFollowing();
+    track.classList.remove('springing', 'pulled');
     setPull(0);
     refreshLoader.classList.remove('spinning');
     refreshLoader.style.opacity = '0';
-    refreshResult.classList.remove('show');
+    refreshResult.classList.remove('show', 'is-updated');
     refreshResultText.textContent = '';
     followed.clear();
     DEFAULT_FOLLOWED.forEach(sym => followed.add(sym));
     selectedTicker = 'All';
     loadedCards = INITIAL_CARDS.slice();
     cardNodes.clear();
+    renderMarket();
     const count = document.getElementById('followCount');
     if (count) count.textContent = String(followed.size);
     render();
@@ -3662,6 +3726,10 @@
   paintBar();
   fitPhone();
   runStartupLoading();
+  if (history.state?.mvpFollowing) {
+    showTab(TAB_ORDER.includes(history.state.mvpFollowingOrigin) ? history.state.mvpFollowingOrigin : 'feed', false);
+    openFollowing(false);
+  }
   /* Webfont metrics can change line wraps after the first synchronous pass.
      Re-measure once they settle; expanded cards stay expanded. */
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(foldPass);
