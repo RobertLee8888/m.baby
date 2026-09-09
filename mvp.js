@@ -1802,8 +1802,10 @@
     paintBar();
     const button = feedFilters.querySelector('[aria-selected="true"]');
     if (button) {
+      const inset = parseFloat(getComputedStyle(feedFilters).paddingLeft) || 0;
+      const left = Math.max(0, button.offsetLeft - inset);
       const right = button.offsetLeft + button.offsetWidth;
-      if (button.offsetLeft < feedFilters.scrollLeft) feedFilters.scrollLeft = button.offsetLeft;
+      if (left < feedFilters.scrollLeft) feedFilters.scrollLeft = left;
       else if (right > feedFilters.scrollLeft + feedFilters.clientWidth) feedFilters.scrollLeft = right - feedFilters.clientWidth + 24;
     }
     updateNewPill();

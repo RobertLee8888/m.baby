@@ -439,7 +439,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   align-items: center;
   gap: var(--space-xs);
   height: var(--filter-h);
-  padding: var(--space-s) var(--gutter);
+  padding: var(--space-s) var(--gutter) var(--space-s) 0;
   background: var(--bg-container);
   box-shadow: 0 var(--hair) 0 var(--l12);
   letter-spacing: 0;
@@ -458,7 +458,8 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   display: flex;
   gap: var(--space-xs);
   overflow-x: auto;
-  padding: 8px 24px 8px 0;
+  /* The leading gutter scrolls with the tabs; clipping stays at the screen edge. */
+  padding: 8px 24px 8px var(--gutter);
   margin-block: -8px;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
