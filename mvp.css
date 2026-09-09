@@ -93,6 +93,7 @@
   --price-up: #2a9b7d;
   --price-down: #e05357;
   --stock-btc: #f7931a;
+  --btn-primary: #49a3a6;
   --btn-primary-reverse: #ffffff;
 
   /* common/* */
@@ -135,6 +136,7 @@
   --radius-ct-m: 6px;
   --radius-ct-l: 8px;
   --radius-ct-max: 960px;
+  --radius-btn-s: 4px;
   --radius-btn-m: 6px;
   --shadow-xs: 0 4px 15px rgba(0, 0, 0, .05);
   --feed-density-cap: 573px; /* 1796:19551, excluding the first-sentence floor */
@@ -666,6 +668,58 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   from { opacity: 0; transform: translate3d(0, 18px, 0); }
   to { opacity: 1; transform: none; }
 }
+
+/* Portfolio entry: Feed-Mobile-MVP 4969:77490. */
+.portfolio-entry {
+  padding: 0;
+  overflow: hidden;
+  background: var(--bg-container);
+  letter-spacing: 0;
+}
+.portfolio-entry-body {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-m);
+}
+.portfolio-brokers { display: flex; width: 88px; height: 24px; overflow: hidden; }
+.portfolio-broker {
+  position: relative;
+  flex: 0 0 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: var(--radius-ct-max);
+  box-shadow: 0 0 0 var(--space-xxxs) var(--bg-container);
+}
+.portfolio-broker + .portfolio-broker { margin-left: calc(-1 * var(--space-xs)); }
+/* Figma exports include the outside stroke, clipped by the stack's frame.
+   Keep the 24px logo geometry; the themed outer ring is drawn above. */
+.portfolio-broker img { position: absolute; top: 0; left: -2px; width: 28px; height: 24px; max-width: none; }
+.portfolio-broker:first-child img { left: 0; width: 26px; }
+.portfolio-broker:last-child img { width: 26px; }
+.portfolio-entry-copy { display: flex; flex-direction: column; gap: var(--space-xxxs); }
+.portfolio-entry h2 { color: var(--n9); font-size: 16px; font-weight: 500; line-height: 26px; }
+.portfolio-entry-description { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.portfolio-entry-actions { display: flex; gap: var(--space-s); }
+.portfolio-entry-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 32px;
+  padding: 6px var(--space-s);
+  gap: 6px;
+  border-radius: var(--radius-btn-s);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+}
+.portfolio-entry-later { color: var(--n9); box-shadow: inset 0 0 0 var(--hair) var(--l3); }
+.portfolio-entry-connect { color: var(--white); background: var(--btn-primary); }
+.portfolio-entry-connect .ic { width: 14px; height: 14px; }
 
 /* ── Feed Card - Meta (1629:17047) ──
    The automation that produced the card on the left, how old the card is on

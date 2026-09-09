@@ -34,6 +34,18 @@ shared follow state, dialog focus, scaled expansion and reset-during-refresh cas
 `tests/mvp-refresh.cjs` checks that loading transitions directly to closing,
 without a result message or extra hold, for touch, pill and tab refresh entry points.
 
+### First-feed portfolio entry
+
+[Figma card 4969:77490](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4969-77490)
+is the first item under All on each new demo visit. It uses live text, shared theme
+tokens and the five original broker SVGs, not a flattened screenshot. The card
+is separate from ticker data and does not affect mention counts or refresh batches.
+Later in Settings collapses it over 240ms; dismissal survives filtering, tab changes
+and refresh until the demo is restarted or reloaded. Reduced motion removes it
+immediately. Connect intentionally has no click action, as requested.
+`tests/mvp-portfolio-entry.cjs` checks geometry at four mobile widths, SVG loading,
+progressive collapse, state persistence, interrupted exits and reduced motion.
+
 ## Contents
 
 | | | Source |

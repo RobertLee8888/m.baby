@@ -1707,6 +1707,57 @@
   let selectedTicker = 'All';
   let loadedCards = INITIAL_CARDS.slice();
   const cardNodes = new Map();
+  let portfolioEntryDismissed = false;
+  let portfolioEntryNode = null;
+
+  function createPortfolioEntry() {
+    const card = el('article', 'card portfolio-entry');
+    card.setAttribute('aria-labelledby', 'portfolioEntryTitle');
+    const body = el('div', 'portfolio-entry-body');
+    const brokers = el('div', 'portfolio-brokers');
+    ['Robinhood', 'Coinbase', 'Binance', 'Hyperliquid', 'OKX'].forEach(name => {
+      const broker = el('span', 'portfolio-broker');
+      const logo = img(A + 'mvp-broker-' + name.toLowerCase() + '.svg');
+      logo.alt = name;
+      broker.appendChild(logo);
+      brokers.appendChild(broker);
+    });
+    const copy = el('div', 'portfolio-entry-copy');
+    const title = el('h2', null, 'Your accounts. One portfolio.');
+    title.id = 'portfolioEntryTitle';
+    const description = el('div', 'portfolio-entry-description');
+    description.append(
+      el('p', null, 'Monitor live positions, P&L and margin across accounts.'),
+      el('p', null, 'Track portfolio returns over time.'),
+    );
+    copy.append(title, description);
+    const actions = el('div', 'portfolio-entry-actions');
+    const later = btn('portfolio-entry-button portfolio-entry-later');
+    later.textContent = 'Later in Settings';
+    const connect = btn('portfolio-entry-button portfolio-entry-connect');
+    connect.append(icon('mvp-link-l.svg'), el('span', null, 'Connect'));
+    actions.append(later, connect);
+    body.append(brokers, copy, actions);
+    card.appendChild(body);
+    later.addEventListener('click', () => {
+      if (portfolioEntryDismissed) return;
+      portfolioEntryDismissed = true;
+      if (card.contains(document.activeElement)) feedTabButton.focus({ preventScroll: true });
+      card.inert = true;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        card.remove();
+        return;
+      }
+      // Animate the outer height so the next item moves up throughout dismissal.
+      const exit = card.animate([
+        { height: card.offsetHeight + 'px', opacity: 1 },
+        { height: '0px', opacity: 0 },
+      ], { duration: 240, easing: 'cubic-bezier(0.32, 0.72, 0, 1)', fill: 'forwards' });
+      exit.finished.then(() => card.remove(), () => card.remove());
+    });
+    return card;
+  }
+
   const feedFilters = document.getElementById('feedFilters');
   const allTickers = document.getElementById('allTickers');
   let followingOpen = false;
@@ -2237,6 +2288,10 @@
     if (served) {
       const boundary = visible.findIndex(card => !NEW_CARDS.includes(card));
       if (boundary > 0) nodes.splice(boundary, 0, seenLine());
+    }
+    if (selectedTicker === 'All' && !portfolioEntryDismissed) {
+      if (!portfolioEntryNode) portfolioEntryNode = createPortfolioEntry();
+      nodes.unshift(portfolioEntryNode);
     }
     cardsEl.replaceChildren(...nodes);
     if (!nodes.length) {
@@ -3660,6 +3715,8 @@
     selectedTicker = 'All';
     loadedCards = INITIAL_CARDS.slice();
     cardNodes.clear();
+    portfolioEntryDismissed = false;
+    portfolioEntryNode = null;
     renderMarket();
     const count = document.getElementById('followCount');
     if (count) count.textContent = String(followed.size);
