@@ -7,6 +7,9 @@
 /* Twitter's launch sequence: anticipation, masked crossfade, content settle.
    Reference: reactnative.dev/blog/2018/01/18/implementing-twitters-app-loading-animation-in-react-native */
 .logo-splash {
+  --splash-symbol-width: 51px;
+  --splash-word-width: 145px;
+  --splash-logo-gap: 8px;
   --splash-progress: 0;
   --splash-anticipation: clamp(0, calc(var(--splash-progress) / .16), 1);
   --splash-expansion: clamp(0, calc((var(--splash-progress) - .16) / .84), 1);
@@ -15,32 +18,46 @@
   background: transparent;
   isolation: isolate;
 }
+/* Keep antialiased logo edges opaque until the content crossfade begins. */
+.logo-splash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--m1);
+  opacity: var(--splash-ink);
+}
 .logo-splash::before {
   content: '';
   position: absolute;
   inset: 0;
   background: var(--m1);
-  -webkit-mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg);
-  mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  -webkit-mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
+  mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
+  -webkit-mask-composite: xor, source-over, source-over;
+  mask-composite: exclude, add, add;
   mask-repeat: no-repeat;
-  mask-size: 100% 100%, calc(64px * var(--splash-scale)) calc(63.48148px * var(--splash-scale));
-  mask-position: center;
+  mask-size: 100% 100%, calc(var(--splash-symbol-width) * var(--splash-scale)) calc(50.586804px * var(--splash-scale)), calc(var(--splash-word-width) * var(--splash-scale)) calc(51.509769px * var(--splash-scale));
+  mask-position: center, calc(50% - (var(--splash-word-width) + var(--splash-logo-gap)) / 2 * var(--splash-scale)) center, calc(50% + (var(--splash-symbol-width) + var(--splash-logo-gap)) / 2 * var(--splash-scale)) center;
+  /* The lockup's center is between letters; clear the remaining gaps during the reveal. */
+  opacity: clamp(0, calc((.85 - var(--splash-progress)) / .35), 1);
 }
 .logo-splash-mark {
   position: absolute;
   top: 50%;
   left: 50%;
-  display: grid;
-  place-items: center;
-  width: 64px;
-  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: var(--splash-logo-gap);
+  width: calc(var(--splash-symbol-width) + var(--splash-logo-gap) + var(--splash-word-width));
+  height: 52px;
   transform: translate(-50%, -50%) scale(var(--splash-scale));
   transform-origin: center;
   opacity: var(--splash-ink);
 }
-.logo-splash-mark img { display: block; width: 100%; height: auto; filter: brightness(0) invert(1); }
+.logo-splash-mark img { display: block; flex: none; height: auto; filter: brightness(0) invert(1); }
+.logo-splash-mark img:first-child { width: var(--splash-symbol-width); }
+.logo-splash-mark img:last-child { width: var(--splash-word-width); }
 .logo-splash:is(.is-leaving, .is-revealing) {
   animation: alva-splash-reveal var(--splash-duration) linear var(--splash-hold) both;
 }

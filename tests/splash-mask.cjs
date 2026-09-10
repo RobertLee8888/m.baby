@@ -21,6 +21,24 @@ fs.mkdirSync(output, { recursive: true });
         await page.goto(new URL(route, base).href);
         const splash = page.locator('.logo-splash');
         await splash.waitFor({ state: 'hidden' });
+        const lockup = await splash.locator('.logo-splash-mark').evaluate(mark => ({
+          width: getComputedStyle(mark).width,
+          height: getComputedStyle(mark).height,
+          gap: getComputedStyle(mark).gap,
+          images: [...mark.querySelectorAll('img')].map(image => ({
+            asset: image.getAttribute('src'),
+            width: getComputedStyle(image).width,
+            loaded: image.complete && image.naturalWidth > 0,
+          })),
+        }));
+        assert.deepEqual(lockup, {
+          width: '204px', height: '52px', gap: '8px',
+          images: [
+            { asset: 'assets/wordmark-symbol.svg', width: '51px', loaded: true },
+            { asset: 'assets/wordmark-text.svg', width: '145px', loaded: true },
+          ],
+        }, 'Every splash must use the original full icon + wordmark lockup');
+        const name = route.replace(/[^a-z0-9]/gi, '-') + '-' + width + '-' + engine;
         await page.evaluate(() => {
           const root = document.querySelector('.logo-splash');
           root.hidden = false;
@@ -43,7 +61,7 @@ fs.mkdirSync(output, { recursive: true });
             maskMotion.currentTime = time;
             const root = document.querySelector('.logo-splash');
             const bounds = root.getBoundingClientRect();
-            const mark = root.querySelector('img').getBoundingClientRect();
+            const mark = root.querySelector('.logo-splash-mark').getBoundingClientRect();
             return {
               scale: Number(getComputedStyle(root).getPropertyValue('--splash-scale')),
               ink: Number(getComputedStyle(root).getPropertyValue('--splash-ink')),
@@ -51,6 +69,14 @@ fs.mkdirSync(output, { recursive: true });
               dy: mark.y + mark.height / 2 - bounds.y - bounds.height / 2,
             };
           }, time);
+          if (time === 1000) {
+            const held = await sharp(await splash.screenshot({ path: path.join(output, name + '-hold.png') })).ensureAlpha().raw().toBuffer();
+            let leaked = 0;
+            for (let index = 0; index < held.length; index += 4) {
+              if (held[index] > held[index + 1] + 8) leaked++;
+            }
+            assert.equal(leaked, 0, 'The page must not leak through the white lockup edges during the hold');
+          }
           assert.ok(Math.abs(frame.dx) < .1 && Math.abs(frame.dy) < .1, 'Logo center must remain at the viewport center');
           if (time === 1115) assert.equal(frame.ink, 1, 'The enlarged logo stays white before the crossfade');
           if (time === 1174) assert.ok(frame.ink > 0 && frame.ink < 1, 'The logo crossfades into content instead of cutting to a hole');
@@ -84,6 +110,7 @@ fs.mkdirSync(output, { recursive: true });
           };
         });
         assert.ok(expected.mask.includes('wordmark-symbol.svg'));
+        assert.ok(expected.mask.includes('wordmark-text.svg'));
         assert.ok(!expected.mask.includes('radial-gradient'));
         assert.ok(Math.abs(Number(expected.ink)) < .000001);
         const actual = await sharp(await splash.screenshot()).ensureAlpha().raw().toBuffer();
@@ -99,7 +126,6 @@ fs.mkdirSync(output, { recursive: true });
             if (Math.abs(actual[index] - 73) > 10 || Math.abs(actual[index + 1] - 163) > 10 || Math.abs(actual[index + 2] - 166) > 10) mismatched++;
           }
         }
-        const name = route.replace(/[^a-z0-9]/gi, '-') + '-' + width + '-' + engine;
         await splash.screenshot({ path: path.join(output, name + '-negative.png') });
         assert.ok(aperture > 1000, 'Logo-shaped content aperture must be visible');
         assert.ok(mismatched / (actual.length / 4) < .003, `${name}: ${mismatched} mismatched pixels; the aperture must follow the original SVG, including its gaps`);
