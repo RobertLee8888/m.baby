@@ -50,7 +50,7 @@ fs.mkdirSync(output, { recursive: true });
         window.reveal.currentTime = 0;
       });
       let previousScale = 1;
-      for (const time of [0, 400, 550, 622, 820, 1000, 1270]) {
+      for (const time of [0, 400, 550, 700, 850, 1150, 1450]) {
         const frame = await page.evaluate(time => {
           window.reveal.currentTime = time;
           const splash = document.querySelector('.splash-screen');
@@ -59,7 +59,7 @@ fs.mkdirSync(output, { recursive: true });
             scale: parseFloat(getComputedStyle(splash).getPropertyValue('--splash-scale')),
             opacity: getComputedStyle(welcome).opacity,
             transform: getComputedStyle(welcome).transform,
-            logoAnimations: document.querySelector('.logo-splash-wordmark').getAnimations({ subtree: true }).length,
+            logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
           };
         }, time);
         if (time <= 550) assert.equal(frame.scale, 1, 'Hold the unchanged logo before the reveal');

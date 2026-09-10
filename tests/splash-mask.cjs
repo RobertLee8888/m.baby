@@ -36,8 +36,30 @@ fs.mkdirSync(output, { recursive: true });
           window.maskMotion = root.getAnimations()[0];
           maskMotion.pause();
         });
-        // At this frame the ink is gone, but the aperture is still the full logo.
-        await page.evaluate(() => { maskMotion.currentTime = 622; });
+        // Equal time steps must produce increasing scale steps without drift.
+        let previousScale = 1, previousStep = 0;
+        for (const time of [550, 730, 910, 1090, 1270, 1450]) {
+          const frame = await page.evaluate(time => {
+            maskMotion.currentTime = time;
+            const root = document.querySelector('.logo-splash');
+            const bounds = root.getBoundingClientRect();
+            const mark = root.querySelector('img').getBoundingClientRect();
+            return {
+              scale: Number(getComputedStyle(root).getPropertyValue('--splash-scale')),
+              dx: mark.x + mark.width / 2 - bounds.x - bounds.width / 2,
+              dy: mark.y + mark.height / 2 - bounds.y - bounds.height / 2,
+            };
+          }, time);
+          assert.ok(Math.abs(frame.dx) < .1 && Math.abs(frame.dy) < .1, 'Logo center must remain at the viewport center');
+          if (time > 550) {
+            const step = frame.scale - previousScale;
+            assert.ok(step > previousStep, 'Expansion must continuously accelerate');
+            previousStep = step;
+          }
+          previousScale = frame.scale;
+        }
+        // Once the ink is gone, the aperture must still match the exact logo.
+        await page.evaluate(() => { maskMotion.currentTime = 700; });
         const expected = await page.evaluate(() => {
           const root = document.querySelector('.logo-splash');
           const bounds = root.getBoundingClientRect();
@@ -55,7 +77,7 @@ fs.mkdirSync(output, { recursive: true });
             ink: getComputedStyle(root).getPropertyValue('--splash-ink'),
           };
         });
-        assert.ok(expected.mask.includes('wordmark-symbol.svg') && expected.mask.includes('wordmark-text.svg'));
+        assert.ok(expected.mask.includes('wordmark-symbol.svg'));
         assert.ok(!expected.mask.includes('radial-gradient'));
         assert.ok(Math.abs(Number(expected.ink)) < .000001);
         const actual = await sharp(await splash.screenshot()).ensureAlpha().raw().toBuffer();
@@ -73,9 +95,9 @@ fs.mkdirSync(output, { recursive: true });
         }
         const name = route.replace(/[^a-z0-9]/gi, '-') + '-' + width + '-' + engine;
         await splash.screenshot({ path: path.join(output, name + '-negative.png') });
-        assert.ok(aperture > 3000, 'Logo-shaped content aperture must be visible');
+        assert.ok(aperture > 1000, 'Logo-shaped content aperture must be visible');
         assert.ok(mismatched / (actual.length / 4) < .003, `${name}: ${mismatched} mismatched pixels; the aperture must follow the original SVG, including its gaps`);
-        await page.evaluate(() => { maskMotion.currentTime = 1270; });
+        await page.evaluate(() => { maskMotion.currentTime = 1450; });
         const final = await sharp(await splash.screenshot()).ensureAlpha().raw().toBuffer();
         let covered = 0;
         for (let index = 0; index < final.length; index += 4) {

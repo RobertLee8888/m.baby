@@ -1,12 +1,13 @@
 @property --splash-scale { syntax: '<number>'; inherits: true; initial-value: 1; }
 @property --splash-ink { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --splash-progress { syntax: '<number>'; inherits: true; initial-value: 0; }
 
-/* Both the visible wordmark and its negative use the original SVG assets.
-   Zoom through the top-left tile's center (20%, 20% of the symbol), so the
-   viewport clears without enormous masks or a separate fade at the end. */
+/* The original symbol and its negative share the viewport center.
+   A quartic ease-in keeps scale velocity continuous and increasing. */
 .logo-splash {
-  --splash-scale: 1;
-  --splash-ink: 1;
+  --splash-progress: 0;
+  --splash-scale: calc(1 + 383 * var(--splash-progress) * var(--splash-progress) * var(--splash-progress) * var(--splash-progress));
+  --splash-ink: clamp(0, calc(1 - 10 * var(--splash-progress)), 1);
   background: transparent;
   isolation: isolate;
 }
@@ -15,36 +16,33 @@
   position: absolute;
   inset: 0;
   background: var(--m1);
-  -webkit-mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
-  mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
-  -webkit-mask-composite: xor, source-over, source-over;
-  mask-composite: exclude, add, add;
+  -webkit-mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg);
+  mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
   mask-repeat: no-repeat;
-  mask-size: 100% 100%, calc(51px * var(--splash-scale)) calc(50.586804px * var(--splash-scale)), calc(145px * var(--splash-scale)) calc(51.509769px * var(--splash-scale));
-  mask-position: center, calc(50% - 91.8px + 15.3px * var(--splash-scale)) calc(50% - 15.176041px + 15.176041px * var(--splash-scale)), calc(50% - 91.8px + 121.3px * var(--splash-scale)) calc(50% - 15.176041px + 15.176041px * var(--splash-scale));
+  mask-size: 100% 100%, calc(64px * var(--splash-scale)) calc(63.48148px * var(--splash-scale));
+  mask-position: center;
 }
-.logo-splash-wordmark {
+.logo-splash-mark {
   position: absolute;
   top: 50%;
   left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 204px;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
   transform: translate(-50%, -50%) scale(var(--splash-scale));
-  transform-origin: 10.2px calc(50% - 15.176041px);
+  transform-origin: center;
   opacity: var(--splash-ink);
 }
-.logo-splash-wordmark img { display: block; min-width: 0; height: auto; filter: brightness(0) invert(1); }
-.logo-splash-wordmark img:first-child { width: 51px; }
-.logo-splash-wordmark img:last-child { width: 145px; }
+.logo-splash-mark img { display: block; width: 100%; height: auto; filter: brightness(0) invert(1); }
 .logo-splash:is(.is-leaving, .is-revealing) {
-  animation: alva-splash-reveal 720ms cubic-bezier(.65, 0, .85, .35) 550ms both;
+  animation: alva-splash-reveal 900ms linear 550ms both;
 }
 @keyframes alva-splash-reveal {
-  from { --splash-scale: 1; --splash-ink: 1; }
-  10% { --splash-scale: 1.4; --splash-ink: 0; }
-  to { --splash-scale: 64; --splash-ink: 0; }
+  from { --splash-progress: 0; }
+  to { --splash-progress: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   .logo-splash:is(.is-leaving, .is-revealing) { animation: none; }

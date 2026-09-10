@@ -23,7 +23,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.waitForFunction(() => document.querySelector('#startupLoader').hidden);
       const events = await page.evaluate(() => window.startupEvents);
       assert.deepEqual(events.map(event => event.type), ['animationstart', 'animationend']);
-      assert.ok(events[1].at - events[0].at < 800);
+      assert.ok(events[1].at - events[0].at < 1100);
       assert.equal(await page.locator('#screens').evaluate(n => n.inert), false);
       assert.equal(await page.locator('#newPill').evaluate(n => n.inert), true);
       const chartLoader = await page.locator('#fsLoader img').evaluate(n => {
@@ -39,12 +39,12 @@ fs.mkdirSync(output, { recursive: true });
         window.motion.pause();
       });
       let previous = 1;
-      for (const time of [0, 400, 550, 622, 820, 1000, 1270]) {
+      for (const time of [0, 400, 550, 700, 850, 1150, 1450]) {
         const state = await page.evaluate(time => {
           motion.currentTime = time;
           return {
             scale: parseFloat(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-scale')),
-            logoAnimations: document.querySelector('.logo-splash-wordmark').getAnimations({ subtree: true }).length,
+            logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
             contentAnimations: document.querySelector('#cards').getAnimations({ subtree: true }).length,
           };
         }, time);
@@ -153,7 +153,7 @@ fs.mkdirSync(output, { recursive: true });
     }
     for (const delay of [0, 3500]) {
       const embedded = await browser.newPage({ viewport: { width: 393, height: 852 } });
-      if (delay) await embedded.route('**/wordmark-text.svg', async route => {
+      if (delay) await embedded.route('**/wordmark-symbol.svg', async route => {
         await new Promise(resolve => setTimeout(resolve, delay));
         await route.continue();
       });
