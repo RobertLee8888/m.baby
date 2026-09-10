@@ -18,7 +18,7 @@ fs.mkdirSync(output, { recursive: true });
   const ready = async () => {
     await page.goto(base);
     await page.evaluate(() => document.fonts.ready);
-    await page.waitForFunction(() => !document.querySelector('#cards').classList.contains('is-booting') && !document.querySelector('#cards').classList.contains('is-revealing'));
+    await page.waitForFunction(() => document.querySelector('#startupLoader').hidden);
   };
   const restart = async () => {
     await page.locator('#restartButton').evaluate(n => n.click());
@@ -92,7 +92,8 @@ fs.mkdirSync(output, { recursive: true });
     await page.locator('.tab[data-tab="market"]').click();
     await page.locator('.tab[data-tab="feed"]').click();
     assert.equal(await entry.count(), 0, 'dismissal survives filtering and navigation');
-    await page.locator('#newPill').click();
+    await page.locator('#feed').evaluate(n => { n.scrollTop = 0; });
+    await page.locator('.tab[data-tab="feed"]').click();
     await page.waitForFunction(() => document.querySelector('#refreshLoader').classList.contains('spinning'));
     await page.waitForFunction(() => !document.querySelector('#allTickers').disabled);
     assert.equal(await entry.count(), 0, 'refresh does not restore the card');

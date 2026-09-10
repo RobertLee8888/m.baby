@@ -213,12 +213,12 @@ day change and six-week range, taken as they ran:
 | 10 | CBRS | Cerebras Converts Ultrafast Demand Into Capacity |
 | 11 | NBIS · PLTR | Cheaper Models Expand Inference Volume |
 
-The two newest cards are held back behind the pill, because that is what
-the production playbook does — new batches at the top, full history below — so
-the refresh brings in the hour that has actually just landed rather than cards
-invented to have something to arrive. The pill counts them rather than naming
-a number: `NEW_CARDS.length + ' new feeds'`, so the label cannot outlive the
-batch it describes.
+Seven existing samples are reserved for updates: the two newest hourly cards
+and five archive entries not already in the initial feed. After 60 seconds,
+the pill announces a random batch of 1–3 unseen cards. The pill and refresh
+share one pending queue in `mvp-feed-updates.js`, so its count always matches
+the cards that will arrive, including under a ticker filter. Source text and
+dates stay unchanged; only discovery time is shown as `Just now`.
 
 What is *not* real: the nine event and anomaly cards interleaved between them.
 The production playbook only produces the source type — which is why an early
@@ -776,11 +776,14 @@ the one element on this screen with a shadow, because it is the one element
 that is floating. Tapping it runs the identical sequence rather than a second
 one.
 
-**There are two cards waiting, and only the first refresh gets them.** Every
-refresh after that runs the same loader and closes without changing the cards.
-Both branches finish with the same 420ms spring close, with no result message.
+**Updates arrive in random batches of 1–3, without repeating cards.** The pill
+starts hidden and waits 60 seconds. Clicking it or pulling consumes the same
+pending batch. Pulling before the timer ends releases a batch immediately.
+After refresh completes, the next 60-second wait starts. Once the seven-card
+sample pool is exhausted, the pill stays hidden and refresh returns no cards.
+Every branch finishes with the same 420ms spring close, with no result message.
 
-When the two do arrive, the boundary between them and what you had already
+When a batch arrives, the boundary between it and what you had already
 read is marked once, in place, the way Twitter marks it: a hairline with
 *You were here* sitting on it, on `content/br03`, 36 tall. It goes in above
 the old first card, before the new ones land, and nothing moves it
@@ -791,6 +794,15 @@ is the count of what is waiting, and that count is still true at the bottom
 of the list. It leaves for exactly two reasons: you tapped it, or you pulled
 the list yourself. Either way the waiting cards are now in the feed, so the
 number has nothing left to say.
+
+### MVP startup
+
+Both MVP routes show the original SVG wordmark on `main/m1`, then reveal the
+ready page in one 500ms expanding circle. The logo does not morph and cards do
+not enter in a second sequence. Reduced-motion skips the transition; a timeout
+also releases the page if the browser does not deliver the animation event.
+`tests/mvp-startup-updates.cjs` covers startup, delayed batches, filtered counts,
+refresh cancellation, exhaustion, and the embedded route.
 
 ### Every stroke is 0.5, and none of them are borders
 

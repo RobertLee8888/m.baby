@@ -659,15 +659,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   from { opacity: 0; transform: translate3d(0, -10px, 0); }
   to { opacity: 1; transform: none; }
 }
-.cards.is-booting .card { opacity: 0; transform: translate3d(0, 18px, 0); }
-.cards.is-revealing .card {
-  animation: feed-start-in .3s var(--ease) both;
-  animation-delay: calc(var(--reveal-order, 0) * 50ms);
-}
-@keyframes feed-start-in {
-  from { opacity: 0; transform: translate3d(0, 18px, 0); }
-  to { opacity: 1; transform: none; }
-}
 
 /* Portfolio entry: Feed-Mobile-MVP 4969:77490. */
 .portfolio-entry {
@@ -1499,33 +1490,40 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: translateX(-50%);
 }
 
-/* Figma 2566:19568. The loader is a full-screen state, while the status and
-   tab bars remain above it. The exported four-cell mark advances one corner
-   per beat; a stepped quarter-turn keeps that exact asset and motion grammar. */
+/* Same single-step reveal as MVP onboarding: a static wordmark uncovers the
+   already-rendered page. No logo morph or second content entrance. */
+@property --mvp-splash-radius { syntax: '<length>'; inherits: false; initial-value: 0px; }
 .startup-loader {
+  --mvp-splash-radius: 0px;
   position: absolute;
-  z-index: 20;
+  z-index: 100;
   inset: 0;
   display: grid;
   place-items: center;
-  background: var(--b10);
-  opacity: 1;
+  overflow: hidden;
+  background: var(--m1);
   pointer-events: auto;
-  transition: opacity .16s ease;
 }
-.startup-loader.is-leaving { opacity: 0; pointer-events: none; }
-.full-loader-mark {
-  width: 40px;
-  height: 40px;
-  animation: loader-quarter-turn 1s steps(4, end) infinite;
+.startup-loader.is-leaving {
+  animation: mvp-splash-reveal .5s cubic-bezier(.167, 0, .833, 1) forwards;
+  mask-image: radial-gradient(circle at center, transparent 0 var(--mvp-splash-radius), #000 calc(var(--mvp-splash-radius) + 1px));
+  -webkit-mask-image: radial-gradient(circle at center, transparent 0 var(--mvp-splash-radius), #000 calc(var(--mvp-splash-radius) + 1px));
 }
+.startup-wordmark { display: flex; align-items: center; gap: var(--space-xs); width: 204px; max-width: 70%; }
+.startup-wordmark img { min-width: 0; height: auto; filter: brightness(0) invert(1); }
+.startup-wordmark img:first-child { width: 25%; }
+.startup-wordmark img:last-child { flex: 1; width: 0; }
+@keyframes mvp-splash-reveal { to { --mvp-splash-radius: 80vmax; } }
+
+/* Chart and pull-to-refresh loaders keep the shared quarter-turn animation. */
+.full-loader-mark { width: 40px; height: 40px; animation: loader-quarter-turn 1s steps(4, end) infinite; }
 @keyframes loader-quarter-turn { to { transform: rotate(360deg); } }
 :root[data-theme="dark"] .full-loader-mark { filter: invert(1) hue-rotate(180deg); }
 
 @media (prefers-reduced-motion: reduce) {
+  .startup-loader.is-leaving { animation: none; }
   .full-loader-mark { animation: none; }
   .refresh-loader-tile { transform: scale(1); }
-  .cards.is-revealing .card { animation-duration: .01ms; animation-delay: 0ms; }
 }
 
 /* ═══════════════════════════════════════════════════════════

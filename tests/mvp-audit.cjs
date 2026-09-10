@@ -11,6 +11,8 @@ fs.mkdirSync(output, { recursive: true });
   const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const context = await browser.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
   const page = await context.newPage();
+  await page.clock.install();
+  await page.addInitScript(() => { Math.random = () => .5; });
   page.setDefaultTimeout(8000);
   const errors = [], checks = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -202,18 +204,22 @@ fs.mkdirSync(output, { recursive: true });
     await page.setViewportSize({ width: 393, height: 852 });
     for (const phase of [100, 800, 1750, 2300]) {
       await reset();
+      await page.clock.fastForward(60000);
+      await page.clock.resume();
       await page.locator('#newPill').click();
       await pause(phase);
       await reset();
       await pause(1700);
       assert.equal(await page.locator('#cards > .card').count(), initialCount);
-      assert.equal(await page.locator('#newPillText').innerText(), '2 new feeds');
+      assert.equal(await page.locator('#newPill').getAttribute('aria-hidden'), 'true');
       assert.equal(await page.locator('#allTickers').isDisabled(), false);
       assert.equal(await page.locator('#refreshLoader').evaluate(n => n.classList.contains('spinning')), false);
       assert.equal(await page.locator('#feedTrack').evaluate(n => n.classList.contains('springing') || !!n.style.transform), false);
       checks.push('restart during refresh: ' + phase + 'ms');
     }
     // The next refresh must still work after cancellation.
+    await page.clock.fastForward(60000);
+    await page.clock.resume();
     await page.locator('#newPill').click();
     await pause(3200);
     assert.equal(await page.locator('#cards > .card').count(), initialCount + 2);

@@ -17,7 +17,7 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=82">
+<link rel="stylesheet" href="mvp.css?v=83">
 <script>if(new URLSearchParams(location.search).get('feed')==='social'){document.documentElement.dataset.feedVariant='social';document.title='Social Feed · Alva prototypes';const css=document.createElement('link');css.rel='stylesheet';css.href='mvp-social.css?v=1';document.head.appendChild(css);}</script>
 <link rel="stylesheet" href="device-chrome.css?v=1">
 </head>
@@ -68,13 +68,13 @@
                     </span>
                   </div>
                 </div>
-                <div class="cards is-booting" id="cards" role="tabpanel" aria-label="All feeds"></div>
+                <div class="cards" id="cards" role="tabpanel" aria-label="All feeds"></div>
               </div>
             </div>
 
-            <button class="pill" id="newPill" type="button" data-press-shadow>
+            <button class="pill gone" id="newPill" type="button" data-press-shadow aria-hidden="true" inert>
               <span class="ic" style="--ic:url(assets/ui-arrow-up-l1.svg)" aria-hidden="true"></span>
-              <span id="newPillText">2 new feeds</span>
+              <span id="newPillText"></span>
             </button>
           </section>
 
@@ -323,8 +323,8 @@
              does in the design (the sheet's foot is the indicator's ground). -->
         <div class="home-indicator" aria-hidden="true"><span></span></div>
 
-        <div class="startup-loader" id="startupLoader" role="status" aria-label="Loading feed" aria-hidden="false">
-          <img class="full-loader-mark" src="assets/logo-loading-light.svg" alt="">
+        <div class="startup-loader" id="startupLoader" role="status" aria-label="Loading Alva" aria-hidden="false">
+          <div class="startup-wordmark" aria-hidden="true"><img src="assets/wordmark-symbol.svg" alt=""><img src="assets/wordmark-text.svg" alt=""></div>
         </div>
 
         <!-- ═══ Overlays ═════════════════════════════════════════
@@ -393,7 +393,8 @@
 <script src="mvp-sources.js?v=79"></script>
 <script src="mvp-feed-reference.js?v=79"></script>
 <script src="mvp-feed-model.js?v=73"></script>
-<script src="mvp.js?v=81"></script>
+<script src="mvp-feed-updates.js?v=1"></script>
+<script src="mvp.js?v=83"></script>
 <script src="press-feedback.js?v=1"></script>
 </body>
 </html>

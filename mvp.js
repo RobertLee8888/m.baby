@@ -748,7 +748,7 @@
      The feed
 
      Complete reference cards lead, followed by source, unusual-move and
-     company-event cards from the fuller prototype. Two more await refresh.
+     company-event cards from the fuller prototype. Unseen cards await refresh.
 
      A source card is: the thesis, the passage it stands on, the read, the
      chart. That is the shape of every batch on the production feed, and it
@@ -1195,10 +1195,9 @@
     ...TSM_ARCHIVE, ...SOURCE_HISTORY,
   ];
 
-  /* What the pill brings in: the 10:58 batch, which is exactly how the
-     production playbook behaves — new batches at the top, full history
-     below. Two cards, one and two sources, because that is what new means. */
-  const NEW_CARDS = [
+  /* Reuse the existing hourly samples and the unshown archive entries.
+     Discovery time changes; original source text and source dates do not. */
+  const UPCOMING_CARDS = [
     {
       type: 'source',
       tickers: [TSM],
@@ -1230,7 +1229,9 @@
         { type: 'media' },
       ],
     },
-  ];
+    ...LEGACY_CARDS.filter(card => !INITIAL_CARDS.includes(card)),
+  ].map((card, index) => ({ ...card, id: 'feed-update-' + index, age: 'Just now' }));
+  const feedUpdates = socialModule ? null : window.createAlvaFeedUpdates(UPCOMING_CARDS);
 
   /* ──────────────────────────────
      Building blocks
@@ -1760,7 +1761,9 @@
 
   let refreshing = false;
   let refreshEpoch = 0;
-  let served = false;   /* the feed has one batch to give; after that it is caught up */
+  let latestBatch = new Set();
+  let newFeedTimer = 0;
+  const NEW_FEED_DELAY_MS = 60000;
   let selectedTicker = 'All';
   let loadedCards = (socialCards || INITIAL_CARDS).slice();
   const cardNodes = new Map();
@@ -2347,8 +2350,8 @@
       }
       return cardNodes.get(card);
     });
-    if (served) {
-      const boundary = visible.findIndex(card => !NEW_CARDS.includes(card));
+    if (latestBatch.size) {
+      const boundary = visible.findIndex(card => !latestBatch.has(card));
       if (boundary > 0) nodes.splice(boundary, 0, seenLine());
     }
     if (!socialModule && selectedTicker === 'All' && !portfolioEntryDismissed) {
@@ -2369,50 +2372,75 @@
   }
 
   function updateNewPill() {
-    const pending = served || socialModule ? [] : NEW_CARDS.filter(card => feedModel.matches(card, selectedTicker));
-    pillText.textContent = pending.length + (pending.length === 1 ? ' new feed' : ' new feeds');
+    const pending = (feedUpdates?.pending() || []).filter(card => feedModel.matches(card, selectedTicker));
+    pillText.textContent = pending.length ? pending.length + (pending.length === 1 ? ' new feed' : ' new feeds') : '';
     setPill(!refreshing && pending.length > 0);
   }
 
+  function scheduleNewFeeds() {
+    window.clearTimeout(newFeedTimer);
+    if (!feedUpdates?.hasMore() || feedUpdates.pending().length) return;
+    newFeedTimer = window.setTimeout(() => {
+      feedUpdates.release();
+      updateNewPill();
+    }, NEW_FEED_DELAY_MS);
+  }
+
   const startupLoader = document.getElementById('startupLoader');
-  let startupLoadTimer = 0;
-  let startupCleanupTimer = 0;
+  let startupRunning = true;
+  let startupCleanup = () => {};
 
   function runStartupLoading() {
-    window.clearTimeout(startupLoadTimer);
-    window.clearTimeout(startupCleanupTimer);
-    cardsEl.classList.remove('is-revealing');
-    cardsEl.classList.add('is-booting');
-    cardsEl.querySelectorAll('.card').forEach((card, index) => {
-      card.style.setProperty('--reveal-order', String(Math.min(index, 5)));
-    });
+    startupCleanup();
+    startupRunning = true;
+    syncModalBackground();
     startupLoader.hidden = false;
     startupLoader.classList.remove('is-leaving');
     startupLoader.setAttribute('aria-hidden', 'false');
+    let finished = false, started = false, frame = 0, fallback = 0;
 
-    startupLoadTimer = window.setTimeout(() => {
-      startupLoader.classList.add('is-leaving');
+    function finish() {
+      if (finished) return;
+      finished = true;
+      startupCleanup();
+      startupRunning = false;
+      startupLoader.hidden = true;
+      startupLoader.classList.remove('is-leaving');
       startupLoader.setAttribute('aria-hidden', 'true');
-      cardsEl.classList.remove('is-booting');
-      cardsEl.classList.add('is-revealing');
-      startupCleanupTimer = window.setTimeout(() => {
-        startupLoader.hidden = true;
-        cardsEl.classList.remove('is-revealing');
-        cardsEl.querySelectorAll('.card').forEach(card => card.style.removeProperty('--reveal-order'));
-      }, 560);
-    }, 1000);
+      syncModalBackground();
+    }
+    function onEnd(event) {
+      if (event.target === startupLoader) finish();
+    }
+    function start() {
+      if (started || finished) return;
+      started = true;
+      window.clearTimeout(fallback);
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
+      // The shell exposes its iframe on load. Paint the wordmark before reveal.
+      frame = window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => {
+          if (!finished) startupLoader.classList.add('is-leaving');
+        });
+      });
+      fallback = window.setTimeout(finish, 1200);
+    }
+    startupCleanup = () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(fallback);
+      window.removeEventListener('load', start);
+      startupLoader.removeEventListener('animationend', onEnd);
+    };
+    startupLoader.addEventListener('animationend', onEnd);
+    if (document.readyState === 'complete') start();
+    else {
+      window.addEventListener('load', start, { once: true });
+      fallback = window.setTimeout(start, 1500);
+    }
   }
 
   function foldPass() {
     Array.prototype.forEach.call(cardsEl.querySelectorAll('.card'), foldCard);
-  }
-
-  /* Only the first refresh returns the pending batch. Empty refreshes use
-     the same loading and closing sequence without a result message. */
-  function nextBatch() {
-    if (served || socialModule) return [];
-    served = true;
-    return NEW_CARDS.slice();
   }
 
   /* Twitter's line: it marks the boundary once, where the reading stopped,
@@ -2468,8 +2496,10 @@
   const wait = ms => new Promise(r => window.setTimeout(r, ms));
 
   async function refresh() {
-    if (refreshing) return;
+    if (refreshing || startupRunning) return;
     const epoch = ++refreshEpoch;
+    window.clearTimeout(newFeedTimer);
+    feedUpdates?.release();
     refreshing = true;
     allTickers.disabled = true;
     feedFilters.querySelectorAll('button').forEach(button => { button.disabled = true; });
@@ -2486,9 +2516,10 @@
     await wait(REFRESH_WAIT_MS);
     if (epoch !== refreshEpoch) return;
 
-    const fresh = nextBatch();
+    const fresh = feedUpdates?.consume() || [];
     const matchingFresh = fresh.filter(card => feedModel.matches(card, selectedTicker));
     if (fresh.length) {
+      latestBatch = new Set(fresh);
       loadedCards = [...fresh, ...loadedCards];
       render();
       paintFilters();
@@ -2505,6 +2536,7 @@
     allTickers.disabled = false;
     paintFilters();
     updateNewPill();
+    scheduleNewFeeds();
   }
 
   /* ── the gesture: touch, and a mouse drag so it works on a desktop too ── */
@@ -2580,7 +2612,11 @@
   });
   window.addEventListener('mouseup', pullEnd);
 
-  function setPill(show) { pill.classList.toggle('gone', !show); }
+  function setPill(show) {
+    pill.classList.toggle('gone', !show);
+    pill.inert = !show;
+    pill.setAttribute('aria-hidden', String(!show));
+  }
 
   pill.addEventListener('click', e => { e.preventDefault(); refresh(); });
 
@@ -2714,8 +2750,8 @@
   sheet.inert = true;
 
   function syncModalBackground() {
-    document.getElementById('screens').inert = followingOpen || sheetOpen;
-    document.getElementById('tabBar').inert = followingOpen || sheetOpen;
+    document.getElementById('screens').inert = startupRunning || followingOpen || sheetOpen;
+    document.getElementById('tabBar').inert = startupRunning || followingOpen || sheetOpen;
   }
 
   /* opts.full  — take the whole ceiling and lay the body out as a column with
@@ -3765,7 +3801,9 @@
     pulling = false;
     pullY = 0;
     allTickers.disabled = false;
-    served = false;
+    latestBatch.clear();
+    feedUpdates?.reset();
+    scheduleNewFeeds();
     closeSheet(true);
     closeFullChart();
     closeFollowing();
@@ -3834,6 +3872,7 @@
   paintBar();
   fitPhone();
   runStartupLoading();
+  scheduleNewFeeds();
   socialUI?.openLinkedPost();
   if (history.state?.mvpFollowing) {
     showTab(TAB_ORDER.includes(history.state.mvpFollowingOrigin) ? history.state.mvpFollowingOrigin : 'feed', false);

@@ -10,7 +10,9 @@ fs.mkdirSync(output, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const page = await browser.newPage({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
+  await page.clock.install();
   page.setDefaultTimeout(8000);
+  await page.addInitScript(() => { Math.random = () => .5; });
   const touch = await page.context().newCDPSession(page);
   const errors = [], checks = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -30,6 +32,7 @@ fs.mkdirSync(output, { recursive: true });
     const before = await page.locator('#cards > .card').count();
     await trigger();
     await page.waitForFunction(() => document.querySelector('#refreshLoader').classList.contains('spinning'));
+    await page.waitForFunction(() => document.querySelector('.refresh-loader-rotor').getAnimations().some(a => a.animationName === 'loader-quarter-turn'));
     await page.screenshot({ path: path.join(output, name + '-loading.png') });
     const ended = await page.evaluate(() => new Promise((resolve, reject) => {
       const loader = document.querySelector('#refreshLoader');
@@ -61,15 +64,17 @@ fs.mkdirSync(output, { recursive: true });
   try {
     await ready();
     await observeRefresh('touch-new-content', pull, 2);
-    await observeRefresh('touch-empty-result', pull, 0);
+    await observeRefresh('touch-next-batch', pull, 2);
     await ready();
     await page.locator('#allTickers').click();
     await page.locator('.following-search input').fill('TSM');
     await page.locator('.following-item').click();
     await page.waitForTimeout(350);
+    await page.clock.fastForward(60000);
+    await page.clock.resume();
     await observeRefresh('filtered-pill', () => page.locator('#newPill').click(), 1);
     assert.equal(await page.locator('#filter-TSM').getAttribute('aria-selected'), 'true');
-    await observeRefresh('filtered-empty-result', pull, 0);
+    await observeRefresh('filtered-next-batch', pull, 1);
     await ready();
     await page.setViewportSize({ width: 320, height: 740 });
     await page.emulateMedia({ colorScheme: 'dark' });
