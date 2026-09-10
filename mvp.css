@@ -1490,30 +1490,15 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
   transform: translateX(-50%);
 }
 
-/* Same single-step reveal as MVP onboarding: a static wordmark uncovers the
-   already-rendered page. No logo morph or second content entrance. */
-@property --mvp-splash-radius { syntax: '<length>'; inherits: false; initial-value: 0px; }
 .startup-loader {
-  --mvp-splash-radius: 0px;
   position: absolute;
   z-index: 100;
   inset: 0;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--m1);
   pointer-events: auto;
 }
-.startup-loader.is-leaving {
-  animation: mvp-splash-reveal .5s cubic-bezier(.167, 0, .833, 1) forwards;
-  mask-image: radial-gradient(circle at center, transparent 0 var(--mvp-splash-radius), #000 calc(var(--mvp-splash-radius) + 1px));
-  -webkit-mask-image: radial-gradient(circle at center, transparent 0 var(--mvp-splash-radius), #000 calc(var(--mvp-splash-radius) + 1px));
-}
-.startup-wordmark { display: flex; align-items: center; gap: var(--space-xs); width: 204px; max-width: 70%; }
-.startup-wordmark img { min-width: 0; height: auto; filter: brightness(0) invert(1); }
-.startup-wordmark img:first-child { width: 25%; }
-.startup-wordmark img:last-child { flex: 1; width: 0; }
-@keyframes mvp-splash-reveal { to { --mvp-splash-radius: 80vmax; } }
 
 /* Chart and pull-to-refresh loaders keep the shared quarter-turn animation. */
 .full-loader-mark { width: 40px; height: 40px; animation: loader-quarter-turn 1s steps(4, end) infinite; }
@@ -1521,7 +1506,6 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 :root[data-theme="dark"] .full-loader-mark { filter: invert(1) hue-rotate(180deg); }
 
 @media (prefers-reduced-motion: reduce) {
-  .startup-loader.is-leaving { animation: none; }
   .full-loader-mark { animation: none; }
   .refresh-loader-tile { transform: scale(1); }
 }

@@ -60,9 +60,9 @@
 
     const splash = screens.get('splash');
     splash.addEventListener('animationend', finishSplash, { once: true });
-    splashFallback = window.setTimeout(finishSplash, 1200);
+    splashFallback = window.setTimeout(finishSplash, 1900);
     screens.get('welcome').classList.add('is-under-splash');
-    // Paint the static wordmark, then uncover the ready page in one motion.
+    // The shared reveal includes a brief logo hold before uncovering the page.
     window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
       if (!splashFinished) splash.classList.add('is-revealing');
     }));

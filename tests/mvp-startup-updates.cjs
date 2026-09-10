@@ -16,7 +16,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.addInitScript(() => {
         window.startupEvents = [];
         for (const type of ['animationstart', 'animationend']) document.addEventListener(type, event => {
-          if (event.animationName === 'mvp-splash-reveal') window.startupEvents.push({ type, at: performance.now(), shellReady: !frameElement || frameElement.classList.contains('ready') });
+          if (event.animationName === 'alva-splash-reveal') window.startupEvents.push({ type, at: performance.now(), shellReady: !frameElement || frameElement.classList.contains('ready') });
         });
       });
       await page.goto(base);
@@ -38,20 +38,21 @@ fs.mkdirSync(output, { recursive: true });
         window.motion = splash.getAnimations()[0];
         window.motion.pause();
       });
-      let previous = -1;
-      for (const time of [0, 150, 300, 500]) {
+      let previous = 1;
+      for (const time of [0, 400, 550, 622, 820, 1000, 1270]) {
         const state = await page.evaluate(time => {
           motion.currentTime = time;
           return {
-            radius: parseFloat(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--mvp-splash-radius')),
-            logoAnimations: document.querySelector('.startup-wordmark').getAnimations({ subtree: true }).length,
+            scale: parseFloat(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-scale')),
+            logoAnimations: document.querySelector('.logo-splash-wordmark').getAnimations({ subtree: true }).length,
             contentAnimations: document.querySelector('#cards').getAnimations({ subtree: true }).length,
           };
         }, time);
-        assert.ok(state.radius > previous);
+        if (time <= 550) assert.equal(state.scale, 1, 'Hold the unchanged logo before the reveal');
+        else assert.ok(state.scale > previous);
         assert.equal(state.logoAnimations, 0);
         assert.equal(state.contentAnimations, 0);
-        previous = state.radius;
+        previous = state.scale;
         await page.screenshot({ path: path.join(output, width + '-splash-' + time + '.png') });
       }
       checks.push({ width, duration: events[1].at - events[0].at });
@@ -157,7 +158,7 @@ fs.mkdirSync(output, { recursive: true });
         await route.continue();
       });
       await embedded.addInitScript(() => document.addEventListener('animationstart', event => {
-        if (event.animationName === 'mvp-splash-reveal') window.readyAtSplash = frameElement?.classList.contains('ready');
+        if (event.animationName === 'alva-splash-reveal') window.readyAtSplash = frameElement?.classList.contains('ready');
       }));
       await embedded.goto(new URL('index.html#/mvp', base).href);
       const frame = embedded.frameLocator('iframe');

@@ -1,0 +1,51 @@
+@property --splash-scale { syntax: '<number>'; inherits: true; initial-value: 1; }
+@property --splash-ink { syntax: '<number>'; inherits: true; initial-value: 1; }
+
+/* Both the visible wordmark and its negative use the original SVG assets.
+   Zoom through the top-left tile's center (20%, 20% of the symbol), so the
+   viewport clears without enormous masks or a separate fade at the end. */
+.logo-splash {
+  --splash-scale: 1;
+  --splash-ink: 1;
+  background: transparent;
+  isolation: isolate;
+}
+.logo-splash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--m1);
+  -webkit-mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
+  mask-image: linear-gradient(#000, #000), url(assets/wordmark-symbol.svg), url(assets/wordmark-text.svg);
+  -webkit-mask-composite: xor, source-over, source-over;
+  mask-composite: exclude, add, add;
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%, calc(51px * var(--splash-scale)) calc(50.586804px * var(--splash-scale)), calc(145px * var(--splash-scale)) calc(51.509769px * var(--splash-scale));
+  mask-position: center, calc(50% - 91.8px + 15.3px * var(--splash-scale)) calc(50% - 15.176041px + 15.176041px * var(--splash-scale)), calc(50% - 91.8px + 121.3px * var(--splash-scale)) calc(50% - 15.176041px + 15.176041px * var(--splash-scale));
+}
+.logo-splash-wordmark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 204px;
+  transform: translate(-50%, -50%) scale(var(--splash-scale));
+  transform-origin: 10.2px calc(50% - 15.176041px);
+  opacity: var(--splash-ink);
+}
+.logo-splash-wordmark img { display: block; min-width: 0; height: auto; filter: brightness(0) invert(1); }
+.logo-splash-wordmark img:first-child { width: 51px; }
+.logo-splash-wordmark img:last-child { width: 145px; }
+.logo-splash:is(.is-leaving, .is-revealing) {
+  animation: alva-splash-reveal 720ms cubic-bezier(.65, 0, .85, .35) 550ms both;
+}
+@keyframes alva-splash-reveal {
+  from { --splash-scale: 1; --splash-ink: 1; }
+  10% { --splash-scale: 1.4; --splash-ink: 0; }
+  to { --splash-scale: 64; --splash-ink: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-splash:is(.is-leaving, .is-revealing) { animation: none; }
+}

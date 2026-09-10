@@ -2427,13 +2427,13 @@
       started = true;
       window.clearTimeout(fallback);
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
-      // The shell exposes its iframe on load. Paint the wordmark before reveal.
+      // The shell must be visible before the logo's hold-and-reveal begins.
       frame = window.requestAnimationFrame(() => {
         frame = window.requestAnimationFrame(() => {
           if (!finished) startupLoader.classList.add('is-leaving');
         });
       });
-      fallback = window.setTimeout(finish, 1200);
+      fallback = window.setTimeout(finish, 1900);
     }
     startupCleanup = () => {
       readyObserver?.disconnect();

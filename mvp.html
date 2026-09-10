@@ -17,7 +17,8 @@
      flash a light frame. Legacy Dark choices survive; the old Light default
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
-<link rel="stylesheet" href="mvp.css?v=84">
+<link rel="stylesheet" href="mvp.css?v=85">
+<link rel="stylesheet" href="splash.css?v=1">
 <script>if(new URLSearchParams(location.search).get('feed')==='social'){document.documentElement.dataset.feedVariant='social';document.title='Social Feed · Alva prototypes';const css=document.createElement('link');css.rel='stylesheet';css.href='mvp-social.css?v=1';document.head.appendChild(css);}</script>
 <link rel="stylesheet" href="device-chrome.css?v=2">
 </head>
@@ -323,8 +324,8 @@
              does in the design (the sheet's foot is the indicator's ground). -->
         <div class="home-indicator" aria-hidden="true"><span></span></div>
 
-        <div class="startup-loader" id="startupLoader" role="status" aria-label="Loading Alva" aria-hidden="false">
-          <div class="startup-wordmark" aria-hidden="true"><img src="assets/wordmark-symbol.svg" alt=""><img src="assets/wordmark-text.svg" alt=""></div>
+        <div class="startup-loader logo-splash" id="startupLoader" role="status" aria-label="Loading Alva" aria-hidden="false">
+          <div class="logo-splash-wordmark" aria-hidden="true"><img src="assets/wordmark-symbol.svg" alt=""><img src="assets/wordmark-text.svg" alt=""></div>
         </div>
 
         <!-- ═══ Overlays ═════════════════════════════════════════
@@ -394,7 +395,7 @@
 <script src="mvp-feed-reference.js?v=79"></script>
 <script src="mvp-feed-model.js?v=73"></script>
 <script src="mvp-feed-updates.js?v=1"></script>
-<script src="mvp.js?v=84"></script>
+<script src="mvp.js?v=85"></script>
 <script src="press-feedback.js?v=1"></script>
 </body>
 </html>

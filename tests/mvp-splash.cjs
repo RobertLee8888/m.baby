@@ -20,7 +20,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.addInitScript(() => {
         window.splashEvents = [];
         for (const type of ['animationstart', 'animationend']) document.addEventListener(type, event => {
-          if (event.animationName !== 'splash-reveal') return;
+          if (event.animationName !== 'alva-splash-reveal') return;
           window.splashEvents.push({ type, at: performance.now() });
         });
       });
@@ -40,7 +40,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.waitForTimeout(400);
 
       // Scrub the same CSS reveal after the real transition has completed.
-      // The static logo and underlying page must never move independently.
+      // The logo and aperture share one scale; the underlying page stays put.
       await page.evaluate(() => {
         const splash = document.querySelector('.splash-screen');
         document.querySelector('.welcome-screen').classList.add('is-under-splash');
@@ -49,24 +49,25 @@ fs.mkdirSync(output, { recursive: true });
         window.reveal.pause();
         window.reveal.currentTime = 0;
       });
-      let previousRadius = -1;
-      for (const time of [0, 150, 300, 500]) {
+      let previousScale = 1;
+      for (const time of [0, 400, 550, 622, 820, 1000, 1270]) {
         const frame = await page.evaluate(time => {
           window.reveal.currentTime = time;
           const splash = document.querySelector('.splash-screen');
           const welcome = document.querySelector('.welcome-screen');
           return {
-            radius: parseFloat(getComputedStyle(splash).getPropertyValue('--splash-reveal')),
+            scale: parseFloat(getComputedStyle(splash).getPropertyValue('--splash-scale')),
             opacity: getComputedStyle(welcome).opacity,
             transform: getComputedStyle(welcome).transform,
-            logoAnimations: document.querySelector('.splash-wordmark').getAnimations({ subtree: true }).length,
+            logoAnimations: document.querySelector('.logo-splash-wordmark').getAnimations({ subtree: true }).length,
           };
         }, time);
-        assert.ok(frame.radius > previousRadius);
+        if (time <= 550) assert.equal(frame.scale, 1, 'Hold the unchanged logo before the reveal');
+        else assert.ok(frame.scale > previousScale);
         assert.equal(frame.opacity, '1');
         assert.equal(frame.transform, 'none');
         assert.equal(frame.logoAnimations, 0);
-        previousRadius = frame.radius;
+        previousScale = frame.scale;
         await page.screenshot({ path: path.join(output, `${width}-${time}.png`) });
       }
       await page.close();
@@ -75,7 +76,7 @@ fs.mkdirSync(output, { recursive: true });
     const embedded = await browser.newPage({ viewport: { width: 393, height: 852 } });
     await embedded.addInitScript(() => {
       document.addEventListener('animationstart', event => {
-        if (event.animationName === 'splash-reveal') window.shellReadyAtReveal = window.frameElement?.classList.contains('ready');
+        if (event.animationName === 'alva-splash-reveal') window.shellReadyAtReveal = window.frameElement?.classList.contains('ready');
       });
     });
     await embedded.goto(new URL('index.html#/mvp-onboarding', base).href);
