@@ -150,16 +150,22 @@ fs.mkdirSync(output, { recursive: true });
       assert.equal(await p.locator('#screens').evaluate(n => n.inert), false, name);
       await p.close();
     }
-    const embedded = await browser.newPage({ viewport: { width: 393, height: 852 } });
-    await embedded.addInitScript(() => document.addEventListener('animationstart', event => {
-      if (event.animationName === 'mvp-splash-reveal') window.readyAtSplash = frameElement?.classList.contains('ready');
-    }));
-    await embedded.goto(new URL('index.html#/mvp', base).href);
-    const frame = embedded.frameLocator('iframe');
-    await frame.locator('#startupLoader').waitFor({ state: 'hidden' });
-    assert.equal(await frame.locator('body').evaluate(() => window.readyAtSplash), true);
-    await embedded.screenshot({ path: path.join(output, 'embedded-feed.png') });
-    await embedded.close();
+    for (const delay of [0, 3500]) {
+      const embedded = await browser.newPage({ viewport: { width: 393, height: 852 } });
+      if (delay) await embedded.route('**/wordmark-text.svg', async route => {
+        await new Promise(resolve => setTimeout(resolve, delay));
+        await route.continue();
+      });
+      await embedded.addInitScript(() => document.addEventListener('animationstart', event => {
+        if (event.animationName === 'mvp-splash-reveal') window.readyAtSplash = frameElement?.classList.contains('ready');
+      }));
+      await embedded.goto(new URL('index.html#/mvp', base).href);
+      const frame = embedded.frameLocator('iframe');
+      await frame.locator('#startupLoader').waitFor({ state: 'hidden' });
+      assert.equal(await frame.locator('body').evaluate(() => window.readyAtSplash), true, 'embedded asset delay: ' + delay);
+      await embedded.screenshot({ path: path.join(output, 'embedded-feed-' + delay + '.png') });
+      await embedded.close();
+    }
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ passed: true, checks, errors, output }, null, 2));
   } finally { await browser.close(); }

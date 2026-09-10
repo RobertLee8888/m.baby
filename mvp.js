@@ -2397,7 +2397,8 @@
     startupLoader.hidden = false;
     startupLoader.classList.remove('is-leaving');
     startupLoader.setAttribute('aria-hidden', 'false');
-    let finished = false, started = false, frame = 0, fallback = 0;
+    let finished = false, started = false, frame = 0, fallback = 0, readyObserver = null;
+    const shellFrame = window.frameElement?.parentElement?.id === 'phoneScreen' ? window.frameElement : null;
 
     function finish() {
       if (finished) return;
@@ -2414,6 +2415,15 @@
     }
     function start() {
       if (started || finished) return;
+      // Slow assets may outlast the fallback while the shell is still hidden.
+      if (shellFrame && !shellFrame.classList.contains('ready')) {
+        if (!readyObserver) {
+          readyObserver = new MutationObserver(() => { if (shellFrame.classList.contains('ready')) start(); });
+          readyObserver.observe(shellFrame, { attributes: true, attributeFilter: ['class'] });
+        }
+        return;
+      }
+      readyObserver?.disconnect();
       started = true;
       window.clearTimeout(fallback);
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { finish(); return; }
@@ -2426,6 +2436,7 @@
       fallback = window.setTimeout(finish, 1200);
     }
     startupCleanup = () => {
+      readyObserver?.disconnect();
       window.cancelAnimationFrame(frame);
       window.clearTimeout(fallback);
       window.removeEventListener('load', start);
