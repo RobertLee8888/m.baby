@@ -40,7 +40,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.waitForTimeout(400);
 
       // Scrub the same CSS reveal after the real transition has completed.
-      // The logo and aperture share one scale; the underlying page stays put.
+      // The logo and aperture share a scale; the page settles in the same run.
       await page.evaluate(() => {
         const splash = document.querySelector('.splash-screen');
         document.querySelector('.welcome-screen').classList.add('is-under-splash');
@@ -48,11 +48,14 @@ fs.mkdirSync(output, { recursive: true });
         window.reveal = splash.getAnimations()[0];
         window.reveal.pause();
         window.reveal.currentTime = 0;
+        window.contentMotion = document.querySelector('.welcome-screen').getAnimations().find(a => a.animationName === 'alva-splash-content');
+        window.contentMotion.pause();
       });
       let previousScale = 1;
-      for (const time of [0, 500, 999, 1000, 1060, 1120, 1230, 1350]) {
+      for (const time of [0, 500, 999, 1000, 1056, 1112, 1175, 1260, 1350]) {
         const frame = await page.evaluate(time => {
           window.reveal.currentTime = time;
+          window.contentMotion.currentTime = time;
           const splash = document.querySelector('.splash-screen');
           const welcome = document.querySelector('.welcome-screen');
           return {
@@ -60,6 +63,7 @@ fs.mkdirSync(output, { recursive: true });
             ink: Number(getComputedStyle(splash).getPropertyValue('--splash-ink')),
             opacity: getComputedStyle(welcome).opacity,
             transform: getComputedStyle(welcome).transform,
+            contentScale: Number(getComputedStyle(welcome).scale),
             logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
           };
         }, time);
@@ -67,7 +71,13 @@ fs.mkdirSync(output, { recursive: true });
           assert.equal(frame.scale, 1, 'Hold the unchanged logo for one second');
           assert.equal(frame.ink, 1, 'The logo stays fully white during the hold');
         }
+        else if (time === 1056) {
+          assert.ok(Math.abs(frame.scale - .88) < .001, 'The logo gently contracts before expanding');
+          assert.equal(frame.ink, 1);
+        }
         else assert.ok(frame.scale > previousScale);
+        const settle = Math.max(0, Math.min(1, (time - 1056) / 294));
+        assert.ok(Math.abs(frame.contentScale - (1 + .08 * (1 - settle) ** 3)) < .0001);
         assert.equal(frame.opacity, '1');
         assert.equal(frame.transform, 'none');
         assert.equal(frame.logoAnimations, 0);

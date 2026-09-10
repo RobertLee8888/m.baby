@@ -18,7 +18,7 @@
      becomes the new System default. -->
 <script>(function(){var p='system',l='';try{p=localStorage.getItem('alva-mvp-appearance')||'';l=localStorage.getItem('alva-mvp-theme')||'';}catch(e){}if(!/^(system|light|dark)$/.test(p))p=l==='dark'?'dark':'system';var d=p==='dark'||(p==='system'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.appearance=p;document.documentElement.dataset.theme=d?'dark':'light';})();</script>
 <link rel="stylesheet" href="mvp.css?v=85">
-<link rel="stylesheet" href="splash.css?v=3">
+<link rel="stylesheet" href="splash.css?v=4">
 <script>if(new URLSearchParams(location.search).get('feed')==='social'){document.documentElement.dataset.feedVariant='social';document.title='Social Feed · Alva prototypes';const css=document.createElement('link');css.rel='stylesheet';css.href='mvp-social.css?v=1';document.head.appendChild(css);}</script>
 <link rel="stylesheet" href="device-chrome.css?v=2">
 </head>

@@ -37,23 +37,33 @@ fs.mkdirSync(output, { recursive: true });
         splash.classList.add('is-leaving');
         window.motion = splash.getAnimations()[0];
         window.motion.pause();
+        window.contentMotion = document.querySelector('#screens').getAnimations().find(a => a.animationName === 'alva-splash-content');
+        window.contentMotion.pause();
       });
       let previous = 1;
-      for (const time of [0, 500, 999, 1000, 1060, 1120, 1230, 1350]) {
+      for (const time of [0, 500, 999, 1000, 1056, 1112, 1175, 1260, 1350]) {
         const state = await page.evaluate(time => {
           motion.currentTime = time;
+          contentMotion.currentTime = time;
           return {
             scale: parseFloat(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-scale')),
             ink: Number(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-ink')),
             logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
             contentAnimations: document.querySelector('#cards').getAnimations({ subtree: true }).length,
+            contentScale: Number(getComputedStyle(document.querySelector('#screens')).scale),
           };
         }, time);
         if (time <= 1000) {
           assert.equal(state.scale, 1, 'Hold the unchanged logo for one second');
           assert.equal(state.ink, 1, 'The logo stays fully white during the hold');
         }
+        else if (time === 1056) {
+          assert.ok(Math.abs(state.scale - .88) < .001, 'The logo gently contracts before expanding');
+          assert.equal(state.ink, 1);
+        }
         else assert.ok(state.scale > previous);
+        const settle = Math.max(0, Math.min(1, (time - 1056) / 294));
+        assert.ok(Math.abs(state.contentScale - (1 + .08 * (1 - settle) ** 3)) < .0001);
         assert.equal(state.logoAnimations, 0);
         assert.equal(state.contentAnimations, 0);
         previous = state.scale;

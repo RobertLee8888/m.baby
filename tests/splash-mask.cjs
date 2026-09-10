@@ -36,9 +36,9 @@ fs.mkdirSync(output, { recursive: true });
           window.maskMotion = root.getAnimations()[0];
           maskMotion.pause();
         });
-        // Equal time steps must produce increasing scale steps without drift.
+        // A brief contraction precedes the accelerating reveal, without drift.
         let previousScale = 1, previousStep = 0;
-        for (const time of [1000, 1070, 1140, 1210, 1280, 1350]) {
+        for (const time of [1000, 1028, 1056, 1115, 1174, 1233, 1292, 1350]) {
           const frame = await page.evaluate(time => {
             maskMotion.currentTime = time;
             const root = document.querySelector('.logo-splash');
@@ -46,12 +46,18 @@ fs.mkdirSync(output, { recursive: true });
             const mark = root.querySelector('img').getBoundingClientRect();
             return {
               scale: Number(getComputedStyle(root).getPropertyValue('--splash-scale')),
+              ink: Number(getComputedStyle(root).getPropertyValue('--splash-ink')),
               dx: mark.x + mark.width / 2 - bounds.x - bounds.width / 2,
               dy: mark.y + mark.height / 2 - bounds.y - bounds.height / 2,
             };
           }, time);
           assert.ok(Math.abs(frame.dx) < .1 && Math.abs(frame.dy) < .1, 'Logo center must remain at the viewport center');
-          if (time > 1000) {
+          if (time === 1115) assert.equal(frame.ink, 1, 'The enlarged logo stays white before the crossfade');
+          if (time === 1174) assert.ok(frame.ink > 0 && frame.ink < 1, 'The logo crossfades into content instead of cutting to a hole');
+          if (time > 1000 && time <= 1056) {
+            assert.ok(frame.scale < previousScale && frame.scale >= .8799);
+            assert.equal(frame.ink, 1, 'Anticipation must not reveal the page yet');
+          } else if (time > 1056) {
             const step = frame.scale - previousScale;
             assert.ok(step > previousStep, 'Expansion must continuously accelerate');
             previousStep = step;
@@ -59,7 +65,7 @@ fs.mkdirSync(output, { recursive: true });
           previousScale = frame.scale;
         }
         // Once the ink is gone, the aperture must still match the exact logo.
-        await page.evaluate(() => { maskMotion.currentTime = 1060; });
+        await page.evaluate(() => { maskMotion.currentTime = 1175; });
         const expected = await page.evaluate(() => {
           const root = document.querySelector('.logo-splash');
           const bounds = root.getBoundingClientRect();

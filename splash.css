@@ -2,12 +2,16 @@
 @property --splash-ink { syntax: '<number>'; inherits: true; initial-value: 1; }
 @property --splash-progress { syntax: '<number>'; inherits: true; initial-value: 0; }
 
-/* The original symbol and its negative share the viewport center.
-   A quartic ease-in keeps scale velocity continuous and increasing. */
+:root { --splash-hold: 1000ms; --splash-duration: 350ms; }
+
+/* Twitter's launch sequence: anticipation, masked crossfade, content settle.
+   Reference: reactnative.dev/blog/2018/01/18/implementing-twitters-app-loading-animation-in-react-native */
 .logo-splash {
   --splash-progress: 0;
-  --splash-scale: calc(1 + 383 * var(--splash-progress) * var(--splash-progress) * var(--splash-progress) * var(--splash-progress));
-  --splash-ink: clamp(0, calc(1 - 10 * var(--splash-progress)), 1);
+  --splash-anticipation: clamp(0, calc(var(--splash-progress) / .16), 1);
+  --splash-expansion: clamp(0, calc((var(--splash-progress) - .16) / .84), 1);
+  --splash-scale: calc(1 - .12 * var(--splash-anticipation) * var(--splash-anticipation) * (3 - 2 * var(--splash-anticipation)) + 383.12 * var(--splash-expansion) * var(--splash-expansion) * var(--splash-expansion) * var(--splash-expansion));
+  --splash-ink: clamp(0, calc((.5 - var(--splash-progress)) / .14), 1);
   background: transparent;
   isolation: isolate;
 }
@@ -38,12 +42,26 @@
 }
 .logo-splash-mark img { display: block; width: 100%; height: auto; filter: brightness(0) invert(1); }
 .logo-splash:is(.is-leaving, .is-revealing) {
-  animation: alva-splash-reveal 350ms linear 1000ms both;
+  animation: alva-splash-reveal var(--splash-duration) linear var(--splash-hold) both;
+}
+.mvp-app:has(> .logo-splash.is-leaving) > .screens,
+.onboarding-app:has(> .logo-splash.is-revealing) > .welcome-screen {
+  --splash-progress: 0;
+  --splash-settle: clamp(0, calc((var(--splash-progress) - .16) / .84), 1);
+  scale: calc(1 + .08 * (1 - var(--splash-settle)) * (1 - var(--splash-settle)) * (1 - var(--splash-settle)));
+  transform-origin: center;
+  animation: alva-splash-content var(--splash-duration) linear var(--splash-hold) both;
 }
 @keyframes alva-splash-reveal {
   from { --splash-progress: 0; }
   to { --splash-progress: 1; }
 }
+@keyframes alva-splash-content {
+  from { --splash-progress: 0; }
+  to { --splash-progress: 1; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .logo-splash:is(.is-leaving, .is-revealing) { animation: none; }
+  .logo-splash:is(.is-leaving, .is-revealing),
+  .mvp-app:has(> .logo-splash.is-leaving) > .screens,
+  .onboarding-app:has(> .logo-splash.is-revealing) > .welcome-screen { animation: none; scale: none; }
 }
