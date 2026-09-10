@@ -2464,8 +2464,6 @@ html.embedded .phone-screen {
 }
 
 @media (max-width: 520px), (max-height: 700px) and (pointer: coarse) {
-  :root:not([data-device-platform]) { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
-  html:not([data-device-platform]) :is(.system-bar, .home-indicator) { display: none; }
   .desk { display: block; background: var(--b10); }
   .phone { width: 100%; height: 100%; padding: 0; border-radius: 0; background: none; box-shadow: none; }
   .phone-buttons, .stage-controls { display: none; }

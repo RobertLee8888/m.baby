@@ -1,118 +1,133 @@
-/* Device chrome shared by every prototype. The shell writes these data
-   attributes only while it is simulating a desktop device; standalone pages
-   keep their native/default chrome. */
+/* Shared simulated system chrome. Physical dimensions are device metrics,
+   not product spacing. The shell owns insets; pages only consume them. */
+@font-face {
+  font-family: 'Alva Device Roboto';
+  src: url('assets/device/Roboto-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
 
-html[data-device-platform='android'] :is(.system-bar, .statusbar, .sysbar) {
+html[data-device-platform] {
+  --device-camera-width: 125px;
+  --device-camera-height: 37px;
+  --device-status-font: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --device-time-size: 16px;
+  --device-time-weight: 600;
+  --device-time-line: 21px;
+  --device-indicator-width: 144px;
+  --device-indicator-height: 5px;
+  --device-indicator-bottom: 8px;
+}
+html[data-device-platform='android'] {
+  --device-camera-width: 12px;
+  --device-camera-height: 12px;
+  --device-status-font: 'Alva Device Roboto', Roboto, Arial, sans-serif;
+  --device-time-size: 14px;
+  --device-time-weight: 500;
+  --device-time-line: 20px;
+  --device-indicator-width: 108px;
+  --device-indicator-height: 4px;
+  --device-indicator-bottom: 6px;
+}
+html[data-device-cutout='drop'] {
+  --device-camera-width: 22px;
+  --device-camera-height: 15px;
+}
+
+html[data-device-platform] :is(.system-bar, .statusbar, .sysbar) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--device-camera-width) minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   height: var(--status-h, var(--sb-h));
   color: var(--n10, #000);
-  font-family: Roboto, Arial, sans-serif;
-}
-
-html[data-device-platform='android'] :is(.system-left, .status-left, .sb-left) {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex: 1 1 0;
-  height: 100%;
-  padding: 0 0 0 16px;
-  font-family: Roboto, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
+  font-family: var(--device-status-font);
+  font-size: var(--device-time-size);
+  font-weight: var(--device-time-weight);
+  line-height: var(--device-time-line);
   letter-spacing: 0;
 }
-
-html[data-device-platform='android'] .sb-time {
-  color: currentColor;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 0;
-}
-
-html[data-device-platform='android'] :is(.system-right, .status-right, .sb-right) {
+html[data-device-platform] :is(.system-left, .status-left, .sb-left, .system-right, .status-right, .sb-right) {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1 1 0;
+  min-width: 0;
   height: 100%;
-  gap: 5px;
-  padding: 0 12px 0 0;
-}
-
-html[data-device-platform='android'] :is(.dynamic-island, .sb-island) {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  flex: 0 0 auto;
-  width: 12px;
-  height: 12px;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  border-radius: 50%;
-  background: #050505;
+  font: inherit;
+  letter-spacing: 0;
+}
+html[data-device-platform] :is(.system-left, .status-left, .sb-left) { grid-column: 1; padding: 0 0 0 10px; }
+html[data-device-platform] :is(.system-right, .status-right, .sb-right) { grid-column: 3; gap: 8px; padding: 0 10px 0 0; }
+html[data-device-platform] .sb-time { color: inherit; font: inherit; letter-spacing: 0; }
+html[data-device-platform] :is(.dynamic-island, .sb-island) {
+  position: absolute;
+  top: calc((var(--status-h, var(--sb-h)) - var(--device-camera-height)) / 2);
+  left: 50%;
+  width: var(--device-camera-width);
+  height: var(--device-camera-height);
+  margin: 0;
+  border-radius: 100px;
+  background: #000;
+  transform: translateX(-50%);
+}
+html[data-device-cutout='drop'] :is(.dynamic-island, .sb-island) { top: 0; border-radius: 0 0 12px 12px; }
+
+html[data-device-platform='android'] :is(.system-left, .status-left, .sb-left) { justify-content: flex-start; padding: 0 0 0 16px; }
+html[data-device-platform='android'] :is(.system-right, .status-right, .sb-right) { justify-content: flex-end; padding: 0 16px 0 0; }
+/* One icon strip works with both the older <img> and newer mask markup.
+   The unmodified Material SVGs remain separate assets, not redrawn iOS icons. */
+html[data-device-platform='android'] :is(.system-right, .status-right, .sb-right) > * { display: none; }
+html[data-device-platform='android'] :is(.system-right, .status-right, .sb-right)::after {
+  content: '';
+  display: block;
+  flex: 0 0 58px;
+  width: 58px;
+  height: 20px;
+  background: currentColor;
+  mask-image: url('assets/device/wifi.svg'), url('assets/device/signal.svg'), url('assets/device/battery.svg');
+  mask-size: 18px 18px, 16px 16px, 14px 20px;
+  mask-position: 0 center, 22px center, 44px center;
+  mask-repeat: no-repeat;
+  -webkit-mask-image: url('assets/device/wifi.svg'), url('assets/device/signal.svg'), url('assets/device/battery.svg');
+  -webkit-mask-size: 18px 18px, 16px 16px, 14px 20px;
+  -webkit-mask-position: 0 center, 22px center, 44px center;
+  -webkit-mask-repeat: no-repeat;
+}
+
+/* Includes full-screen chart chrome as well as the shared page indicator. */
+html[data-device-platform] :is(.home-indicator, .sys-home, .fs-home) {
+  height: var(--home-h);
+  flex-shrink: 0;
+  background: transparent;
+}
+html[data-device-platform] :is(.home-indicator, .sys-home, .fs-home) span {
+  bottom: var(--device-indicator-bottom);
+  left: 50%;
+  width: var(--device-indicator-width);
+  height: var(--device-indicator-height);
+  border-radius: 100px;
+  background: var(--n10, #000);
   transform: translateX(-50%);
 }
 
-html[data-device-cutout='drop'] :is(.dynamic-island, .sb-island) {
-  top: 0;
-  width: 22px;
-  height: 15px;
-  border-radius: 0 0 12px 12px;
+/* The chart can sit above a dimmed ticker sheet; its status bar must match
+   the chart surface, not the obscured sheet's scrim. */
+.mvp-app.dim:has(.fs.show) .system-bar { color: var(--n10); }
+
+/* Native/browser mode: never draw a second OS bar. Embedded pages also
+   cover the 521-899px range where the gallery has no simulated device. */
+html.embedded:not([data-device-platform]) {
+  --status-h: env(safe-area-inset-top, 0px);
+  --sb-h: env(safe-area-inset-top, 0px);
+  --home-h: env(safe-area-inset-bottom, 0px);
 }
-
-html[data-device-platform='android'] :is(
-  .system-right .sb-signal,
-  .system-right > img:first-child,
-  .status-right > img:first-child,
-  .sb-right > img:nth-child(1)
-) { width: 14px; height: 10px; }
-
-html[data-device-platform='android'] :is(
-  .system-right .sb-wifi,
-  .system-right > img:nth-child(2),
-  .status-right > img:nth-child(2),
-  .sb-right > img:nth-child(2)
-) { width: 14px; height: 10px; }
-
-html[data-device-platform='android'] :is(.battery, .sb-batt) {
-  position: relative;
-  display: block;
-  width: 17px;
-  height: 10px;
-  border: 1.25px solid currentColor;
-  border-radius: 2px;
-}
-
-html[data-device-platform='android'] :is(.battery, .sb-batt)::before {
-  position: absolute;
-  inset: 2px 3px 2px 2px;
-  border-radius: 1px;
-  background: currentColor;
-  content: '';
-}
-
-html[data-device-platform='android'] :is(.battery, .sb-batt)::after {
-  position: absolute;
-  top: 2px;
-  right: -3px;
-  width: 2px;
-  height: 4px;
-  border-radius: 0 1px 1px 0;
-  background: currentColor;
-  content: '';
-}
-
-html[data-device-platform='android'] :is(.battery, .sb-batt) > * { display: none; }
-
-html[data-device-platform='android'] :is(.home-indicator, .sys-home) {
-  height: var(--home-h);
-}
-
-html[data-device-platform='android'] :is(.home-indicator, .sys-home) span {
-  bottom: 6px;
-  width: 108px;
-  height: 4px;
-  border-radius: 100px;
+html.embedded:not([data-device-platform]) :is(.system-bar, .statusbar, .sysbar, .home-indicator, .sys-home, .fs-home span) { display: none; }
+@media (max-width: 520px), (max-height: 700px) and (pointer: coarse) {
+  html:not([data-device-platform]) {
+    --status-h: env(safe-area-inset-top, 0px);
+    --sb-h: env(safe-area-inset-top, 0px);
+    --home-h: env(safe-area-inset-bottom, 0px);
+  }
+  html:not([data-device-platform]) :is(.system-bar, .statusbar, .sysbar, .home-indicator, .sys-home, .fs-home span) { display: none; }
 }

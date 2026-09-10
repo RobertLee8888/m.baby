@@ -1389,11 +1389,15 @@ The stage's bottom-right control sets the complete simulated device, so a layout
 
 These are portrait CSS viewports — the resolution a layout actually sees, not raw panel pixels. The Android choices are volume-led rather than a list of new flagships: Counterpoint names the [Galaxy A16 5G as 2025's best-selling Android phone](https://counterpointresearch.com/en/insights/iphone-16-worlds-best-selling-smartphone-in-2025-apple-takes-7-spots-in-top-10-models), identifies the S25 Ultra as the high-performing Samsung flagship in the same ranking, and lists the [Redmi 14C as the only Xiaomi model in the Q2 2025 global top ten](https://counterpointresearch.com/en/insights/global-smartphone-sales-top-10-best-sellers).
 
-**The platform chrome is the part that makes this more than a resize.** The shell writes the selected model's insets and device attributes onto the prototype's own root. iPhone keeps the 62px island status area and 34px Home Indicator area. Android uses a 32px status area, the selected waterdrop or punch-hole camera treatment, Android typography and battery geometry, plus a 24px navigation area with a 108 × 4 gesture pill. The outer mockup changes bezel thickness, corner radius, material and side-button layout at the same time. All four prototypes consume the same `device-chrome.css`, so platform chrome cannot drift page by page.
+**The platform chrome is the part that makes this more than a resize.** The shell writes the selected model's insets and device attributes onto the prototype's own root. iPhone keeps the 62px island status area and 34px Home Indicator area. Android uses a 32px status area, the selected waterdrop or punch-hole camera treatment, Roboto 14/20 and original Material status SVGs, plus a 24px navigation area with a 108 × 4 gesture pill. The outer mockup changes bezel thickness, corner radius, material and side-button layout at the same time. All five gallery entries consume the same `device-chrome.css`, including fullscreen chart indicators. These are common platform previews, not exact replicas of every manufacturer's OS version or navigation preference. Asset sources and licenses are in `assets/device/README.md`.
 
-Below 900px none of this applies: there is no mockup and no switcher, the prototype is running on whatever phone is actually in someone's hand, and the overrides are removed so its own values take back over. Handing a real device a chosen device's insets would be worse than not choosing.
+Below 900px none of this applies: there is no mockup and no switcher. The device overrides are removed, simulated system bars are hidden, and browser safe-area insets take over. Standalone phone-sized pages follow the same rule. The transparent gesture region must not create a second white strip over a sheet or a scrolling page.
 
 **Switching never remounts the iframe.** Remounting would throw away which screen you are on, and comparing *the same state* across six devices is the whole point — so viewport, system areas, platform chrome and mockup geometry update around the running prototype. Restart still remounts, and the device survives it.
+
+`tests/device-chrome.cjs` checks all 30 entry/device combinations, centered
+status content, camera clearance, bottom navigation, native/desktop round
+trips, standalone phone pages, and chart-over-sheet contrast in both themes.
 
 Two things fell out of building it, both of which had been hardcoded guesses that were only ever right for the row that existed when they were written:
 
@@ -1517,12 +1521,11 @@ that if the value has a name to override:
 }
 ```
 
-Use `var(--status-h)` / `var(--home-h)` everywhere the OS chrome takes space —
-never the literal. Every device in the switcher is a 62pt-inset one, so a
-prototype that hardcodes 59 renders every screen 3px high and no amount of
-resizing will fix it. (If you need a third name, add it to `SAFE_TOP_VARS` /
-`SAFE_BOTTOM_VARS` in `shell.js`; below 900px the shell removes the overrides
-instead, so your own `:root` value is what a real phone gets.)
+Use `var(--status-h)` / `var(--home-h)` everywhere the OS chrome takes space,
+never the literal. The presets use different iOS and Android insets; include
+`device-chrome.css` to normalize system UI and replace those insets with
+browser values in native mode. If a third name is required, add it to
+`SAFE_TOP_VARS` / `SAFE_BOTTOM_VARS` in `shell.js` and the shared native rules.
 
 **Check yourself before shipping:**
 
