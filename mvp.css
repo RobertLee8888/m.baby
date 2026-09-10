@@ -700,7 +700,7 @@ img { display: block; pointer-events: none; -webkit-user-drag: none; }
 .portfolio-broker:last-child img { width: 26px; }
 .portfolio-entry-copy { display: flex; flex-direction: column; gap: var(--space-xxxs); }
 .portfolio-entry h2 { color: var(--n9); font-size: 16px; font-weight: 500; line-height: 26px; }
-.portfolio-entry-description { color: var(--n5); font-size: 12px; font-weight: 400; line-height: 20px; }
+.portfolio-entry-description { color: var(--n5); font-size: 14px; font-weight: 400; line-height: 22px; }
 .portfolio-entry-actions { display: flex; gap: var(--space-s); }
 .portfolio-entry-button {
   display: flex;

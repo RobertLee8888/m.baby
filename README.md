@@ -54,6 +54,11 @@ without a result message or extra hold, for touch, pill and tab refresh entry po
 
 ### First-feed portfolio entry
 
+2026-09-10: the supporting copy now follows Regular/14 (14px/22px), still
+using `text/n5`. The card hugs its content: 176px at 393px and wider; 198px at
+the 360px logical minimum where the first paragraph wraps. Existing broker
+SVGs, title, buttons and dismissal behavior are unchanged.
+
 [Figma card 4969:77490](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=4969-77490)
 is the first item under All on each new demo visit. It uses live text, shared theme
 tokens and the five original broker SVGs, not a flattened screenshot. The card
