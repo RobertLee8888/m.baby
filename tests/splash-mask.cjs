@@ -38,7 +38,7 @@ fs.mkdirSync(output, { recursive: true });
         });
         // Equal time steps must produce increasing scale steps without drift.
         let previousScale = 1, previousStep = 0;
-        for (const time of [550, 730, 910, 1090, 1270, 1450]) {
+        for (const time of [1000, 1070, 1140, 1210, 1280, 1350]) {
           const frame = await page.evaluate(time => {
             maskMotion.currentTime = time;
             const root = document.querySelector('.logo-splash');
@@ -51,7 +51,7 @@ fs.mkdirSync(output, { recursive: true });
             };
           }, time);
           assert.ok(Math.abs(frame.dx) < .1 && Math.abs(frame.dy) < .1, 'Logo center must remain at the viewport center');
-          if (time > 550) {
+          if (time > 1000) {
             const step = frame.scale - previousScale;
             assert.ok(step > previousStep, 'Expansion must continuously accelerate');
             previousStep = step;
@@ -59,7 +59,7 @@ fs.mkdirSync(output, { recursive: true });
           previousScale = frame.scale;
         }
         // Once the ink is gone, the aperture must still match the exact logo.
-        await page.evaluate(() => { maskMotion.currentTime = 700; });
+        await page.evaluate(() => { maskMotion.currentTime = 1060; });
         const expected = await page.evaluate(() => {
           const root = document.querySelector('.logo-splash');
           const bounds = root.getBoundingClientRect();
@@ -97,7 +97,7 @@ fs.mkdirSync(output, { recursive: true });
         await splash.screenshot({ path: path.join(output, name + '-negative.png') });
         assert.ok(aperture > 1000, 'Logo-shaped content aperture must be visible');
         assert.ok(mismatched / (actual.length / 4) < .003, `${name}: ${mismatched} mismatched pixels; the aperture must follow the original SVG, including its gaps`);
-        await page.evaluate(() => { maskMotion.currentTime = 1450; });
+        await page.evaluate(() => { maskMotion.currentTime = 1350; });
         const final = await sharp(await splash.screenshot()).ensureAlpha().raw().toBuffer();
         let covered = 0;
         for (let index = 0; index < final.length; index += 4) {

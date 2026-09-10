@@ -38,7 +38,7 @@
 }
 .logo-splash-mark img { display: block; width: 100%; height: auto; filter: brightness(0) invert(1); }
 .logo-splash:is(.is-leaving, .is-revealing) {
-  animation: alva-splash-reveal 900ms linear 550ms both;
+  animation: alva-splash-reveal 350ms linear 1000ms both;
 }
 @keyframes alva-splash-reveal {
   from { --splash-progress: 0; }

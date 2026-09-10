@@ -28,7 +28,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.locator('.welcome-screen.is-active').waitFor({ state: 'visible', timeout: 2500 });
       const events = await page.evaluate(() => window.splashEvents);
       assert.deepEqual(events.map(event => event.type), ['animationstart', 'animationend']);
-      assert.ok(events[1].at - events[0].at < 1000, 'The reveal must finish without a second animation');
+      assert.ok(events[1].at - events[0].at >= 300 && events[1].at - events[0].at < 500, 'The reveal must finish quickly without a second animation');
       runs.push({ width, duration: Math.round(events[1].at - events[0].at) });
       assert.equal(await page.locator('.splash-screen').isVisible(), false);
       assert.equal(await page.locator('.is-under-splash').count(), 0);
@@ -50,19 +50,23 @@ fs.mkdirSync(output, { recursive: true });
         window.reveal.currentTime = 0;
       });
       let previousScale = 1;
-      for (const time of [0, 400, 550, 700, 850, 1150, 1450]) {
+      for (const time of [0, 500, 999, 1000, 1060, 1120, 1230, 1350]) {
         const frame = await page.evaluate(time => {
           window.reveal.currentTime = time;
           const splash = document.querySelector('.splash-screen');
           const welcome = document.querySelector('.welcome-screen');
           return {
             scale: parseFloat(getComputedStyle(splash).getPropertyValue('--splash-scale')),
+            ink: Number(getComputedStyle(splash).getPropertyValue('--splash-ink')),
             opacity: getComputedStyle(welcome).opacity,
             transform: getComputedStyle(welcome).transform,
             logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
           };
         }, time);
-        if (time <= 550) assert.equal(frame.scale, 1, 'Hold the unchanged logo before the reveal');
+        if (time <= 1000) {
+          assert.equal(frame.scale, 1, 'Hold the unchanged logo for one second');
+          assert.equal(frame.ink, 1, 'The logo stays fully white during the hold');
+        }
         else assert.ok(frame.scale > previousScale);
         assert.equal(frame.opacity, '1');
         assert.equal(frame.transform, 'none');

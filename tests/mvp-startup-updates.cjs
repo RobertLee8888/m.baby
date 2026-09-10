@@ -23,7 +23,7 @@ fs.mkdirSync(output, { recursive: true });
       await page.waitForFunction(() => document.querySelector('#startupLoader').hidden);
       const events = await page.evaluate(() => window.startupEvents);
       assert.deepEqual(events.map(event => event.type), ['animationstart', 'animationend']);
-      assert.ok(events[1].at - events[0].at < 1100);
+      assert.ok(events[1].at - events[0].at >= 300 && events[1].at - events[0].at < 500);
       assert.equal(await page.locator('#screens').evaluate(n => n.inert), false);
       assert.equal(await page.locator('#newPill').evaluate(n => n.inert), true);
       const chartLoader = await page.locator('#fsLoader img').evaluate(n => {
@@ -39,16 +39,20 @@ fs.mkdirSync(output, { recursive: true });
         window.motion.pause();
       });
       let previous = 1;
-      for (const time of [0, 400, 550, 700, 850, 1150, 1450]) {
+      for (const time of [0, 500, 999, 1000, 1060, 1120, 1230, 1350]) {
         const state = await page.evaluate(time => {
           motion.currentTime = time;
           return {
             scale: parseFloat(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-scale')),
+            ink: Number(getComputedStyle(document.querySelector('#startupLoader')).getPropertyValue('--splash-ink')),
             logoAnimations: document.querySelector('.logo-splash-mark').getAnimations({ subtree: true }).length,
             contentAnimations: document.querySelector('#cards').getAnimations({ subtree: true }).length,
           };
         }, time);
-        if (time <= 550) assert.equal(state.scale, 1, 'Hold the unchanged logo before the reveal');
+        if (time <= 1000) {
+          assert.equal(state.scale, 1, 'Hold the unchanged logo for one second');
+          assert.equal(state.ink, 1, 'The logo stays fully white during the hold');
+        }
         else assert.ok(state.scale > previous);
         assert.equal(state.logoAnimations, 0);
         assert.equal(state.contentAnimations, 0);
