@@ -1,4 +1,5 @@
-import { SOCIAL_POSTS } from './mvp-social-data.js';
+import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
+import { createSocialPages } from './mvp-social-pages.js?v=1';
 
 const STORAGE_KEY = 'alva-social-feed-v1';
 const PREFIXES = ['Replied to Sam Altman: ', 'Quoted Satya Nadella: '];
@@ -14,19 +15,19 @@ export function createCards(references) {
 function readState() {
   let saved;
   try { saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { /* Storage can be disabled. */ }
-  return new Map(SOCIAL_POSTS.map(post => {
-    const item = saved?.[post.key];
-    return [post.key, {
-      liked: item?.liked === true, reposted: item?.reposted === true, tracked: item?.tracked === true,
+  const keys = new Set([...SOCIAL_POSTS.map(post => post.key), ...Object.keys(saved && typeof saved === 'object' ? saved : {})]);
+  return new Map([...keys].map(key => {
+    const item = saved?.[key];
+    return [key, {
+      liked: item?.liked === true, bookmarked: typeof item?.bookmarked === 'boolean' ? item.bookmarked : ['S07', 'P07'].includes(key), tracked: item?.tracked === true,
       replies: Array.isArray(item?.replies) ? item.replies.filter(text => typeof text === 'string' && text.trim()).slice(-100).map(text => text.slice(0, 2000)) : [],
     }];
   }));
 }
 
-export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLogo, openSources, openTicker, openSheet, sheetClose, toast }) {
+export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSources, openTicker, openSheet, closeSheet, sheetClose, toast, cards, tickerDirectory, followed, onFollowChange }) {
   let states = readState();
-  const counters = new Map();
-  let linkTimer;
+  const bindings = new Map();
   let viewportHost = window;
   try {
     if (window.frameElement && window.parent.location.origin === location.origin) viewportHost = window.parent;
@@ -63,10 +64,53 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
     catch { /* The current session remains usable without persistent storage. */ }
   }
 
+  function stateFor(card) {
+    const key = card.social.key;
+    if (!states.has(key)) states.set(key, { liked: false, bookmarked: false, tracked: false, replies: [] });
+    return states.get(key);
+  }
+
+  function bind(card, node, paint) {
+    const key = card.social.key;
+    if (!bindings.has(key)) bindings.set(key, new Set());
+    bindings.get(key).add({ node, paint });
+    paint();
+  }
+
+  function update(card) {
+    save();
+    for (const binding of bindings.get(card.social.key) || []) {
+      if (binding.node.isConnected) binding.paint();
+      else bindings.get(card.social.key).delete(binding);
+    }
+  }
+
   function logo() {
-    const tile = el('span', 'logo-tile social-logo');
-    tile.append(img('assets/social-logo.svg'));
+    const tile = el('span', 'social-logo');
+    tile.append(img('assets/social-inline-logo.svg'));
     return tile;
+  }
+
+  function identity(source, time) {
+    const head = el('div', 'social-identity');
+    const avatar = btn('social-avatar', source.name + ' profile');
+    avatar.append(portrait(source));
+    avatar.addEventListener('click', () => pages.openProfile(source));
+    const byline = el('div', 'social-byline');
+    const row = el('div', 'social-publisher');
+    const name = btn('social-name', source.name + ' profile');
+    name.textContent = source.name;
+    name.addEventListener('click', () => pages.openProfile(source));
+    row.append(name);
+    if (time) row.append(el('span', 'social-time', time));
+    byline.append(row);
+    if (source.role || source.handle) byline.append(el('span', 'social-role', source.role || source.handle));
+    head.append(avatar, byline);
+    return head;
+  }
+
+  function portrait(source) {
+    return img(source.img, source.name === 'Chamath Palihapitiya' ? 'social-portrait-crop' : '');
   }
 
   function quote(card) {
@@ -75,30 +119,41 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
       const wrap = el('div', 'social-event');
       const tag = el('span', 'social-event-tag');
       tag.append(icon(post.key === 'S04' ? 'social-earnings.svg' : 'social-report.svg'), el('span', null, post.event));
-      const copy = btn('quote-body');
-      copy.textContent = post.statements[0];
-      copy.addEventListener('click', () => openSources(card));
-      wrap.append(tag, copy);
+      const row = el('div', 'social-publisher');
+      row.append(tag, el('span', 'social-time', post.age));
+      const headline = btn('social-event-headline');
+      headline.textContent = post.headline;
+      headline.addEventListener('click', () => pages.openDetail(card));
+      // Both the headline and event facts lead to the same thesis.
+      const facts = btn('quote-body');
+      facts.textContent = post.statements[0];
+      facts.addEventListener('click', () => pages.openDetail(card));
+      wrap.append(row, headline, facts);
       return wrap;
     }
     function displaySource(source, depth = 0) {
-      return { ...source, attribution: source.name, preview: undefined, summary: post.statements[depth],
-        img: source.name === 'Reuters' ? 'assets/social-reuters.png' : source.img,
-        reference: source.reference ? displaySource(source.reference, depth + 1) : undefined };
-    }
-    const result = sourceUI.quote(displaySource(card.sources[0]), card);
-    result.querySelectorAll('.source-play').forEach(play => play.replaceChildren(icon('social-play.svg')));
-    result.querySelectorAll('.quote-body').forEach(body => {
-      const text = body.textContent;
+      const wrap = el('div', depth ? 'quote-nested' : 'quote');
+      const hasSubtitle = depth || !post.key.startsWith('S');
+      wrap.append(identity({ ...source, role: hasSubtitle ? source.role : '', handle: hasSubtitle ? source.handle : '', img: source.name === 'Reuters' ? 'assets/social-reuters.png' : source.img }, depth ? null : post.age));
+      const body = btn('quote-body', 'Open thesis');
+      const text = post.statements[depth] || source.summary || source.quote || '';
       const prefix = PREFIXES.find(value => text.startsWith(value));
-      if (prefix) body.replaceChildren(el('span', 'social-quote-prefix', prefix), document.createTextNode(text.slice(prefix.length)));
-      body.tabIndex = 0;
-      body.setAttribute('role', 'button');
-      body.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); body.click(); }
-      });
-    });
-    return result;
+      if (prefix) body.append(el('span', 'social-quote-prefix', prefix), text.slice(prefix.length));
+      else body.textContent = text;
+      body.addEventListener('click', () => pages.openDetail(card));
+      if (text) wrap.append(body);
+      if (source.media) {
+        const media = el('a', 'source-media source-media-compact');
+        media.href = source.media.url; media.target = '_blank'; media.rel = 'noopener noreferrer';
+        media.setAttribute('aria-label', 'Play source video');
+        media.append(img(source.media.poster));
+        const play = el('span', 'source-play'); play.append(icon('social-play.svg')); media.append(play);
+        wrap.append(media);
+      }
+      if (source.reference) wrap.append(displaySource(source.reference, depth + 1));
+      return wrap;
+    }
+    return displaySource(card.sources[0]);
   }
 
   function tickerTag(ticker) {
@@ -118,9 +173,7 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
     const section = el('div', 'social-analysis');
     const copy = el('p', 'social-reading');
     copy.append(logo(), el('strong', null, 'Alva'), ' ', card.social.analysis);
-    const tickers = el('div', 'social-tickers');
-    card.tickers.forEach(ticker => tickers.append(tickerTag(ticker)));
-    section.append(copy, tickers);
+    section.append(copy);
     return section;
   }
 
@@ -132,22 +185,23 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
   }
 
   function engagement(card) {
-    const post = card.social, state = states.get(post.key);
+    const post = card.social, state = stateFor(card);
     const row = el('div', 'social-engagement');
     const reply = btn('social-action', 'Reply');
-    const replies = el('span', null, formatCount(post.counts[0], state.replies.length));
+    const replies = el('span');
+    bind(card, replies, () => { replies.textContent = formatCount(post.counts[0], state.replies.length); });
     reply.append(icon('social-comment.svg'), replies);
     reply.addEventListener('click', () => openReplies(card));
-    counters.set(post.key, replies);
     row.append(reply);
-    for (const [index, key, label, glyph] of [[1, 'reposted', 'Repost', 'social-repost.svg'], [2, 'liked', 'Like', 'social-heart.svg']]) {
+    for (const [index, key, label, glyph] of [[1, 'liked', 'Like', 'social-heart.svg'], [2, 'bookmarked', 'Bookmark', 'social-bookmark.svg']]) {
       const control = btn('social-action social-' + key, label);
       function paint() {
         control.setAttribute('aria-pressed', String(state[key]));
-        control.replaceChildren(icon(key === 'liked' && state[key] ? 'ui-heart-f.svg' : glyph), el('span', null, formatCount(post.counts[index], Number(state[key]))));
+        const baseSaved = key === 'bookmarked' && ['S07', 'P07'].includes(post.key);
+        control.replaceChildren(icon(state[key] ? key === 'liked' ? 'ui-heart-f.svg' : 'ui-bookmark-f.svg' : glyph), el('span', null, formatCount(post.counts[index], Number(state[key]) - Number(baseSaved))));
       }
-      paint();
-      control.addEventListener('click', () => { state[key] = !state[key]; save(); paint(); });
+      bind(card, control, paint);
+      control.addEventListener('click', () => { state[key] = !state[key]; update(card); });
       row.append(control);
     }
     const share = btn('social-action', 'Share post');
@@ -161,17 +215,21 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
     const url = new URL('mvp.html', location.href);
     url.searchParams.set('feed', 'social');
     url.searchParams.set('post', card.social.key);
+    await shareLink(card.sources[0].name + ' · Alva', url.href, 'Share post');
+  }
+
+  async function shareLink(title, url, label) {
     try {
-      if (navigator.share) await navigator.share({ title: card.sources[0].name + ' · Alva', url: url.href });
-      else { await navigator.clipboard.writeText(url.href); toast('Link copied'); }
+      if (navigator.share) await navigator.share({ title, url });
+      else { await navigator.clipboard.writeText(url); toast('Link copied'); }
     } catch (error) {
       if (error.name === 'AbortError') return;
       const link = el('input', 'social-share-link');
-      link.value = url.href;
+      link.value = url;
       link.readOnly = true;
-      link.setAttribute('aria-label', 'Post link');
+      link.setAttribute('aria-label', 'Share link');
       link.addEventListener('focus', () => link.select());
-      openSheet([sheetClose(), el('h2', null, 'Share post')], [link], { label: 'Share post' });
+      openSheet([sheetClose(), el('h2', null, label)], [link], { label });
     }
   }
 
@@ -180,14 +238,14 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
     card.social.actions.forEach(label => {
       const track = label === 'Track This';
       const control = btn('social-cta' + (track ? ' social-track' : ''), label);
-      const state = states.get(card.social.key);
+      const state = stateFor(card);
       function paint() {
         control.replaceChildren(icon(track ? 'social-notification.svg' : 'social-chat.svg'), el('span', null, track && state.tracked ? 'Tracking' : label));
         if (track) control.setAttribute('aria-pressed', String(state.tracked));
       }
-      paint();
+      bind(card, control, paint);
       control.addEventListener('click', () => {
-        if (track) { state.tracked = !state.tracked; save(); paint(); }
+        if (track) { state.tracked = !state.tracked; update(card); }
         else openConversation(card, label);
       });
       row.append(control);
@@ -198,16 +256,42 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
   function content(card) {
     const body = el('div', 'social-content');
     body.append(quote(card));
-    if (card.social.endorsement) {
-      const proof = el('div', 'social-proof');
-      const text = el('p');
-      text.append(el('strong', null, 'Greg Brockman'), ' also shares this view.');
-      proof.append(img('assets/social-greg.png'), text);
-      body.append(proof);
-    }
     card.blocks.filter(item => item.type === 'media').forEach(item => body.append(block(item, card)));
-    body.append(analysis(card), actions(card), engagement(card));
+    if (!card.social.hideSource) body.append(sourceLink(card));
+    if (['P01', 'P04'].includes(card.social.key)) body.append(kolViews(card));
+    const controls = el('div', 'social-controls');
+    card.tickers.forEach(ticker => controls.append(tickerTag(ticker)));
+    controls.append(...actions(card).children);
+    body.append(analysis(card), controls, engagement(card));
     return body;
+  }
+
+  function sourceLink(card) {
+    const source = card.sources[0];
+    const url = source.media?.url || source.url;
+    const link = el(url ? 'a' : 'span', 'social-source-link');
+    if (url) { link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; }
+    link.append(el('span', null, url ? new URL(url).hostname.replace(/^www\./, '') : source.name));
+    if (url) link.append(icon('ui-popout-l.svg'));
+    return link;
+  }
+
+  function kolViews(card) {
+    const wrap = el('div', 'social-kol-views');
+    const sides = card.social.key === 'P04'
+      ? [{ name: 'Greg Brockman', images: ['social-greg.png'], source: { name: 'Greg Brockman', img: 'assets/social-greg.png' } }]
+      : [{ name: 'Sam Altman', extra: '+1', images: ['social-agree-first.png', 'social-agree-second.png'], source: window.AlvaSourceSamples.P04 },
+        { name: 'Warren Buffett', disagree: true, images: ['social-disagree-first.png'], source: window.AlvaSourceSamples.P07 }];
+    sides.forEach(side => {
+      const b = btn('social-kol-side' + (side.disagree ? ' disagree' : ''), side.name + ' profile');
+      b.append(icon(side.disagree ? 'social-disagree.svg' : 'social-agree.svg'));
+      const avatars = el('span', 'social-avatar-stack');
+      side.images.forEach(name => avatars.append(img('assets/' + name)));
+      b.append(avatars, el('span', null, side.name + (side.extra ? ' ' + side.extra : '')));
+      b.addEventListener('click', () => pages.openProfile(side.source));
+      wrap.append(b);
+    });
+    return wrap;
   }
 
   function composer(placeholder, submit) {
@@ -245,13 +329,13 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
   function ownReply(text) {
     const reply = el('article', 'social-own-reply');
     const who = el('div', 'social-reply-who');
-    who.append(img('assets/avatar-kaleo.png'), el('strong', null, 'Sheer'));
+    who.append(img('assets/social-owner.png'), el('strong', null, 'YGGYLL'));
     reply.append(who, el('p', null, text));
     return reply;
   }
 
   function openReplies(card) {
-    const state = states.get(card.social.key);
+    const state = stateFor(card);
     const thread = el('div', 'social-thread');
     const context = el('div', 'social-reply-context');
     context.append(quote(card));
@@ -263,9 +347,8 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
     const editor = composer('Reply to ' + card.sources[0].name, text => {
       if (state.replies.length >= 100) { toast('Reply limit reached'); return; }
       state.replies.push(text);
-      save();
+      update(card);
       replies.append(ownReply(text));
-      counters.get(card.social.key).textContent = formatCount(card.social.counts[0], state.replies.length);
       thread.scrollTop = thread.scrollHeight;
     });
     openSheet([sheetClose(), el('h2', null, 'Reply')], [thread, editor.form], { full: true, bodyClass: 'social-sheet', label: 'Reply' });
@@ -307,22 +390,18 @@ export function createSocialFeed({ el, img, btn, icon, sourceUI, block, stockLog
   }
 
   function openLinkedPost() {
-    clearTimeout(linkTimer);
-    const key = new URLSearchParams(location.search).get('post');
-    if (!SOCIAL_POSTS.some(post => post.key === key)) return;
-    linkTimer = setTimeout(() => {
-      const card = document.querySelector('[data-card-id="source-' + key + '"]');
-      const feed = document.getElementById('feed');
-      if (card) {
-        const scale = feed.getBoundingClientRect().width / feed.clientWidth;
-        feed.scrollTop += (card.getBoundingClientRect().top - feed.getBoundingClientRect().top) / scale - 72;
-      }
-    }, 1650);
+    const params = new URLSearchParams(location.search);
+    pages.openLinked(params.get('post'), params.get('profile'));
   }
 
-  return { content, openLinkedPost, reset() {
-    clearTimeout(linkTimer);
+  const pages = createSocialPages({ el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange,
+    identity, portrait, content, analysis, actions, engagement, sourceLink, kolViews, block, stockLogo,
+    stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose,
+  });
+
+  return { content, openLinkedPost, leavePages: pages.leave, openOwner: pages.openOwner, reset() {
     states = readState();
-    counters.clear();
+    bindings.clear();
+    pages.reset();
   } };
 }

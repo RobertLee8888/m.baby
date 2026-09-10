@@ -1,10 +1,11 @@
-// Feed-Mobile-MVP 5031:94702. Source URLs, identities and media stay in mvp-source-data.js.
+// Approved Figma examples, 5506:89524. Engagement numbers are demo data.
+// Counts: comments, likes, bookmarks. Source URLs and media remain in mvp-source-data.js.
 export const SOCIAL_POSTS = [
   {
     "key": "P01",
-    "nodeId": "5031:94723",
-    "automation": "Alpha Radar",
-    "age": "Just now",
+    "nodeId": "5363:86518",
+    "height": 535,
+    "age": "Jul 13",
     "statements": [
       "Cheaper models would increase the return on AI spending and drive more token demand, redistributing margin dollars toward AI infrastructure providers."
     ],
@@ -15,14 +16,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "24",
-      "68",
-      "326"
+      "326",
+      "68"
     ]
   },
   {
     "key": "P06",
-    "nodeId": "5031:94724",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86519",
+    "height": 326,
     "age": "1h ago",
     "statements": [
       "Azure surpassed $75 billion in annual revenue, up 34%. Microsoft added more than two gigawatts of datacenter capacity over the previous 12 months and now had over 400 datacenters across 70 regions."
@@ -33,14 +34,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "18",
-      "42",
-      "218"
+      "218",
+      "32"
     ]
   },
   {
     "key": "S04",
-    "nodeId": "5031:94725",
-    "automation": "Alpha Radar",
+    "nodeId": "5363:86520",
+    "height": 356,
     "age": "1h ago",
     "statements": [
       "NVIDIA reported Q4 FY2025 revenue of $39.3 billion, up 78% year over year. Data Center revenue reached $35.6 billion, with full-year revenue of $130.5 billion."
@@ -53,15 +54,16 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "86",
-      "124",
-      "1.2K"
+      "1.2K",
+      "214"
     ],
-    "event": "Earnings"
+    "event": "Earnings",
+    "headline": "NVIDIA Q4 FY2025 Revenue Reaches $39.3B"
   },
   {
     "key": "S01",
-    "nodeId": "5031:94726",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86521",
+    "height": 535.0625,
     "age": "1h ago",
     "statements": [
       "Merck and Moderna said their personalized mRNA therapy met its primary endpoint and a key secondary endpoint in a late-stage melanoma trial, the first positive Phase 3 result for an mRNA cancer vaccine."
@@ -72,14 +74,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "12",
-      "31",
-      "148"
+      "148",
+      "56"
     ]
   },
   {
     "key": "P02",
-    "nodeId": "5031:94727",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86522",
+    "height": 500,
     "age": "1h ago",
     "statements": [
       "Replied to Sam Altman: Altman would lead Microsoft's new AI group, drawing on Microsoft's experience giving founders room to build independent teams.",
@@ -92,15 +94,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "64",
-      "182",
-      "986"
-    ],
-    "endorsement": "Greg Brockman also shares this view."
+      "986",
+      "127"
+    ]
   },
   {
     "key": "S02",
-    "nodeId": "5031:94728",
-    "automation": "Alpha Radar",
+    "nodeId": "5363:86523",
+    "height": 467,
     "age": "1h ago",
     "statements": [
       "The S&P 500 and Nasdaq fell as the popularity of DeepSeek's low-cost AI model raised concerns about the outlook for U.S. AI leaders. Nvidia and other chipmakers led the selloff."
@@ -111,14 +112,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "128",
-      "246",
-      "2.4K"
+      "2.4K",
+      "308"
     ]
   },
   {
     "key": "P07",
-    "nodeId": "5031:94729",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86524",
+    "height": 429,
     "age": "1h ago",
     "statements": [
       "He would recommend Greg Abel as Berkshire Hathaway's next CEO, effective at the end of the year."
@@ -129,14 +130,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "42",
-      "96",
-      "684"
+      "684",
+      "74"
     ]
   },
   {
     "key": "S05",
-    "nodeId": "5031:94730",
-    "automation": "Alpha Radar",
+    "nodeId": "5363:86525",
+    "height": 298,
     "age": "1h ago",
     "statements": [
       "Berkshire's board unanimously appointed Greg Abel as President and CEO, effective January 1, 2026. Warren Buffett would remain Chairman of the Board."
@@ -147,14 +148,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "16",
-      "38",
-      "207"
+      "207",
+      "41"
     ]
   },
   {
     "key": "S06",
-    "nodeId": "5031:94731",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86526",
+    "height": 445,
     "age": "1h ago",
     "statements": [
       "Warren Buffett would remain Berkshire Hathaway's chairman after Greg Abel became CEO. Berkshire shares fell following the leadership announcement."
@@ -165,14 +166,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "28",
-      "71",
-      "364"
+      "364",
+      "96"
     ]
   },
   {
     "key": "P04",
-    "nodeId": "5031:94732",
-    "automation": "Investor-roundtable",
+    "nodeId": "5363:86527",
+    "height": 428,
     "age": "1h ago",
     "statements": [
       "Quoted Satya Nadella: the mission continues",
@@ -184,15 +185,14 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "52",
-      "137",
-      "842"
-    ],
-    "endorsement": "Greg Brockman also shares this view."
+      "842",
+      "63"
+    ]
   },
   {
     "key": "S07",
-    "nodeId": "5031:94733",
-    "automation": "Alpha Radar",
+    "nodeId": "5363:86528",
+    "height": 342,
     "age": "1h ago",
     "statements": [
       "NVIDIA's annual report covers the fiscal year ended January 26, 2025. It includes audited financial statements, management's discussion and analysis, and business risk factors."
@@ -203,9 +203,10 @@ export const SOCIAL_POSTS = [
     ],
     "counts": [
       "9",
-      "24",
-      "156"
+      "156",
+      "28"
     ],
-    "event": "Annual Report"
+    "event": "Annual Report",
+    "headline": "NVIDIA Files FY2025 Annual Report"
   }
 ];

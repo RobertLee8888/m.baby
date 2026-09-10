@@ -5,7 +5,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.env.DEMO_URL || 'http://localhost:4173/mvp.html?feed=social';
 const output = process.env.QA_OUTPUT || '/tmp/alva-social-qa';
 const order = ['P01', 'P06', 'S04', 'S01', 'P02', 'S02', 'P07', 'S05', 'S06', 'P04', 'S07'];
-const heights = [527, 402, 426, 611.0625, 608, 543, 505, 374, 521, 488, 386];
+const heights = [535, 326, 356, 535.0625, 500, 467, 429, 298, 445, 428, 342];
 fs.mkdirSync(output, { recursive: true });
 
 (async () => {
@@ -49,20 +49,21 @@ fs.mkdirSync(output, { recursive: true });
       assert.ok(await node.locator('img').evaluateAll(ns => ns.every(n => n.complete && n.naturalWidth > 0)), key + ' images');
       assert.equal(await node.locator('.social-engagement button').count(), 4);
       await node.screenshot({ path: path.join(output, '393-' + key + '.png') });
-      await node.locator('.quote-copy, .social-event .quote-body').first().click();
+      await node.locator('.quote-body').first().click();
       await page.waitForTimeout(400);
-      assert.equal(await page.locator('#sheetBody > .src').getAttribute('data-source-id'), key);
-      assert.equal(await page.locator('#sheetBody .src-nested').count(), key === 'P02' ? 2 : key === 'P04' ? 1 : 0);
-      assert.ok(await page.locator('#sheetBody .src-open').first().evaluate(n => n.tagName === 'A' && getComputedStyle(n.querySelector('span')).textDecorationLine.includes('underline')));
-      await close();
+      const detail = page.locator('.social-page:not([hidden])');
+      assert.equal(await detail.getAttribute('data-post'), key);
+      assert.ok(await detail.locator('.social-source-link').first().evaluate(n => n.tagName === 'A' && getComputedStyle(n.querySelector('span')).textDecorationLine.includes('underline')));
+      await detail.locator('.social-page-back').click();
+      await page.waitForTimeout(350);
     }
 
-    const filters = await page.locator('#feedFilters [data-ticker]').evaluateAll(ns => ns.slice(1).map(n => ({ sym: n.dataset.ticker, count: Number(n.querySelector('.feed-filter-count').textContent) })));
+    const filters = await page.locator('#feedFilters [data-ticker]').evaluateAll(ns => ns.slice(1).map(n => ({ sym: n.dataset.ticker, count: Number(n.querySelector('.feed-filter-count')?.textContent || 0) })));
     assert.equal(filters[0].sym, 'GOOG');
     for (const filter of filters) {
       await page.locator('#filter-' + filter.sym).click();
-      assert.equal(await page.locator('.social-card').count(), filter.count);
-      assert.ok(await page.locator('.social-card').evaluateAll((ns, sym) => ns.every(n => n.dataset.tickers.split(' ').includes(sym)), filter.sym));
+      assert.equal(await page.locator('#cards > .social-card').count(), filter.count);
+      assert.ok(await page.locator('#cards > .social-card').evaluateAll((ns, sym) => ns.every(n => n.dataset.tickers.split(' ').includes(sym)), filter.sym));
     }
     await page.locator('#filter-All').click();
     await expose(card('P01').locator('.social-engagement'));
@@ -70,7 +71,7 @@ fs.mkdirSync(output, { recursive: true });
     await like.click();
     assert.equal(await like.getAttribute('aria-pressed'), 'true');
     assert.equal(await like.textContent(), '327');
-    await card('P01').getByRole('button', { name: 'Repost', exact: true }).click();
+    await card('P01').getByRole('button', { name: 'Bookmark', exact: true }).click();
     await card('P01').getByRole('button', { name: 'Track This', exact: true }).click();
     await card('P01').getByRole('button', { name: 'Reply', exact: true }).click();
     await page.waitForTimeout(400);
@@ -90,12 +91,12 @@ fs.mkdirSync(output, { recursive: true });
     assert.equal(await card('P01').getByRole('button', { name: 'Reply', exact: true }).textContent(), '25');
     await load();
     assert.equal(await like.getAttribute('aria-pressed'), 'true');
-    assert.equal(await card('P01').getByRole('button', { name: 'Repost', exact: true }).textContent(), '69');
+    assert.equal(await card('P01').getByRole('button', { name: 'Bookmark', exact: true }).textContent(), '69');
     assert.equal(await card('P01').getByRole('button', { name: 'Track This', exact: true }).textContent(), 'Tracking');
     await expose(card('P01').locator('.social-engagement'));
     await like.click();
     assert.equal(await like.textContent(), '326');
-    await card('P01').getByRole('button', { name: 'Repost', exact: true }).click();
+    await card('P01').getByRole('button', { name: 'Bookmark', exact: true }).click();
     await card('P01').getByRole('button', { name: 'Track This', exact: true }).click();
 
     await card('P01').getByRole('button', { name: 'What’s my impact', exact: true }).click();
@@ -119,13 +120,15 @@ fs.mkdirSync(output, { recursive: true });
     assert.equal(new URL(shared).searchParams.get('post'), 'P01');
     const deepLink = new URL(shared); deepLink.searchParams.set('post', 'P04');
     await load(deepLink.href);
-    assert.ok((await card('P04').boundingBox()).y >= 0 && (await card('P04').boundingBox()).y < 160);
+    assert.equal(await page.locator('.social-page:not([hidden])').getAttribute('data-post'), 'P04');
+    await page.locator('.social-page:not([hidden]) .social-page-back').click();
+    await page.waitForTimeout(350);
 
     await page.locator('#feed').evaluate(n => { n.scrollTop = 0; });
     await page.locator('.tab[data-tab="feed"]').click();
     await page.waitForFunction(() => document.querySelector('#refreshLoader').classList.contains('spinning'));
     await page.waitForFunction(() => !document.querySelector('#allTickers').disabled);
-    assert.equal(await page.locator('.social-card').count(), 11);
+    assert.equal(await page.locator('#cards > .social-card').count(), 11);
     assert.equal(await page.locator('#refreshResult, .refresh-result, .seen-line').count(), 0);
 
     await expose(card('P01').locator('.social-engagement'));

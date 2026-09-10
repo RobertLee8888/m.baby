@@ -24,7 +24,7 @@
 (async function () {
   'use strict';
   const socialModule = document.documentElement.dataset.feedVariant === 'social'
-    ? await import('./mvp-social.js?v=1') : null;
+    ? await import('./mvp-social.js?v=2') : null;
   let socialUI = null;
 
   const A = 'assets/';
@@ -1485,6 +1485,7 @@
     node.appendChild(meta);
 
     if (card.social) {
+      meta.remove();
       node.classList.add('social-card');
       node.appendChild(socialUI.content(card));
       return node;
@@ -1859,6 +1860,7 @@
     MSFT: 'Microsoft Corporation', AMD: 'Advanced Micro Devices, Inc.',
     TSM: 'Taiwan Semiconductor Manufacturing', AVGO: 'Broadcom Inc.', AMZN: 'Amazon.com, Inc.',
   };
+  if (socialModule) tickerDirectory.forEach((ticker, sym) => { ticker.co = followingNames[sym] || ticker.co; });
   // Logo/Stock instances from 4888:43299. Feed-card artwork is a separate
   // variant and must not determine the filter or Following logo's framing.
   ['GOOG', 'MSFT', 'TSLA', 'AMD', 'AVGO', 'AMZN'].forEach(sym => {
@@ -1869,12 +1871,12 @@
   });
 
   function recentTickers() {
-    const recent = feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
     if (socialModule) {
-      const order = sym => DEFAULT_FOLLOWED.includes(sym) ? DEFAULT_FOLLOWED.indexOf(sym) : DEFAULT_FOLLOWED.length;
-      recent.sort((a, b) => order(a.sym) - order(b.sym));
+      const counts = feedModel.tickerStats(loadedCards.map(card => ({ ...card, hoursAgo: 0 })), followed);
+      return DEFAULT_FOLLOWED.slice(0, 6).filter(sym => followed.has(sym)).map(sym =>
+        counts.find(item => item.sym === sym) || { sym, ticker: tickerDirectory.get(sym), count: 0, balance: 0 });
     }
-    return recent;
+    return feedModel.tickerStats(loadedCards, followed).filter(item => item.count > 0);
   }
 
   function paintFilters() {
@@ -3777,6 +3779,10 @@
       const reselected = tab.classList.contains('is-active');
       closeSheet();
       hideToast();
+      if (socialUI) {
+        socialUI.leavePages();
+        if (name === 'me') { socialUI.openOwner(); return; }
+      }
       if (reselected) void handleTabReselect(name);
       else showTab(name);
     });
@@ -3871,7 +3877,9 @@
 
   socialUI = socialModule?.createSocialFeed({
     el, img, btn, icon, sourceUI, block, stockLogo,
-    openSources, openTicker, openSheet, sheetClose, toast,
+    openSources, openTicker, openSheet, closeSheet, sheetClose, toast,
+    cards: socialCards, tickerDirectory, followed,
+    onFollowChange() { paintFilters(); renderMarket(); },
   });
   setAppearance(readAppearance());
   showTab('feed', false);
