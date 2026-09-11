@@ -37,9 +37,9 @@
     {
       title: 'Social Feed',
       subtitle: 'Source-first feed with Alva analysis, nested quotes and social interactions.',
-      edited: '2026-09-10',
+      edited: '2026-09-11',
       slug: 'mvp-social',
-      href: 'mvp.html?feed=social&v=86',
+      href: 'mvp.html?feed=social&v=87',
       meta: 'Mobile · 11 posts · social feed exploration',
       figma: {
         label: 'Feed Mobile MVP · Social source first',

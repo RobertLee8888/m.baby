@@ -71,13 +71,13 @@
 .social-detail-facts { font-size: 14px; line-height: 22px; }
 .social-article { display: flex; flex-direction: column; gap: var(--space-s); overflow: hidden; font-size: 14px; line-height: 22px; }
 .social-show-more { display: inline; color: var(--m1); font: inherit; font-weight: 500; }
-.social-detail-intro .media-row { margin: 0; padding: 0; width: 100%; }
 .social-detail-intro .media-tile { width: 240px; height: 135px; flex: 0 0 240px; }
 .social-detail-intro .media-tile img { object-fit: contain; }
 .social-detail-intro .media-row + .social-source-link { margin-top: calc(-1 * var(--space-xs)); }
 .social-detail-analysis { display: flex; flex-direction: column; gap: var(--space-s); padding: var(--space-s); border-radius: var(--radius-ct-l); background: linear-gradient(105deg, var(--br05), color-mix(in srgb, var(--n10) 2%, transparent)); }
 .social-detail-analysis .social-reading { color: var(--n9); }
-.social-large-tickers { display: flex; align-items: center; gap: var(--space-s); overflow-x: auto; scrollbar-width: none; }
+/* Both nested gutters scroll away; the viewport remains the clipping boundary. */
+.social-large-tickers { --scroll-gutter: calc(var(--gutter) + var(--space-s)); display: flex; align-items: center; gap: var(--space-s); margin-inline: calc(-1 * var(--scroll-gutter)); padding-inline: var(--scroll-gutter); overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
 .social-large-ticker { display: flex; align-items: center; gap: var(--space-xs); color: var(--n9); flex: none; }
 .social-large-ticker + .social-large-ticker { padding-left: var(--space-s); position: relative; }
 .social-large-ticker + .social-large-ticker::before { content: ''; position: absolute; left: 0; top: 8px; height: 24px; width: var(--hair); background: var(--l12); }
