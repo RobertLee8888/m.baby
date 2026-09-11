@@ -1,5 +1,8 @@
 /* Figma 5506:89524 and 5482:88375. Shared theme, media and overlays: mvp.css. */
 .social-card { padding: 0; letter-spacing: 0; }
+/* Each item owns its bottom rule, including filtered and refreshing lists. */
+.card.social-card,
+.feed-track.pulled .cards > .card.social-card:first-child { box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--l12); }
 .social-page, .social-sheet { letter-spacing: 0; }
 .social-content { display: flex; flex-direction: column; gap: var(--space-s); padding: var(--space-s) var(--gutter) var(--space-xxxs); min-width: 0; }
 .social-content > * { min-width: 0; }
@@ -98,12 +101,11 @@
 .social-tab[aria-selected="true"] { color: var(--n9); font-weight: 500; }
 .social-tab[aria-selected="true"]::after { content: ''; position: absolute; height: 2px; background: var(--m1); bottom: 0; left: 0; right: 0; }
 .social-signals { padding: var(--space-m) var(--gutter) 24px; }
-.social-signal { display: flex; gap: var(--space-s); }
+.social-signal { display: flex; gap: var(--space-s); box-shadow: inset 0 calc(-1 * var(--hair)) 0 var(--l12); }
 .social-signal-rail { position: relative; width: 12px; flex: 0 0 12px; padding-top: var(--space-xs); display: flex; justify-content: center; }
 .social-signal-rail img { width: 8px; height: 8px; position: relative; z-index: 1; }
 .social-signal:not(:last-child) .social-signal-rail::after { content: ''; position: absolute; width: 1px; background: var(--l3); top: 12px; bottom: -12px; }
 .social-signal-body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: var(--space-xs); padding-bottom: 24px; }
-.social-signal:last-child .social-signal-body { padding-bottom: 0; }
 .social-signal-body time { font-size: 12px; line-height: 20px; color: var(--n7); }
 .social-signal-copy { font-size: 14px; line-height: 22px; }
 .social-inline-person { display: inline-flex; align-items: center; gap: var(--space-xxs); padding: var(--space-xxxs) 6px; margin-top: -2px; border-radius: var(--radius-btn-s); background: var(--br05); font-size: 14px; line-height: 22px; color: var(--n9); vertical-align: baseline; }
