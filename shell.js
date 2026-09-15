@@ -35,15 +35,15 @@
 
   const PROTOTYPES = [
     {
-      title: 'Social Feed',
-      subtitle: 'Source-first feed with Alva analysis, nested quotes and social interactions.',
-      edited: '2026-09-11',
+      title: 'Thesis',
+      subtitle: 'Theses, sources, people and the markets they follow.',
+      edited: '2026-09-15',
       slug: 'mvp-social',
-      href: 'mvp.html?feed=social&v=88',
-      meta: 'Mobile · 11 posts · social feed exploration',
+      href: 'mvp.html?feed=social&v=89',
+      meta: 'Mobile · For You · Search · Me',
       figma: {
-        label: 'Feed Mobile MVP · Social source first',
-        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5506-89524',
+        label: 'Feed Mobile MVP · Thesis',
+        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5851-100223',
       },
     },
     {

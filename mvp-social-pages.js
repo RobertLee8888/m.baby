@@ -1,14 +1,14 @@
-import { ARTICLE, SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
+import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
+import { createThesisProfiles } from './mvp-thesis-profile.js';
 
-// Pages retain their DOM while stacked, preserving scroll, filters and expanded text.
+// Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {
-  const { el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange,
-    identity, portrait, content, analysis, actions, engagement, sourceLink, kolViews, block,
-    stockLogo, stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose } = ui;
+  const { el, img, btn, icon, cards, content, analysis, actions, sourceLink,
+    stateFor, bind, update, sharePost, closeSheet } = ui;
   const host = document.getElementById('screens');
   const session = String(Date.now());
   const entries = new Map();
-  const catalog = new Map(cards.map(card => [card.social.key, card]));
+  const catalog = new Map(cards.filter(card => card.social).map(card => [card.social.key, card]));
   let active = null, nextId = 0;
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -26,6 +26,7 @@ export function createSocialPages(ui) {
   function setEntry(entry, back = false) {
     const from = active?.node;
     active = entry;
+    if (ui.thesis) document.getElementById('mvpApp').classList.toggle('thesis-immersive', !!entry);
     host.querySelectorAll(':scope > .screen').forEach(node => { node.inert = !!entry; });
     transition(from, entry?.node, back);
     entry?.refresh?.();
@@ -111,14 +112,17 @@ export function createSocialPages(ui) {
   }
 
   function variant(base, changes, social) {
-    return { ...base, ...changes, id: 'social-' + social.key, social: { ...base.social, ...social } };
+    const tickers = changes.tickers || base.tickers;
+    return { ...base, ...changes, id: 'social-' + social.key, social: { ...base.social,
+      generationMode: 'auto', paragraphs: undefined,
+      charts: tickers.map(ticker => base.social.charts?.[base.tickers.findIndex(t => t.sym === ticker.sym)]).filter(Boolean), ...social } };
   }
 
   function relatedCards(card) {
     if (card.social.key !== 'P01') return cards.filter(other => other !== card && other.tickers.some(t => card.tickers.some(c => c.sym === t.sym))).slice(0, 2);
     const g = cards.find(c => c.social.key === 'P01');
     return [
-      variant(g, { blocks: [], sources: [{ ...PROFILES.chamath, handle: '@chamath', role: '@chamath', url: 'https://x.com/chamath' }], tickers: [g.tickers[0]].map(t => ({ ...t, stance: 'flat' })) }, {
+      variant(g, { blocks: [], sources: [{ ...PROFILES.chamath, bot: true, handle: '@chamath', role: '@chamath', url: 'https://x.com/chamath' }], tickers: [g.tickers[0]].map(t => ({ ...t, stance: 'flat' })) }, {
         key: 'related-chamath', age: 'Updated Jul 24', actions: ['Dig Deeper'], counts: ['18', '218', '32'],
         statements: ['Google can monetize AI across chips, cloud, applications and advertising; a fragmented model landscape can still benefit an integrated platform with strong capital-allocation capabilities.'],
         analysis: 'His views evolved across the window. Historical ROIC cited in the interview has not been independently recalculated here.',
@@ -150,21 +154,6 @@ export function createSocialPages(ui) {
     return list;
   }
 
-  function largeTickers(card) {
-    const row = el('div', 'social-large-tickers');
-    card.tickers.forEach(ticker => {
-      const button = btn('social-large-ticker', ticker.sym + ' details');
-      const text = el('span', 'social-large-ticker-copy');
-      text.append(el('strong', null, ticker.sym));
-      const stance = el('span', 'social-large-stance ' + ticker.stance);
-      const dial = el('span', 'stance-dial'); dial.append(icon('social-stance-arrow.svg'));
-      stance.append(dial, el('span', null, { bull: 'Tailwind', bear: 'Headwind', flat: 'Context' }[ticker.stance]));
-      text.append(stance); button.append(stockLogo(ticker), text);
-      button.addEventListener('click', () => openTicker(ticker)); row.append(button);
-    });
-    return row;
-  }
-
   function openDetail(card) {
     const { page, top, scroll } = pageShell('Thesis');
     page.dataset.socialPage = 'detail'; page.dataset.post = card.social.key;
@@ -174,40 +163,8 @@ export function createSocialPages(ui) {
       save.replaceChildren(icon(stateFor(card).bookmarked ? 'ui-bookmark-f.svg' : 'social-bookmark.svg'));
     });
     top.append(save, tool('Share thesis', 'social-share.svg', () => sharePost(card)));
-    const intro = el('div', 'social-detail-intro');
-    intro.append(identity(card.sources[0], card.social.age), el('h2', 'social-detail-title', card.social.headline || card.social.statements[0]));
-    if (card.social.event) intro.append(el('p', 'social-detail-facts', card.social.statements[0]));
-    if (card.social.key === 'P01') {
-      const article = el('div', 'social-article');
-      let expanded = false;
-      function paintArticle() {
-        article.replaceChildren();
-        if (expanded) ARTICLE.paragraphs.forEach(text => article.append(el('p', null, text)));
-        const last = expanded ? article.lastElementChild : el('p', null, ARTICLE.summary + '… ');
-        const more = btn('social-show-more', expanded ? 'Show less' : 'Show more');
-        more.textContent = expanded ? 'Show less' : 'Show more'; more.setAttribute('aria-expanded', String(expanded));
-        more.addEventListener('click', () => {
-          const before = article.offsetHeight;
-          expanded = !expanded; paintArticle();
-          if (!reduced()) article.animate([{ height: before + 'px' }, { height: article.offsetHeight + 'px' }], { duration: 220, easing: 'ease-out' });
-        });
-        last.append(' ', more); if (!expanded) article.append(last);
-      }
-      paintArticle(); intro.append(article);
-    }
-    card.blocks.filter(b => b.type === 'media').forEach(b => intro.append(block(b, card)));
-    if (card.sources[0].media || card.sources[0].reference) {
-      const extra = content(card).querySelector('.quote');
-      if (extra) {
-        extra.querySelector(':scope > .social-identity')?.remove();
-        extra.querySelector(':scope > .quote-body')?.remove();
-        intro.append(extra);
-      }
-    }
-    intro.append(sourceLink(card));
-    if (['P01', 'P04'].includes(card.social.key)) intro.append(kolViews(card));
-    const assessment = el('div', 'social-detail-analysis');
-    assessment.append(analysis(card), largeTickers(card)); intro.append(assessment, engagement(card));
+    const intro = el('div', 'social-thesis-detail');
+    intro.append(content(card, { full: true }));
     const contentTabs = el('div', 'social-detail-tabs');
     const panel = el('div', 'social-detail-panel'); panel.setAttribute('role', 'tabpanel');
     const nav = tabs(['Signals', 'Related theses', 'Updates'], name => {
@@ -232,124 +189,20 @@ export function createSocialPages(ui) {
     page.append(footer); push(page);
   }
 
-  function profileFor(source) {
-    if (source.owner || source.id === 'owner') return PROFILES.owner;
-    if (source.name === 'Maya Reynolds') return PROFILES.maya;
-    if (source.name === 'Chamath Palihapitiya') return PROFILES.chamath;
-    return { ...source, id: source.name, external: true };
-  }
-
-  function profileCards(profile) {
-    if (!profile.postKeys) return cards.filter(card => card.sources[0].name === profile.name);
-    return profile.postKeys.map(key => {
-      const card = cards.find(c => c.social.key === key);
-      const source = { ...card.sources[0], ...profile, role: profile.owner || profile.pro ? profile.handle : '', reference: undefined };
-      if (profile.id === 'chamath' && source.media) source.media = { ...source.media, poster: 'assets/social-chamath-video.png' };
-      return { ...card, sources: [source], social: { ...card.social, age: '1h ago', hideSource: true } };
-    });
-  }
-
-  function tickerFilters(select) {
-    const row = el('div', 'social-profile-filters');
-    row.setAttribute('role', 'tablist'); row.setAttribute('aria-label', 'Filter theses');
-    ['All', 'GOOG', 'NVDA', 'META', 'BABA', 'AAOI', 'MSFT'].forEach(sym => {
-      const b = btn('social-filter', sym); b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(sym === 'All'));
-      if (sym !== 'All') {
-        const ticker = tickerDirectory.get(sym) || tickerDirectory.get(sym === 'GOOG' ? 'GOOGL' : sym);
-        if (ticker) b.append(stockLogo(ticker));
-      }
-      b.append(el('span', null, sym));
-      b.addEventListener('click', () => { [...row.children].forEach(n => n.setAttribute('aria-selected', String(n === b))); select(sym); });
-      row.append(b);
-    });
-    return row;
-  }
-
-  function openProfile(source) {
-    const profile = profileFor(source);
-    const { page, top, scroll } = pageShell('Profile');
-    page.dataset.socialPage = 'profile'; page.dataset.profile = profile.id;
-    const share = tool('Share profile', 'social-share.svg', () => {
-      const url = new URL('mvp.html', location.href);
-      url.searchParams.set('feed', 'social'); url.searchParams.set('profile', profile.id);
-      shareLink(profile.name + ' · Alva', url.href, 'Share profile');
-    });
-    top.append(share);
-    const header = el('div', 'social-profile-header');
-    const who = el('div', 'social-profile-identity');
-    const avatar = el('span', 'social-profile-avatar'); avatar.append(portrait(profile)); who.append(avatar);
-    const info = el('div', 'social-profile-info');
-    const name = el('div', 'social-profile-name'); name.append(el('h2', null, profile.name));
-    if (profile.pro) name.append(el('span', 'social-pro', 'Pro'));
-    info.append(name);
-    if (profile.role) info.append(el('p', 'social-profile-role', profile.role));
-    if (profile.handle) info.append(el('p', 'social-profile-handle', profile.handle));
-    who.append(info); header.append(who);
-    if (profile.bio) {
-      const bio = el('p', 'social-profile-bio', profile.bio);
-      if (profile.external) {
-        const more = btn('social-show-more', 'Show more'); more.textContent = 'Show more';
-        more.addEventListener('click', () => openSheet([sheetClose(), el('h2', null, profile.name)], [el('p', 'social-bio-full', profile.bio)], { label: profile.name }));
-        bio.append(' ', more);
-      }
-      header.append(bio);
-    }
-    if (profile.channels) {
-      const channels = el('div', 'social-profile-channels');
-      profile.channels.forEach(([platform, label, url]) => {
-        const a = el('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-        a.append(img('assets/social-channel-' + platform + '.svg'), el('span', null, label)); channels.append(a);
-      });
-      header.append(channels);
-    }
-    if (profile.external) {
-      const note = el('p', 'social-profile-disclaimer');
-      note.append(icon('ui-explain-l.svg'), 'Compiled from public information. Not affiliated with Alva.'); header.append(note);
-    }
-    const pinned = el('div', 'social-profile-pinned');
-    const list = el('div', 'social-profile-list'); list.setAttribute('role', 'tabpanel');
-    let selected = 'Thesis', filter = 'All';
-    const filters = tickerFilters(sym => { filter = sym; renderList(); });
-    function renderList() {
-      list.setAttribute('aria-label', selected);
-      filters.hidden = selected === 'Followed';
-      if (selected === 'Followed') {
-        list.replaceChildren();
-        const all = [...new Set(['GOOG', 'NVDA', 'META', 'BABA', 'AAOI', 'MSFT', 'TSLA', ...followed])];
-        all.filter(sym => followed.has(sym)).forEach(sym => {
-          const ticker = tickerDirectory.get(sym); if (!ticker) return;
-          const row = el('div', 'social-follow-row');
-          const stock = btn('social-follow-stock', sym + ' details');
-          const text = el('span'); text.append(el('strong', null, sym), el('small', null, ticker.co));
-          stock.append(stockLogo(ticker), text); stock.addEventListener('click', () => openTicker(ticker));
-          const toggle = btn('social-cta', 'Unfollow ' + sym); toggle.textContent = 'Unfollow';
-          toggle.addEventListener('click', () => { followed.delete(sym); onFollowChange(); renderList(); });
-          row.append(stock, toggle); list.append(row);
-        });
-        return;
-      }
-      const items = selected === 'Bookmark' ? [...catalog.values()]
-        .sort((a,b) => Number(b.social.key === 'S07') - Number(a.social.key === 'S07'))
-        .filter(c => stateFor(c).bookmarked)
-        .map(c => ({ ...c, social: { ...c.social, age: '1h ago', hideSource: true } })) : profileCards(profile);
-      const filtered = items.filter(card => filter === 'All' || card.tickers.some(t => (t.sym === 'GOOGL' ? 'GOOG' : t.sym) === filter));
-      list.replaceChildren(...filtered.map(cardNode));
-      if (!filtered.length) list.append(el('p', 'social-empty', selected === 'Bookmark' ? 'No bookmarked theses' : 'No theses'));
-    }
-    if (profile.owner) pinned.append(tabs(['Thesis', 'Followed', 'Bookmark'], value => { selected = value; renderList(); }));
-    pinned.append(filters); scroll.append(header, pinned, list); renderList();
-    push(page, renderList);
-  }
-
+  const profiles = ui.thesis ? createThesisProfiles({ ...ui, pageShell, push }, ui.controls) : null;
+  function openProfile(source) { profiles?.open(source); }
   function openOwner() { openProfile(PROFILES.owner); }
+
   function reset() {
     leave();
     entries.forEach(entry => entry.node.remove());
     entries.clear();
   }
   const primary = cards.find(card => card.social.key === 'P01');
-  for (const card of relatedCards(primary)) catalog.set(card.social.key, card);
-  for (const v of EARLIER_VERSIONS) catalog.set(v.key, variant(primary, { blocks: [] }, { ...v, statements: [v.statement], hideSource: true }));
+  if (primary) {
+    for (const card of relatedCards(primary)) catalog.set(card.social.key, card);
+    for (const v of EARLIER_VERSIONS) catalog.set(v.key, variant(primary, { blocks: [] }, { ...v, statements: [v.statement], hideSource: true }));
+  }
 
   function openLinked(post, profileId) {
     if (profileId) {
@@ -357,9 +210,10 @@ export function createSocialPages(ui) {
       function collect(source) { identities.push(source); if (source.reference) collect(source.reference); }
       cards.forEach(card => card.sources.forEach(collect));
       const profile = Object.values(PROFILES).find(p => p.id === profileId)
-        || [...identities, ...SIGNALS].find(source => source.name === profileId);
+        || [...identities, ...SIGNALS, ...(ui.controls?.PEOPLE || [])].find(source => source.name === profileId);
       if (profile) openProfile(profile);
     } else if (catalog.has(post)) openDetail(catalog.get(post));
   }
-  return { openDetail, openProfile, openOwner, openLinked, leave, reset };
+  return { openDetail, openProfile, openOwner, openLinked, leave, reset,
+    mountOwner: () => profiles?.mountOwner(), refreshOwner: () => profiles?.refresh() };
 }

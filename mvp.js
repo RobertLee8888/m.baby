@@ -24,7 +24,7 @@
 (async function () {
   'use strict';
   const socialModule = document.documentElement.dataset.feedVariant === 'social'
-    ? await import('./mvp-social.js?v=2') : null;
+    ? await import('./mvp-social.js?v=3') : null;
   let socialUI = null;
 
   const A = 'assets/';
@@ -3706,6 +3706,8 @@
       } finally {
         feedReselectPending = false;
       }
+    } else if (socialUI && (name === 'market' || name === 'me')) {
+      await quickScrollTop(socialUI.scroller(name));
     } else if (name === 'market') {
       await quickScrollTop(marketScroll);
     }
@@ -3781,7 +3783,7 @@
       hideToast();
       if (socialUI) {
         socialUI.leavePages();
-        if (name === 'me') { socialUI.openOwner(); return; }
+        socialUI.showTab(name);
       }
       if (reselected) void handleTabReselect(name);
       else showTab(name);
@@ -3880,6 +3882,7 @@
     openSources, openTicker, openSheet, closeSheet, sheetClose, toast,
     cards: socialCards, tickerDirectory, followed,
     onFollowChange() { paintFilters(); renderMarket(); },
+    onCreate() { showTab('chat'); },
   });
   setAppearance(readAppearance());
   showTab('feed', false);

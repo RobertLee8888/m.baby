@@ -1,15 +1,19 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=1';
+import { createSocialPages } from './mvp-social-pages.js?v=3';
+import { thesisCards } from './mvp-thesis-data.js';
+import { createThesisCard } from './mvp-thesis-card.js';
+import { createThesisControls } from './mvp-thesis-controls.js';
+import { createThesisSearch } from './mvp-thesis-search.js';
+import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 
 const STORAGE_KEY = 'alva-social-feed-v1';
-const PREFIXES = ['Replied to Sam Altman: ', 'Quoted Satya Nadella: '];
 
 export function createCards(references) {
-  return SOCIAL_POSTS.map(post => {
+  return thesisCards(SOCIAL_POSTS.map(post => {
     const reference = references.find(card => card.sources[0].id === post.key);
     if (!reference) throw new Error('Missing social source: ' + post.key);
     return { ...reference, referenceNodeId: post.nodeId, automation: post.automation, age: post.age, social: post };
-  });
+  }));
 }
 
 function readState() {
@@ -25,7 +29,7 @@ function readState() {
   }));
 }
 
-export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSources, openTicker, openSheet, closeSheet, sheetClose, toast, cards, tickerDirectory, followed, onFollowChange }) {
+export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, openTicker, openSheet, closeSheet, sheetClose, toast, cards, tickerDirectory, followed, onFollowChange, onCreate }) {
   let states = readState();
   const bindings = new Map();
   let viewportHost = window;
@@ -102,6 +106,7 @@ export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSou
     name.textContent = source.name;
     name.addEventListener('click', () => pages.openProfile(source));
     row.append(name);
+    if (source.bot) row.append(icon('thesis/search-imgBotNotOnAlva.svg', 'thesis-bot'));
     if (time) row.append(el('span', 'social-time', time));
     byline.append(row);
     if (source.role || source.handle) byline.append(el('span', 'social-role', source.role || source.handle));
@@ -113,102 +118,12 @@ export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSou
     return img(source.img, source.name === 'Chamath Palihapitiya' ? 'social-portrait-crop' : '');
   }
 
-  function quote(card) {
-    const post = card.social;
-    if (post.event) {
-      const wrap = el('div', 'social-event');
-      const tag = el('span', 'social-event-tag');
-      tag.append(icon(post.key === 'S04' ? 'social-earnings.svg' : 'social-report.svg'), el('span', null, post.event));
-      const row = el('div', 'social-publisher');
-      row.append(tag, el('span', 'social-time', post.age));
-      const headline = btn('social-event-headline');
-      headline.textContent = post.headline;
-      headline.addEventListener('click', () => pages.openDetail(card));
-      // Both the headline and event facts lead to the same thesis.
-      const facts = btn('quote-body');
-      facts.textContent = post.statements[0];
-      facts.addEventListener('click', () => pages.openDetail(card));
-      wrap.append(row, headline, facts);
-      return wrap;
-    }
-    function displaySource(source, depth = 0) {
-      const wrap = el('div', depth ? 'quote-nested' : 'quote');
-      const hasSubtitle = depth || !post.key.startsWith('S');
-      wrap.append(identity({ ...source, role: hasSubtitle ? source.role : '', handle: hasSubtitle ? source.handle : '', img: source.name === 'Reuters' ? 'assets/social-reuters.png' : source.img }, depth ? null : post.age));
-      const body = btn('quote-body', 'Open thesis');
-      const text = post.statements[depth] || source.summary || source.quote || '';
-      const prefix = PREFIXES.find(value => text.startsWith(value));
-      if (prefix) body.append(el('span', 'social-quote-prefix', prefix), text.slice(prefix.length));
-      else body.textContent = text;
-      body.addEventListener('click', () => pages.openDetail(card));
-      if (text) wrap.append(body);
-      if (source.media) {
-        const media = el('a', 'source-media source-media-compact');
-        media.href = source.media.url; media.target = '_blank'; media.rel = 'noopener noreferrer';
-        media.setAttribute('aria-label', 'Play source video');
-        media.append(img(source.media.poster));
-        const play = el('span', 'source-play'); play.append(icon('social-play.svg')); media.append(play);
-        wrap.append(media);
-      }
-      if (source.reference) wrap.append(displaySource(source.reference, depth + 1));
-      return wrap;
-    }
-    return displaySource(card.sources[0]);
-  }
-
-  function tickerTag(ticker) {
-    const tag = btn('social-ticker', ticker.sym + ' details');
-    tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym));
-    const stance = el('span', 'stance ' + ticker.stance);
-    stance.setAttribute('aria-label', { bull: 'Tailwind', bear: 'Headwind', flat: 'Context' }[ticker.stance]);
-    const dial = el('span', 'stance-dial');
-    dial.append(icon('social-stance-arrow.svg'));
-    stance.append(dial);
-    tag.append(stance);
-    tag.addEventListener('click', () => openTicker(ticker));
-    return tag;
-  }
-
   function analysis(card) {
     const section = el('div', 'social-analysis');
     const copy = el('p', 'social-reading');
     copy.append(logo(), el('strong', null, 'Alva'), ' ', card.social.analysis);
     section.append(copy);
     return section;
-  }
-
-  function formatCount(label, extra) {
-    if (!extra) return label;
-    const base = Number.parseFloat(label) * (label.endsWith('K') ? 1000 : 1);
-    if (label.endsWith('K')) return ((base + extra) / 1000).toFixed(1) + 'K';
-    return (base + extra).toLocaleString('en-US');
-  }
-
-  function engagement(card) {
-    const post = card.social, state = stateFor(card);
-    const row = el('div', 'social-engagement');
-    const reply = btn('social-action', 'Reply');
-    const replies = el('span');
-    bind(card, replies, () => { replies.textContent = formatCount(post.counts[0], state.replies.length); });
-    reply.append(icon('social-comment.svg'), replies);
-    reply.addEventListener('click', () => openReplies(card));
-    row.append(reply);
-    for (const [index, key, label, glyph] of [[1, 'liked', 'Like', 'social-heart.svg'], [2, 'bookmarked', 'Bookmark', 'social-bookmark.svg']]) {
-      const control = btn('social-action social-' + key, label);
-      function paint() {
-        control.setAttribute('aria-pressed', String(state[key]));
-        const baseSaved = key === 'bookmarked' && ['S07', 'P07'].includes(post.key);
-        control.replaceChildren(icon(state[key] ? key === 'liked' ? 'ui-heart-f.svg' : 'ui-bookmark-f.svg' : glyph), el('span', null, formatCount(post.counts[index], Number(state[key]) - Number(baseSaved))));
-      }
-      bind(card, control, paint);
-      control.addEventListener('click', () => { state[key] = !state[key]; update(card); });
-      row.append(control);
-    }
-    const share = btn('social-action', 'Share post');
-    share.append(icon('social-share.svg'));
-    share.addEventListener('click', () => sharePost(card));
-    row.append(share);
-    return row;
   }
 
   async function sharePost(card) {
@@ -235,63 +150,17 @@ export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSou
 
   function actions(card) {
     const row = el('div', 'social-ctas');
-    card.social.actions.forEach(label => {
-      const track = label === 'Track This';
-      const control = btn('social-cta' + (track ? ' social-track' : ''), label);
-      const state = stateFor(card);
-      function paint() {
-        control.replaceChildren(icon(track ? 'social-notification.svg' : 'social-chat.svg'), el('span', null, track && state.tracked ? 'Tracking' : label));
-        if (track) control.setAttribute('aria-pressed', String(state.tracked));
-      }
-      bind(card, control, paint);
-      control.addEventListener('click', () => {
-        if (track) { state.tracked = !state.tracked; update(card); }
-        else openConversation(card, label);
-      });
-      row.append(control);
-    });
+    const control = btn('social-cta', 'Ask Alva');
+    control.append(icon('social-chat.svg'), el('span', null, 'Ask Alva'));
+    control.addEventListener('click', () => openConversation(card, 'Ask Alva'));
+    row.append(control);
     return row;
   }
 
-  function content(card) {
-    const body = el('div', 'social-content');
-    body.append(quote(card));
-    card.blocks.filter(item => item.type === 'media').forEach(item => body.append(block(item, card)));
-    if (!card.social.hideSource) body.append(sourceLink(card));
-    if (['P01', 'P04'].includes(card.social.key)) body.append(kolViews(card));
-    const controls = el('div', 'social-controls');
-    card.tickers.forEach(ticker => controls.append(tickerTag(ticker)));
-    controls.append(...actions(card).children);
-    body.append(analysis(card), controls, engagement(card));
-    return body;
-  }
+  function content(card, options) { return thesis.content(card, options); }
 
   function sourceLink(card) {
-    const source = card.sources[0];
-    const url = source.media?.url || source.url;
-    const link = el(url ? 'a' : 'span', 'social-source-link');
-    if (url) { link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; }
-    link.append(el('span', null, url ? new URL(url).hostname.replace(/^www\./, '') : source.name));
-    if (url) link.append(icon('ui-popout-l.svg'));
-    return link;
-  }
-
-  function kolViews(card) {
-    const wrap = el('div', 'social-kol-views');
-    const sides = card.social.key === 'P04'
-      ? [{ name: 'Greg Brockman', images: ['social-greg.png'], source: { name: 'Greg Brockman', img: 'assets/social-greg.png' } }]
-      : [{ name: 'Sam Altman', extra: '+1', images: ['social-agree-first.png', 'social-agree-second.png'], source: window.AlvaSourceSamples.P04 },
-        { name: 'Warren Buffett', disagree: true, images: ['social-disagree-first.png'], source: window.AlvaSourceSamples.P07 }];
-    sides.forEach(side => {
-      const b = btn('social-kol-side' + (side.disagree ? ' disagree' : ''), side.name + ' profile');
-      b.append(icon(side.disagree ? 'social-disagree.svg' : 'social-agree.svg'));
-      const avatars = el('span', 'social-avatar-stack');
-      side.images.forEach(name => avatars.append(img('assets/' + name)));
-      b.append(avatars, el('span', null, side.name + (side.extra ? ' ' + side.extra : '')));
-      b.addEventListener('click', () => pages.openProfile(side.source));
-      wrap.append(b);
-    });
-    return wrap;
+    return thesis.sourceParagraph(card);
   }
 
   function composer(placeholder, submit) {
@@ -324,34 +193,6 @@ export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSou
     send.disabled = true;
     form.append(input, send);
     return { form, input, setBusy(busy) { input.disabled = busy; send.disabled = busy || !input.value.trim(); } };
-  }
-
-  function ownReply(text) {
-    const reply = el('article', 'social-own-reply');
-    const who = el('div', 'social-reply-who');
-    who.append(img('assets/social-owner.png'), el('strong', null, 'YGGYLL'));
-    reply.append(who, el('p', null, text));
-    return reply;
-  }
-
-  function openReplies(card) {
-    const state = stateFor(card);
-    const thread = el('div', 'social-thread');
-    const context = el('div', 'social-reply-context');
-    context.append(quote(card));
-    thread.append(context);
-    const replies = el('div', 'social-replies');
-    replies.setAttribute('aria-live', 'polite');
-    state.replies.forEach(text => replies.append(ownReply(text)));
-    thread.append(replies);
-    const editor = composer('Reply to ' + card.sources[0].name, text => {
-      if (state.replies.length >= 100) { toast('Reply limit reached'); return; }
-      state.replies.push(text);
-      update(card);
-      replies.append(ownReply(text));
-      thread.scrollTop = thread.scrollHeight;
-    });
-    openSheet([sheetClose(), el('h2', null, 'Reply')], [thread, editor.form], { full: true, bodyClass: 'social-sheet', label: 'Reply' });
   }
 
   function openConversation(card, question) {
@@ -394,14 +235,34 @@ export function createSocialFeed({ el, img, btn, icon, block, stockLogo, openSou
     pages.openLinked(params.get('post'), params.get('profile'));
   }
 
-  const pages = createSocialPages({ el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange,
-    identity, portrait, content, analysis, actions, engagement, sourceLink, kolViews, block, stockLogo,
-    stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose,
+  const controls = createThesisControls({ el, img, btn, icon, stockLogo, tickerDirectory, followed, onFollowChange });
+  const thesis = createThesisCard({ el, img, btn, icon, identity, stockLogo, stateFor, bind, update, openTicker, openSources,
+    openDetail: card => pages.openDetail(card), ask: openConversation });
+  const pages = createSocialPages({ el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange, thesis: true, controls,
+    content, analysis, actions, sourceLink,
+    stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose, preview: thesis.preview,
   });
+  const search = createThesisSearch({ el, img, btn, icon, stockLogo, openTicker, openProfile: pages.openProfile }, controls);
+  document.getElementById('screenMarket').append(search.root);
+  document.getElementById('screenMe').append(pages.mountOwner());
+  const create = btn('thesis-create', 'Create thesis');
+  create.append(icon('thesis/create.svg'));
+  create.addEventListener('click', onCreate);
+  document.getElementById('screenFeed').append(create);
+  const nav = document.querySelector('#tabBar [data-tab="market"]');
+  nav.lastElementChild.textContent = 'Search'; nav.setAttribute('aria-label', 'Search');
+  nav.querySelector('.ic-off').style.setProperty('--ic', `url(${assets.tabbar.imgSearchL1})`);
+  nav.querySelector('.ic-on').style.setProperty('--ic', `url(${assets.search.imgSearchF1})`);
+  const feedNav = document.querySelector('#tabBar [data-tab="feed"]');
+  feedNav.querySelector('.ic-off').style.setProperty('--ic', `url(${assets.search.imgForYouL})`);
+  feedNav.querySelector('.ic-on').style.setProperty('--ic', `url(${assets.tabbar.imgForYouF})`);
 
-  return { content, openLinkedPost, leavePages: pages.leave, openOwner: pages.openOwner, reset() {
+  return { content, openDetail: pages.openDetail, openLinkedPost, leavePages: pages.leave, openOwner: pages.openOwner,
+    scroller(name) { return document.querySelector(name === 'me' ? '.thesis-me .thesis-root-scroll' : '.thesis-search .thesis-root-scroll'); },
+    showTab(name) { if (name === 'me') pages.refreshOwner(); if (name === 'market') search.refresh(); thesis.preview.refresh(); }, reset() {
     states = readState();
     bindings.clear();
+    thesis.preview.reset();
     pages.reset();
   } };
 }

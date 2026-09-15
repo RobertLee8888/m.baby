@@ -7,6 +7,23 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 
 ### ▶︎ [Open the live prototypes](https://robertlee8888.github.io/m.baby/)
 
+## Thesis (2026-09-15)
+
+[Open Thesis](https://robertlee8888.github.io/m.baby/#/mvp-social). The former
+Social Feed entry now uses the current V5 homepage and For You / Alva / Search /
+Me navigation. Existing links remain valid.
+
+The nine supplied theses use explicit lifecycle tags, original chart bitmaps,
+Library SVG icons, shared color/spacing tokens and responsive text previews.
+Search includes recent history, asset filters, people, follow controls and empty
+states. Me includes account/usage summaries, Theses, Bookmarks, Tickers,
+Playbooks and Automations. Profile, Sources, ticker and Alva navigation retain
+their context on return. All data remains a local demonstration.
+
+Current references, implementation boundaries and browser checks are recorded in
+[Thesis acceptance notes](docs/thesis-2026-09-15.md). The older Social Feed
+sections below describe historical versions and are superseded for this entry.
+
 ## MVP update: Sources and ticker filters (2026-09-09)
 
 ### Social-feed exploration
