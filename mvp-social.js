@@ -1,7 +1,7 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=3';
+import { createSocialPages } from './mvp-social-pages.js?v=4';
 import { thesisCards } from './mvp-thesis-data.js';
-import { createThesisCard } from './mvp-thesis-card.js';
+import { createThesisCard } from './mvp-thesis-card.js?v=2';
 import { createThesisControls } from './mvp-thesis-controls.js';
 import { createThesisSearch } from './mvp-thesis-search.js';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
@@ -130,6 +130,7 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
     const url = new URL('mvp.html', location.href);
     url.searchParams.set('feed', 'social');
     url.searchParams.set('post', card.social.key);
+    if (card.social.version) url.searchParams.set('version', card.social.version);
     await shareLink(card.sources[0].name + ' · Alva', url.href, 'Share post');
   }
 
@@ -232,14 +233,14 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
 
   function openLinkedPost() {
     const params = new URLSearchParams(location.search);
-    pages.openLinked(params.get('post'), params.get('profile'));
+    pages.openLinked(params.get('post'), params.get('profile'), params.get('version'));
   }
 
   const controls = createThesisControls({ el, img, btn, icon, stockLogo, tickerDirectory, followed, onFollowChange });
   const thesis = createThesisCard({ el, img, btn, icon, identity, stockLogo, stateFor, bind, update, openTicker, openSources,
     openDetail: card => pages.openDetail(card), ask: openConversation });
   const pages = createSocialPages({ el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange, thesis: true, controls,
-    content, analysis, actions, sourceLink,
+    content, analysis, actions, sourceLink, identity, stockLogo, openSources, footer: thesis.footer,
     stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose, preview: thesis.preview,
   });
   const search = createThesisSearch({ el, img, btn, icon, stockLogo, openTicker, openProfile: pages.openProfile }, controls);

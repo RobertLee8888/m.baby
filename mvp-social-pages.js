@@ -1,5 +1,6 @@
 import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
 import { createThesisProfiles } from './mvp-thesis-profile.js';
+import { createThesisDetail } from './mvp-thesis-detail.js';
 
 // Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {
@@ -34,9 +35,9 @@ export function createSocialPages(ui) {
     else entries.forEach(item => { if (item.focus?.isConnected && item.node === from) item.focus.focus({ preventScroll: true }); });
   }
 
-  function push(node, refresh) {
+  function push(node, refresh, destroy) {
     closeSheet(true);
-    const entry = { id: ++nextId, parent: active, node, refresh, focus: document.activeElement };
+    const entry = { id: ++nextId, parent: active, node, refresh, destroy, focus: document.activeElement };
     entries.set(entry.id, entry);
     host.append(node);
     history.pushState({ ...history.state, mvpSocial: { session, id: entry.id } }, '');
@@ -154,7 +155,12 @@ export function createSocialPages(ui) {
     return list;
   }
 
-  function openDetail(card) {
+  function openDetail(card, version) {
+    if (ui.thesis) {
+      const base = card.social.key.startsWith('P01-') ? cards.find(item => item.social.key === 'P01') : card;
+      detail.open(base, version || (base !== card ? card.social.key : undefined));
+      return;
+    }
     const { page, top, scroll } = pageShell('Thesis');
     page.dataset.socialPage = 'detail'; page.dataset.post = card.social.key;
     const save = tool('Bookmark thesis', 'social-bookmark.svg', () => { stateFor(card).bookmarked = !stateFor(card).bookmarked; update(card); });
@@ -190,12 +196,13 @@ export function createSocialPages(ui) {
   }
 
   const profiles = ui.thesis ? createThesisProfiles({ ...ui, pageShell, push }, ui.controls) : null;
+  const detail = ui.thesis ? createThesisDetail({ ...ui, pageShell, push, relatedCards, cardNode }) : null;
   function openProfile(source) { profiles?.open(source); }
   function openOwner() { openProfile(PROFILES.owner); }
 
   function reset() {
     leave();
-    entries.forEach(entry => entry.node.remove());
+    entries.forEach(entry => { entry.destroy?.(); entry.node.remove(); });
     entries.clear();
   }
   const primary = cards.find(card => card.social.key === 'P01');
@@ -204,7 +211,7 @@ export function createSocialPages(ui) {
     for (const v of EARLIER_VERSIONS) catalog.set(v.key, variant(primary, { blocks: [] }, { ...v, statements: [v.statement], hideSource: true }));
   }
 
-  function openLinked(post, profileId) {
+  function openLinked(post, profileId, version) {
     if (profileId) {
       const identities = [];
       function collect(source) { identities.push(source); if (source.reference) collect(source.reference); }
@@ -212,7 +219,7 @@ export function createSocialPages(ui) {
       const profile = Object.values(PROFILES).find(p => p.id === profileId)
         || [...identities, ...SIGNALS, ...(ui.controls?.PEOPLE || [])].find(source => source.name === profileId);
       if (profile) openProfile(profile);
-    } else if (catalog.has(post)) openDetail(catalog.get(post));
+    } else if (catalog.has(post)) openDetail(catalog.get(post), version);
   }
   return { openDetail, openProfile, openOwner, openLinked, leave, reset,
     mountOwner: () => profiles?.mountOwner(), refreshOwner: () => profiles?.refresh() };

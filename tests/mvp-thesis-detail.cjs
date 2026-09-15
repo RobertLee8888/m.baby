@@ -1,0 +1,116 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.DEMO_URL || 'http://127.0.0.1:4174/mvp.html?feed=social';
+const output = process.env.QA_OUTPUT || '/tmp/alva-thesis-detail/qa';
+fs.mkdirSync(output, { recursive: true });
+
+(async () => {
+  const engine = process.env.QA_ENGINE === 'webkit' ? webkit : chromium;
+  const browser = await engine.launch({ headless: true, ...(engine === chromium && process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
+  const context = await browser.newContext({ viewport: { width: 393, height: 759 }, deviceScaleFactor: 2, hasTouch: true });
+  const page = await context.newPage(); page.setDefaultTimeout(8000);
+  const errors = []; page.on('pageerror', error => errors.push(error.stack));
+  page.on('response', response => { if (response.status() >= 400) errors.push(response.status() + ' ' + response.url()); });
+  const active = () => page.locator('.thesis-detail:not([hidden]):not([inert])');
+  const sheet = page.locator('#sheet');
+  const expand = () => active().getByRole('button', { name: 'All updates', exact: true });
+  const settle = () => page.waitForTimeout(450);
+  const shot = name => page.screenshot({ path: output + '/' + name + '.png' });
+  try {
+    await page.goto(base); await page.waitForTimeout(1900); await page.evaluate(() => document.fonts.ready);
+    await page.locator('#cards [data-thesis="P01"] .thesis-body').click(); await settle();
+    assert.equal(await active().getAttribute('data-version'), 'latest');
+    assert.equal(await active().locator('.social-page-top .social-name').textContent(), 'Gavin Baker');
+    assert.equal(await active().locator('.social-page-top .social-avatar').count(), 1);
+    assert.equal(await active().locator('.thesis-full .social-identity,.thesis-full .thesis-type').count(), 0);
+    assert.equal(await active().locator('.social-detail-footer').evaluate(n => n.offsetHeight), 48);
+    assert.equal(await page.locator('#tabBar').isVisible(), false);
+    assert.equal(await active().locator('.thesis-view-latest').isVisible(), false);
+    const latestText = await active().locator('.thesis-body').textContent();
+    await shot('latest-393');
+    await active().locator('.social-detail-panel').scrollIntoViewIfNeeded(); await settle(); await shot('signals-393');
+    assert.equal(await active().locator('.thesis-signal').count(), 3);
+    assert.equal(await active().locator('.thesis-inline-alva img').count(), 3);
+    await active().locator('.social-page-scroll').evaluate(n => n.scrollTop = 0);
+    await expand().click(); await settle();
+    assert.equal(await sheet.getAttribute('aria-label'), 'All updates');
+    assert.equal(await sheet.locator('.thesis-update-row').count(), 6);
+    assert.equal(await sheet.locator('.thesis-latest-badge').count(), 1);
+    assert.equal(Math.round((await sheet.boundingBox()).y), 47);
+    assert.equal(await sheet.locator('.thesis-update-timeline').evaluate(n => getComputedStyle(n).rowGap), '24px');
+    assert.ok(await sheet.locator('.thesis-update-rail').first().evaluate(n => parseFloat(getComputedStyle(n, '::before').height) > 100));
+    await shot('updates-393');
+    await sheet.locator('[data-version="P01-jul10"]').click(); await settle();
+    assert.equal(await sheet.getAttribute('aria-hidden'), 'true');
+    assert.equal(await active().getAttribute('data-version'), 'P01-jul10');
+    assert.equal(await active().locator('.thesis-body > p').count(), 3);
+    assert.ok((await active().locator('.thesis-body').textContent()).startsWith('Integrated platforms'));
+    assert.equal(await active().locator('.thesis-version-pill[aria-selected="true"]').getAttribute('data-version'), 'P01-jul10');
+    assert.equal(await active().locator('.thesis-view-latest').isVisible(), false, 'historical selection alone must not show return control');
+    await expand().click(); await settle();
+    await sheet.locator('[data-version="P01-jul8"]').click(); await settle();
+    assert.equal(await active().locator('.thesis-chart').count(), 0, 'missing historical charts must not inherit the latest chart');
+    assert.equal(await active().locator('.thesis-signal').count(), 0, 'historical evidence belongs to that update');
+    assert.equal(await active().locator('.social-detail-panel').getAttribute('data-version'), 'P01-jul8');
+    await active().getByRole('tab', { name: 'Related theses', exact: true }).click();
+    assert.equal(await active().locator('.social-detail-panel .card').count(), 0);
+    await active().locator('.social-page-scroll').evaluate(n => n.scrollTop = 0);
+    await active().locator('.thesis-version-scroll').evaluate(n => n.scrollLeft = n.scrollWidth); await settle();
+    assert.equal(await active().locator('.thesis-view-latest').isVisible(), true); await shot('history-scrolled');
+    await active().getByRole('button', { name: 'View latest', exact: true }).click(); await settle();
+    assert.equal(await active().getAttribute('data-version'), 'latest');
+    assert.equal(await active().locator('.thesis-full .thesis-body').textContent(), latestText);
+    assert.equal(await active().locator('.thesis-view-latest').isVisible(), false);
+    assert.equal(await active().locator('.social-detail-panel .card').count(), 2);
+    await active().getByRole('tab', { name: 'Signals', exact: true }).click();
+    await active().locator('.social-page-scroll').evaluate(n => n.scrollTop = 0);
+    for (const mode of ['back', 'close', 'scrim', 'escape', 'drag']) {
+      await expand().click(); await settle();
+      if (mode === 'back') await page.goBack();
+      if (mode === 'close') await page.locator('#sheetTop [aria-label="Close"]').click();
+      if (mode === 'scrim') await page.mouse.click(190, 24);
+      if (mode === 'escape') await page.keyboard.press('Escape');
+      if (mode === 'drag') {
+        const grab = await sheet.locator('.grabber').boundingBox();
+        await page.mouse.move(grab.x + grab.width / 2, grab.y + 8); await page.mouse.down();
+        await page.mouse.move(grab.x + grab.width / 2, grab.y + 130, { steps: 8 }); await page.mouse.up();
+      }
+      await settle();
+      assert.equal(await sheet.getAttribute('aria-hidden'), 'true', mode);
+      assert.equal(await active().getAttribute('data-post'), 'P01', mode + ' must retain detail');
+      assert.equal(await expand().getAttribute('aria-expanded'), 'false');
+      assert.equal(await page.evaluate(() => !!history.state?.thesisUpdates), false);
+    }
+    await page.goForward(); await settle();
+    assert.equal(await sheet.getAttribute('aria-hidden'), 'false', 'forward must restore the sheet history entry');
+    await page.goBack(); await settle();
+    assert.equal(await sheet.getAttribute('aria-hidden'), 'true');
+    await active().locator('.thesis-version-pill[data-version="P01-jul3"]').click(); await settle();
+    await page.evaluate(() => Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.sharedThesis = data; } }));
+    await active().getByRole('button', { name: 'Share thesis', exact: true }).click();
+    const shared = new URL(await page.evaluate(() => window.sharedThesis.url));
+    assert.equal(shared.searchParams.get('post'), 'P01'); assert.equal(shared.searchParams.get('version'), 'P01-jul3');
+    await active().locator('.thesis-bookmark').click();
+    await active().getByRole('button', { name: 'View latest', exact: true }).click();
+    assert.equal(await active().locator('.thesis-bookmark').getAttribute('aria-pressed'), 'true');
+    await active().getByRole('button', { name: 'Ask Alva', exact: true }).click(); await settle();
+    assert.equal(await page.locator('.social-conversation').count(), 1);
+    await page.locator('#sheetTop [aria-label="Close"]').click(); await settle();
+    for (const width of [320, 360, 430, 393]) {
+      await page.setViewportSize({ width, height: 759 }); await settle();
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+      await shot('latest-' + width); await expand().click(); await settle(); await shot('updates-' + width);
+      assert.ok(await sheet.locator('.thesis-update-row').evaluateAll(nodes => nodes.every(n => n.scrollWidth <= n.clientWidth + 1)));
+      await page.locator('#sheetTop [aria-label="Close"]').click(); await settle();
+    }
+    await active().locator('.social-page-back').click(); await settle();
+    assert.equal(await page.locator('.thesis-detail:not([hidden]):not([inert])').count(), 0);
+    assert.equal(await page.locator('#tabBar').isVisible(), true);
+    await page.goto(shared.href); await page.waitForTimeout(1900);
+    assert.equal(await active().getAttribute('data-version'), 'P01-jul3');
+    assert.ok((await active().locator('.thesis-body').textContent()).startsWith('The key question'));
+    assert.deepEqual(errors, []);
+    console.log('Thesis detail, history context, five dismiss paths, shared state, deep links and responsive checks passed.');
+  } finally { await browser.close(); }
+})();

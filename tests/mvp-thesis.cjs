@@ -59,7 +59,7 @@ fs.mkdirSync(output, { recursive: true });
     await active().locator('.thesis-source-link').first().click(); await settle();
     assert.equal(await page.locator('#sheet').getAttribute('aria-hidden'), 'false');
     await page.locator('#sheetTop [aria-label="Close"]').click(); await settle();
-    await active().locator('.social-detail-footer button').click(); await settle();
+    await active().locator('.social-detail-footer').getByRole('button', { name: 'Ask Alva', exact: true }).click(); await settle();
     assert.equal(await page.locator('.social-conversation').count(), 1);
     await page.locator('#sheetTop [aria-label="Close"]').click(); await settle();
     await active().locator('.social-page-back').click(); await settle();

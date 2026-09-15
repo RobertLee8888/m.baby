@@ -37,9 +37,9 @@
     {
       title: 'Thesis',
       subtitle: 'Theses, sources, people and the markets they follow.',
-      edited: '2026-09-15',
+      edited: '2026-09-16',
       slug: 'mvp-social',
-      href: 'mvp.html?feed=social&v=89',
+      href: 'mvp.html?feed=social&v=90',
       meta: 'Mobile · For You · Search · Me',
       figma: {
         label: 'Feed Mobile MVP · Thesis',

@@ -24,7 +24,7 @@
 (async function () {
   'use strict';
   const socialModule = document.documentElement.dataset.feedVariant === 'social'
-    ? await import('./mvp-social.js?v=3') : null;
+    ? await import('./mvp-social.js?v=4') : null;
   let socialUI = null;
 
   const A = 'assets/';
@@ -2758,6 +2758,7 @@
 
   let sheetOpen = false;
   let sheetTeardown = null;
+  let sheetOnClose = null;
   let sheetCloseTimer = 0;
   let sheetFocus = null;
   sheet.inert = true;
@@ -2789,6 +2790,7 @@
     sheetBody.replaceChildren(...nodes);
     sheetBody.scrollTop = 0;
     sheetTeardown = o.teardown || null;
+    sheetOnClose = o.onClose || null;
     sheetOpen = true;
     sheet.inert = false;
     sheet.setAttribute('aria-hidden', 'false');
@@ -2809,6 +2811,9 @@
     syncModalBackground();
     if (sheetFocus?.isConnected) sheetFocus.focus({ preventScroll: true });
     app.classList.remove('dim');
+    const onClose = sheetOnClose;
+    sheetOnClose = null;
+    onClose?.(!!immediate);
     const appearanceRow = document.getElementById('appearanceRow');
     if (appearanceRow) appearanceRow.setAttribute('aria-expanded', 'false');
     const done = () => {

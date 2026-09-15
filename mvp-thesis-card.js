@@ -4,18 +4,22 @@ import { createPreviewLayout, summaryPreview } from './mvp-thesis-preview.js';
 export function createThesisCard(ui) {
   const { el, img, btn, icon, identity, stockLogo, stateFor, bind, update, openTicker, openSources, openDetail, ask } = ui;
   const glyph = path => icon(path.replace(/^assets\//, ''));
-  function sourceParagraph(card) {
+  function sourceParagraph(card, { attributed = false } = {}) {
     const row = el('p', 'thesis-sources');
-    const domains = new Set();
+    const domains = new Map();
     function add(source) {
       const raw = source.url || source.media?.url;
-      if (raw) { try { domains.add(new URL(raw).hostname.replace(/^www\./, '')); } catch { /* Not a web source. */ } }
+      if (raw) { try {
+        const domain = new URL(raw).hostname.replace(/^www\./, '');
+        if (!domains.has(domain)) domains.set(domain, source.name);
+      } catch { /* Not a web source. */ } }
       if (source.reference) add(source.reference);
     }
     card.sources.forEach(add);
-    for (const domain of domains) {
+    for (const [domain, name] of domains) {
       const link = btn('thesis-source-link', 'Sources: ' + domain);
-      link.append(el('span', null, domain), ' ', el('span', 'thesis-source-arrow', '\u{1F855}'));
+      const label = attributed && name ? name + ' on ' + (domain === 'x.com' ? 'X' : domain) : domain;
+      link.append(el('span', null, label), ' ', el('span', 'thesis-source-arrow', '\u{1F855}'));
       link.addEventListener('click', () => openSources(card)); row.append(link, ' ');
     }
     return row;
@@ -40,18 +44,18 @@ export function createThesisCard(ui) {
     save.addEventListener('click', () => { stateFor(card).bookmarked = !stateFor(card).bookmarked; update(card); });
     row.append(askButton, save); return row;
   }
-  function content(card, { full = false, compact = false } = {}) {
+  function content(card, { full = false, compact = false, detail = false } = {}) {
     const wrap = el('div', 'thesis-content' + (compact ? ' thesis-compact' : '') + (full ? ' thesis-full' : ''));
     const source = card.sources[0];
     wrap.dataset.thesis = card.social.key;
     wrap.dataset.generationMode = card.social.generationMode || 'auto';
-    wrap.append(identity({ ...source, role: compact ? '' : source.role, handle: compact ? '' : source.handle }, card.social.age), typeTag(card.social.thesisType));
+    if (!detail) wrap.append(identity({ ...source, role: compact ? '' : source.role, handle: compact ? '' : source.handle }, card.social.age), typeTag(card.social.thesisType));
     const body = el(full ? 'div' : 'button', 'thesis-body');
     if (!full) { body.type = 'button'; body.setAttribute('aria-label', 'Open thesis'); body.addEventListener('click', () => openDetail(card)); }
     const paragraphs = full || card.social.generationMode === 'manual' ? card.social.paragraphs || card.social.statements : [summaryPreview(card.social.statements[0])];
     paragraphs.forEach(text => body.append(el('p', null, text)));
     wrap.append(body);
-    if (full) wrap.append(sourceParagraph(card));
+    if (full) wrap.append(sourceParagraph(card, { attributed: detail }));
     if (!compact && card.social.charts?.length) {
       const charts = el('div', 'thesis-charts'); charts.setAttribute('aria-label', 'Ticker charts');
       card.social.charts.forEach((src, index) => {
