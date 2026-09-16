@@ -1,6 +1,5 @@
 import { ASSET_TYPES, SEARCH_TICKERS, PEOPLE } from './mvp-thesis-data.js';
-import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
-import { readStored, writeStored } from './mvp-thesis-controls.js';
+import { readStored, writeStored } from './mvp-thesis-controls.js?v=2';
 
 export function createThesisSearch(ui, controls) {
   const { el, btn, icon, openTicker, openProfile } = ui;
@@ -17,11 +16,16 @@ export function createThesisSearch(ui, controls) {
   const panel = el('div', 'thesis-search-panel'); scroll.append(panel);
   const defaults = [{ kind: 'ticker', id: 'NVDA' }, { kind: 'person', id: 'Chamath Palihapitiya' }];
   const saved = readStored('alva-thesis-recent', defaults);
-  let recent = (Array.isArray(saved) ? saved : defaults).filter(item => item && ['ticker', 'person'].includes(item.kind));
+  let recent = (Array.isArray(saved) ? saved : defaults).filter(item => item && (item.kind === 'ticker' ? SEARCH_TICKERS.some(record => record.sym === item.id) : item.kind === 'person' && PEOPLE.some(record => record.name === item.id)));
   let queryTab = 'All', assetType = 'All', timer;
   function remember(kind, id) {
-    recent = [{ kind, id }, ...recent.filter(item => item.kind !== kind || item.id !== id)].slice(0, 8);
+    recent = [{ kind, id }, ...recent.filter(item => item.kind !== kind || item.id !== id)];
     writeStored('alva-thesis-recent', recent);
+    const focusLabel = document.activeElement?.getAttribute('aria-label');
+    const position = scroll.scrollTop;
+    render();
+    scroll.scrollTop = position;
+    if (focusLabel) [...panel.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === focusLabel)?.focus({ preventScroll: true });
   }
   function visitPerson(person) { remember('person', person.name); openProfile(person); }
   function visitTicker(ticker) { remember('ticker', ticker.sym); openTicker(ticker); }
@@ -36,7 +40,7 @@ export function createThesisSearch(ui, controls) {
       all.addEventListener('click', () => controls.confirm({ title: 'Clear recent history?', description: 'This will remove all your recently viewed people and tickers.', action: 'Clear all',
         onConfirm() { recent = []; writeStored('alva-thesis-recent', recent); render(); } }));
       head.append(heading('Recent'), all); const chips = el('div', 'thesis-recent-chips');
-      for (const item of recent) {
+      for (const item of recent.slice(0, 5)) {
         const record = (item.kind === 'ticker' ? SEARCH_TICKERS : PEOPLE).find(entry => (entry.sym || entry.name) === item.id);
         if (!record) continue;
         const chip = el('div', 'thesis-recent-chip'); const open = btn('thesis-recent-label', item.id);
@@ -68,13 +72,14 @@ export function createThesisSearch(ui, controls) {
   }
   function results(query) {
     const result = el('div', 'thesis-search-results'); result.setAttribute('role', 'tabpanel'); result.setAttribute('aria-label', queryTab);
+    result.dataset.category = queryTab;
     const tickerMatches = SEARCH_TICKERS.filter(record => matches(record, query));
     const personMatches = PEOPLE.filter(record => matches(record, query));
     const visibleStocks = queryTab !== 'People' && tickerMatches.length;
     const visiblePeople = queryTab !== 'Tickers' && personMatches.length;
     if (!visibleStocks && !visiblePeople) { result.classList.add('is-empty'); result.append(controls.empty('No results found')); }
     if (visibleStocks) {
-      const group = el('section', 'thesis-results-group'); group.append(heading('Tickers'));
+      const group = el('section', 'thesis-results-group'); if (queryTab === 'All') group.append(heading('Tickers'));
       const list = el('div', 'thesis-result-list');
       const paint = () => {
         const items = tickerMatches.filter(record => assetType === 'All' || record.assetType === assetType);
@@ -84,7 +89,7 @@ export function createThesisSearch(ui, controls) {
       group.append(controls.tabs(ASSET_TYPES, value => { assetType = value; paint(); }, { pills: true, selected: assetType }), list); paint(); result.append(group);
     }
     if (visiblePeople) {
-      const group = el('section', 'thesis-results-group'); group.append(heading('People'));
+      const group = el('section', 'thesis-results-group'); if (queryTab === 'All') group.append(heading('People'));
       personMatches.forEach(person => group.append(controls.personRow(person, visitPerson))); result.append(group);
     }
     panel.append(result);

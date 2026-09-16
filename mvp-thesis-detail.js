@@ -1,5 +1,5 @@
-import { thesisVersions } from './mvp-thesis-versions.js';
-import { createVersionNavigation } from './mvp-thesis-version-nav.js';
+import { thesisVersions } from './mvp-thesis-versions.js?v=2';
+import { createVersionNavigation } from './mvp-thesis-version-nav.js?v=2';
 
 const SIGNAL_ROLES = {
   SemiAnalysis: 'Semiconductor & AI research',

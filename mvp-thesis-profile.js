@@ -1,6 +1,6 @@
 import { PROFILES } from './mvp-social-detail-data.js';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
-import { readStored, writeStored } from './mvp-thesis-controls.js';
+import { readStored, writeStored } from './mvp-thesis-controls.js?v=2';
 
 export function createThesisProfiles(ui, controls) {
   const { el, img, btn, icon, cards, content, stateFor, pageShell, push, shareLink, openTicker, openSheet, closeSheet, sheetClose } = ui;
@@ -14,7 +14,7 @@ export function createThesisProfiles(ui, controls) {
         bio: typeof saved.bio === 'string' ? saved.bio : PROFILES.owner.bio, joined: 'Dec 23, 2025', followers: '1.2K', following: '128' };
     }
     if (source.name === 'Maya Reynolds') return { ...PROFILES.maya, joined: 'Mar 4, 2026', followers: '2.4K', following: '86' };
-    if (source.name === 'Chamath Palihapitiya') return { ...PROFILES.chamath, img: assets.search.imgLeadingVisual, bot: true, followers: '12.8K', channels: [['x', '@chamath', 'https://x.com/chamath']] };
+    if (source.name === 'Chamath Palihapitiya') return { ...PROFILES.chamath, profileCrop: true, bot: true, followers: '12.8K', channels: [['x', '@chamath', 'https://x.com/chamath']] };
     return { ...source, id: source.id || source.name, external: false };
   }
   function edit(profile, refresh) {
@@ -49,7 +49,10 @@ export function createThesisProfiles(ui, controls) {
       if (!records.length) list.append(controls.empty('No ' + selected.toLowerCase() + ' yet'));
     }
     const names = profile.bot ? ['Followers'] : ['Followers', 'Following'];
-    scroll.append(controls.tabs(names, name => { selected = name; render(); }, { selected: initial }), list); render(); push(page, render);
+    const nav = controls.tabs(names, name => { selected = name; render(); }, { selected: initial });
+    nav.classList.add('thesis-relations-tabs');
+    [...nav.children].forEach((tab, index) => { tab.textContent = names[index] + ' ' + (names[index] === 'Followers' ? profile.followers : profile.following); });
+    scroll.append(nav, list); render(); push(page, render);
   }
   function privateCards() {
     const section = el('div', 'thesis-private');
@@ -73,16 +76,19 @@ export function createThesisProfiles(ui, controls) {
       const b = btn('social-page-tool', label); b.append(glyph(asset)); b.addEventListener('click', run); return b;
     }
     if (profile.owner) top.append(tool('Edit profile', assets.profile.imgEditL1, () => edit(profile, refreshHeader)));
+    else top.append(controls.followButton(profile));
     top.append(tool('Share profile', assets.profile.imgShareL, () => {
       const url = new URL('mvp.html', location.href); url.searchParams.set('feed', 'social'); url.searchParams.set('profile', profile.id);
       shareLink(profile.name + ' · Alva', url.href, 'Share profile');
     }));
     if (profile.owner) top.append(tool('Settings', assets.profile.imgSettingsL, settings));
-    else top.append(controls.followButton(profile));
     const header = el('div', 'thesis-profile-header');
+    const collapsed = !rootTab ? el('span', 'thesis-profile-collapsed') : null;
+    if (collapsed) { collapsed.setAttribute('aria-hidden', 'true'); top.querySelector('h1').append(collapsed); }
     function refreshHeader() {
       header.replaceChildren();
       const identity = el('div', 'thesis-profile-identity'); const portrait = controls.portrait(profile);
+      if (collapsed) collapsed.replaceChildren(controls.portrait(profile), controls.nameLabel(profile));
       const info = el('div', 'thesis-profile-info'); const name = controls.nameLabel(profile);
       if (profile.pro) name.append(el('span', 'social-pro', 'Pro')); info.append(name);
       if (profile.joined) {
@@ -101,7 +107,10 @@ export function createThesisProfiles(ui, controls) {
         const bio = el('div', 'thesis-profile-bio'); const copy = el('p', null, profile.bio); bio.append(copy);
         if (profile.bot) {
           bio.classList.add('can-expand'); const more = btn('social-show-more', 'Show more'); more.textContent = 'Show more';
-          more.addEventListener('click', () => { bio.classList.remove('can-expand'); more.remove(); }); bio.append(more);
+          more.addEventListener('click', () => {
+            const full = el('div', 'thesis-profile-about'); full.append(el('p', null, profile.bio));
+            openSheet([sheetClose(), el('h2', null, profile.name)], [full], { label: profile.name + ' bio' });
+          }); copy.append(' ', more);
         }
         header.append(bio);
       }
@@ -112,13 +121,13 @@ export function createThesisProfiles(ui, controls) {
           link.append(img('assets/social-channel-' + platform + '.svg'), el('span', null, label)); channels.append(link);
         }); header.append(channels);
       }
-      if (profile.bot) { const note = el('p', 'thesis-profile-note'); note.append(glyph(assets.search.imgBotNotOnAlva), 'Compiled from public information. Not affiliated with Alva.'); header.append(note); }
+      if (profile.bot) { const note = el('div', 'thesis-profile-note'); note.append(glyph(assets.search.imgBotNotOnAlva), el('p', null, 'Compiled from public information. Not affiliated with Alva.')); header.append(note); }
     }
     refreshHeader(); scroll.append(header);
     if (profile.owner) scroll.append(privateCards());
     const pinned = el('div', 'thesis-profile-pinned'); const list = el('div', 'thesis-profile-list'); list.setAttribute('role', 'tabpanel');
     let selected = 'Theses', status = 'Active';
-    const statusTabs = controls.tabs(['Active', 'Archived'], value => { status = value; renderList(); }, { pills: true });
+    const statusTabs = controls.tabs(['Active', 'Archived'], value => { status = value; renderList(); }, { pills: !!profile.owner });
     function renderList() {
       list.setAttribute('aria-label', selected); statusTabs.hidden = selected !== 'Theses';
       if (selected === 'Tickers') {
@@ -143,6 +152,10 @@ export function createThesisProfiles(ui, controls) {
     }
     if (profile.owner) pinned.append(controls.tabs(['Theses', 'Bookmarks', 'Tickers', 'Playbooks', 'Automations'], value => { selected = value; renderList(); }));
     pinned.append(statusTabs); scroll.append(pinned, list); renderList();
+    if (collapsed) scroll.addEventListener('scroll', () => {
+      const visible = scroll.scrollTop >= header.offsetHeight;
+      collapsed.classList.toggle('is-visible', visible); collapsed.setAttribute('aria-hidden', String(!visible));
+    }, { passive: true });
     const refresh = () => { if (profile.owner) { profile = profileFor(source); refreshHeader(); } renderList(); ui.preview?.refresh(); };
     if (rootTab) roots.add(refresh); else push(page, refresh);
     return page;

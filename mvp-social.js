@@ -1,9 +1,9 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=4';
+import { createSocialPages } from './mvp-social-pages.js?v=5';
 import { thesisCards } from './mvp-thesis-data.js';
-import { createThesisCard } from './mvp-thesis-card.js?v=2';
-import { createThesisControls } from './mvp-thesis-controls.js';
-import { createThesisSearch } from './mvp-thesis-search.js';
+import { createThesisCard } from './mvp-thesis-card.js?v=3';
+import { createThesisControls } from './mvp-thesis-controls.js?v=2';
+import { createThesisSearch } from './mvp-thesis-search.js?v=2';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 
 const STORAGE_KEY = 'alva-social-feed-v1';

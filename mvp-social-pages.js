@@ -1,6 +1,6 @@
 import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
-import { createThesisProfiles } from './mvp-thesis-profile.js';
-import { createThesisDetail } from './mvp-thesis-detail.js';
+import { createThesisProfiles } from './mvp-thesis-profile.js?v=2';
+import { createThesisDetail } from './mvp-thesis-detail.js?v=2';
 
 // Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {
@@ -11,15 +11,29 @@ export function createSocialPages(ui) {
   const entries = new Map();
   const catalog = new Map(cards.filter(card => card.social).map(card => [card.social.key, card]));
   let active = null, nextId = 0;
+  const motions = new Map();
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function play(node, frames, easing) {
+    const motion = node.animate(frames, { duration: 260, easing });
+    motions.set(node, motion);
+    motion.finished.then(() => { if (motions.get(node) === motion) motions.delete(node); }).catch(() => {});
+    return motion;
+  }
 
   function transition(from, to, back = false) {
+    const positions = new Map();
+    for (const [node, animation] of motions) {
+      positions.set(node, { transform: getComputedStyle(node).transform, opacity: getComputedStyle(node).opacity });
+      animation.cancel();
+      if (node !== from && node !== to) { node.hidden = true; node.inert = true; }
+    }
+    motions.clear();
     if (to) { to.hidden = false; to.inert = false; to.style.zIndex = back ? '20' : '21'; }
     if (from) { from.inert = true; from.style.zIndex = back ? '21' : '20'; }
     if (reduced()) { if (from) from.hidden = true; return; }
-    if (to) to.animate([{ transform: `translateX(${back ? '-18%' : '100%'})`, opacity: back ? .75 : 1 }, { transform: 'translateX(0)', opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    if (to) play(to, [positions.get(to) || { transform: `translateX(${back ? '-18%' : '100%'})`, opacity: back ? .75 : 1 }, { transform: 'translateX(0)', opacity: 1 }], 'cubic-bezier(.2,.8,.2,1)');
     if (from) {
-      const motion = from.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${back ? '100%' : '-18%'})` }], { duration: 260, easing: back ? 'cubic-bezier(.4,0,1,1)' : 'cubic-bezier(.2,.8,.2,1)' });
+      const motion = play(from, [positions.get(from) || { transform: 'translateX(0)' }, { transform: `translateX(${back ? '100%' : '-18%'})` }], back ? 'cubic-bezier(.4,0,1,1)' : 'cubic-bezier(.2,.8,.2,1)');
       motion.finished.then(() => { if (active?.node !== from) from.hidden = true; }).catch(() => {});
     }
   }
@@ -37,6 +51,14 @@ export function createSocialPages(ui) {
 
   function push(node, refresh, destroy) {
     closeSheet(true);
+    // A new branch replaces browser forward history; dispose the same abandoned pages.
+    const ancestors = new Set();
+    for (let parent = active; parent; parent = parent.parent) ancestors.add(parent);
+    for (const [id, entry] of entries) {
+      if (ancestors.has(entry)) continue;
+      motions.get(entry.node)?.cancel(); motions.delete(entry.node);
+      entry.destroy?.(); entry.node.remove(); entries.delete(id);
+    }
     const entry = { id: ++nextId, parent: active, node, refresh, destroy, focus: document.activeElement };
     entries.set(entry.id, entry);
     host.append(node);

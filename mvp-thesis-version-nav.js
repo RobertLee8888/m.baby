@@ -1,3 +1,5 @@
+import { thesisMedia } from './mvp-thesis-media.js';
+
 let navigationSequence = 0;
 
 export function createVersionNavigation(ui, versions, initial, select) {
@@ -69,7 +71,9 @@ export function createVersionNavigation(ui, versions, initial, select) {
       version.card.tickers.forEach(ticker => {
         const tag = el('span', 'social-ticker'); tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym)); tickers.append(tag);
       });
-      body.append(date, el('span', 'thesis-update-summary', version.summary)); if (tickers.childElementCount) body.append(tickers);
+      body.append(date, el('span', 'thesis-update-summary', version.summary));
+      if (version.card.social.media?.length) body.append(thesisMedia(ui, version.card.social.media));
+      if (tickers.childElementCount) body.append(tickers);
       row.append(rail, body); row.addEventListener('click', () => { choose(version); closeSheet(); }); timeline.append(row);
     });
     const listeners = new AbortController();

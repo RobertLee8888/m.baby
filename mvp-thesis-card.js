@@ -1,5 +1,6 @@
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 import { createPreviewLayout, summaryPreview } from './mvp-thesis-preview.js';
+import { thesisMedia } from './mvp-thesis-media.js';
 
 export function createThesisCard(ui) {
   const { el, img, btn, icon, identity, stockLogo, stateFor, bind, update, openTicker, openSources, openDetail, ask } = ui;
@@ -66,6 +67,7 @@ export function createThesisCard(ui) {
       });
       wrap.append(charts);
     }
+    if (!compact && card.social.media?.length) wrap.append(thesisMedia(ui, card.social.media));
     if (card.tickers.length) {
       const tickers = el('div', 'thesis-tickers');
       card.tickers.forEach(ticker => {

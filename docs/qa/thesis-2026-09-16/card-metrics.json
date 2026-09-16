@@ -1,0 +1,47 @@
+[
+  {
+    "key": "P06",
+    "reference": 413,
+    "actual": 413
+  },
+  {
+    "key": "P01",
+    "reference": 633,
+    "actual": 633
+  },
+  {
+    "key": "S05",
+    "reference": 385,
+    "actual": 385
+  },
+  {
+    "key": "P04",
+    "reference": 248,
+    "actual": 226
+  },
+  {
+    "key": "S01",
+    "reference": 407,
+    "actual": 407
+  },
+  {
+    "key": "P07",
+    "reference": 369,
+    "actual": 369
+  },
+  {
+    "key": "P02",
+    "reference": 391,
+    "actual": 391
+  },
+  {
+    "key": "S02",
+    "reference": 407,
+    "actual": 407
+  },
+  {
+    "key": "S06",
+    "reference": 385,
+    "actual": 385
+  }
+]

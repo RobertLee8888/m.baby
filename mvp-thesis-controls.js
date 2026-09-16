@@ -42,7 +42,7 @@ export function createThesisControls(ui) {
     node.append(img('assets/thesis/empty.svg'), el('p', null, text)); return node;
   }
   function portrait(person) {
-    const wrap = el('span', 'thesis-portrait' + (person.crop ? ' is-cropped' : ''));
+    const wrap = el('span', 'thesis-portrait' + (person.profileCrop ? ' is-profile-cropped' : person.crop ? ' is-cropped' : ''));
     const picture = img(person.img); picture.alt = ''; wrap.append(picture); return wrap;
   }
   function nameLabel(person) {
