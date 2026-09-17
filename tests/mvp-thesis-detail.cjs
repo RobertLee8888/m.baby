@@ -50,9 +50,35 @@ fs.mkdirSync(output, { recursive: true });
       chart: [48, 220, 240, 135], tickerHeight: 28,
       tabs: [0, 447, 393, 32], footer: [0, 716, 393, 43],
     });
+    const rhythm = await detail().evaluate(node => {
+      const body = node.querySelector('.thesis-body').getBoundingClientRect();
+      const source = node.querySelector('.thesis-sources').getBoundingClientRect();
+      const chart = node.querySelector('.thesis-chart').getBoundingClientRect();
+      const view = node.querySelector('.thesis-view-updates');
+      const label = view.querySelector('.thesis-view-link > span').getBoundingClientRect();
+      const arrow = view.querySelector('.thesis-view-link .ic').getBoundingClientRect();
+      return {
+        sourceGaps: [source.top - body.bottom, chart.top - source.bottom],
+        sourceHeight: source.height,
+        sourceArrowLineHeight: getComputedStyle(node.querySelector('.thesis-source-arrow')).lineHeight,
+        viewHeight: view.getBoundingClientRect().height,
+        viewConnector: getComputedStyle(view, '::before').height,
+        viewArrowGap: arrow.left - label.right,
+        footerRule: getComputedStyle(node.querySelector('.social-detail-footer'), '::before').height,
+      };
+    });
+    assert.deepEqual(rhythm, {
+      sourceGaps: [8, 8], sourceHeight: 20, sourceArrowLineHeight: '20px',
+      viewHeight: 20, viewConnector: '3px', viewArrowGap: 4, footerRule: '0.5px',
+    });
+    assert.equal(await detail().locator('.social-page-top').evaluate(n => n.classList.contains('has-scroll-divider')), false);
+    await detail().locator('.social-page-scroll').evaluate(n => n.scrollTop = 2); await page.waitForTimeout(40);
+    assert.equal(await detail().locator('.social-page-top').evaluate(n => n.classList.contains('has-scroll-divider')), true);
     await shot('latest-393');
     await detail().locator('.social-page-scroll').evaluate(n => n.scrollTop = n.scrollHeight);
+    await page.waitForTimeout(40);
     assert.ok(Math.abs(await detail().evaluate(n => n.querySelector('.thesis-tabs').getBoundingClientRect().top - n.querySelector('.social-page-scroll').getBoundingClientRect().top)) < 1);
+    assert.equal(await detail().locator('.social-page-top').evaluate(n => n.classList.contains('has-scroll-divider')), false);
     assert.equal(await detail().locator('.thesis-signal').count(), 3);
     await detail().getByRole('tab', { name: 'Related theses' }).click();
     assert.equal(await detail().locator('.social-detail-panel .card').count(), 2);
@@ -65,6 +91,13 @@ fs.mkdirSync(output, { recursive: true });
     const more = updates().locator('[data-version="latest"] .thesis-show-more');
     await more.click();
     assert.equal(await updates().locator('[data-version="latest"] .thesis-body > p:visible').count(), 4);
+    await updates().locator('[data-version="P01-jul10"] .thesis-show-more').click();
+    assert.equal(await updates().locator('[data-version="latest"] .thesis-body > p:visible').count(), 1);
+    assert.equal(await updates().locator('[data-version="P01-jul10"] .thesis-body > p:visible').count(), 3);
+    assert.deepEqual(await updates().locator('.thesis-content.is-expanded').evaluateAll(nodes => nodes.map(node => node.closest('.thesis-update-row').dataset.version)), ['P01-jul10']);
+    await more.click();
+    assert.equal(await updates().locator('[data-version="P01-jul10"] .thesis-body > p:visible').count(), 1);
+    assert.deepEqual(await updates().locator('.thesis-content.is-expanded').evaluateAll(nodes => nodes.map(node => node.closest('.thesis-update-row').dataset.version)), ['latest']);
     await updates().locator('.social-page-scroll').evaluate(n => n.scrollTop = 650);
     await settle();
     assert.equal(await updates().locator('.thesis-floating-less').isVisible(), true);
@@ -81,7 +114,7 @@ fs.mkdirSync(output, { recursive: true });
     await media.evaluate(n => n.scrollLeft = 200);
     assert.ok(await media.evaluate(n => n.scrollLeft > 0));
     assert.equal(await updates().locator('[data-version="P01-jul8"] .thesis-show-more').isVisible(), true);
-    await page.goBack(); await settle();
+    await updates().locator('.thesis-update-row').first().click({ position: { x: 4, y: 4 } }); await settle();
     assert.equal(await detail().count(), 1);
     assert.equal(await detail().getByRole('tab', { name: 'Related theses' }).getAttribute('aria-selected'), 'true');
     await page.goForward(); await settle();

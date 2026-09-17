@@ -1,5 +1,5 @@
 import { thesisVersions } from './mvp-thesis-versions.js?v=3';
-import { createThesisTimeline } from './mvp-thesis-timeline.js?v=1';
+import { createThesisTimeline } from './mvp-thesis-timeline.js?v=2';
 
 const SIGNAL_ROLES = {
   SemiAnalysis: 'Semiconductor & AI research',
@@ -66,7 +66,7 @@ export function createThesisDetail(ui) {
     const nav = controls.tabs(['Signals', 'Related theses'], name => {
       const pinned = nav.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 1;
       activeTab = name; renderPanel();
-      if (pinned) scroll.scrollTop = section.offsetTop;
+      if (pinned) scroll.scrollTop += nav.getBoundingClientRect().top - scroll.getBoundingClientRect().top;
     });
     const bottom = el('footer', 'social-detail-footer');
 
@@ -132,7 +132,9 @@ export function createThesisDetail(ui) {
       intro.replaceChildren(timeline.row(latest, { withRail: items.length > 1, preview: true, status }));
       if (items.length > 1) {
         const all = btn('thesis-view-updates', 'View all ' + items.length + ' updates');
-        all.append(el('span', 'thesis-view-dot'), el('span', null, 'View all ' + items.length + ' updates'), icon('ui-arrow-right-l2.svg'));
+        const link = el('span', 'thesis-view-link');
+        link.append(el('span', null, 'View all ' + items.length + ' updates'), icon('ui-arrow-right-l2.svg'));
+        all.append(el('span', 'thesis-view-dot'), link);
         all.addEventListener('click', () => timeline.openUpdates(items));
         intro.append(all);
       }

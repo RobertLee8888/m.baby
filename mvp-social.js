@@ -1,10 +1,11 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=6';
+import { createSocialPages } from './mvp-social-pages.js?v=7';
 import { thesisCards } from './mvp-thesis-data.js';
 import { createThesisCard } from './mvp-thesis-card.js?v=3';
 import { createThesisControls } from './mvp-thesis-controls.js?v=2';
 import { createThesisSearch } from './mvp-thesis-search.js?v=2';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
+import { bindScrollChrome } from './mvp-scroll-chrome.js?v=1';
 
 const STORAGE_KEY = 'alva-social-feed-v1';
 
@@ -252,7 +253,13 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
   });
   const search = createThesisSearch({ el, img, btn, icon, stockLogo, openTicker, openProfile: pages.openProfile }, controls);
   document.getElementById('screenMarket').append(search.root);
-  document.getElementById('screenMe').append(pages.mountOwner());
+  const owner = pages.mountOwner();
+  document.getElementById('screenMe').append(owner);
+  bindScrollChrome(document.querySelector('#screenFeed .topbar'), document.getElementById('feed'), {
+    attached: document.querySelector('#screenFeed .feed-filters'),
+  });
+  bindScrollChrome(search.root.querySelector('.thesis-root-title'), search.root.querySelector('.thesis-root-scroll'));
+  bindScrollChrome(owner.querySelector('.thesis-me-top'), owner.querySelector('.thesis-root-scroll'));
   const create = btn('thesis-create', 'Create thesis');
   create.append(icon('thesis/create.svg'));
   create.addEventListener('click', onCreate);

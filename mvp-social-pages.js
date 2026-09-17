@@ -1,6 +1,7 @@
 import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
 import { createThesisProfiles } from './mvp-thesis-profile.js?v=3';
-import { createThesisDetail } from './mvp-thesis-detail.js?v=3';
+import { createThesisDetail } from './mvp-thesis-detail.js?v=4';
+import { bindScrollChrome } from './mvp-scroll-chrome.js?v=1';
 
 // Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {
@@ -9,6 +10,7 @@ export function createSocialPages(ui) {
   const host = document.getElementById('screens');
   const session = String(Date.now());
   const entries = new Map();
+  const chromeCleanups = new WeakMap();
   const catalog = new Map(cards.filter(card => card.social).map(card => [card.social.key, card]));
   let active = null, nextId = 0;
   const motions = new Map();
@@ -59,7 +61,9 @@ export function createSocialPages(ui) {
       motions.get(entry.node)?.cancel(); motions.delete(entry.node);
       entry.destroy?.(); entry.node.remove(); entries.delete(id);
     }
-    const entry = { id: ++nextId, parent: active, node, refresh, destroy, focus: document.activeElement };
+    const teardown = destroy;
+    const entry = { id: ++nextId, parent: active, node, refresh,
+      destroy() { chromeCleanups.get(node)?.(); teardown?.(); }, focus: document.activeElement };
     entries.set(entry.id, entry);
     host.append(node);
     history.pushState({ ...history.state, mvpSocial: { session, id: entry.id } }, '');
@@ -93,6 +97,7 @@ export function createSocialPages(ui) {
     top.append(back, title);
     const scroll = el('div', 'social-page-scroll');
     page.append(top, scroll);
+    chromeCleanups.set(page, bindScrollChrome(top, scroll));
     return { page, top, scroll };
   }
 

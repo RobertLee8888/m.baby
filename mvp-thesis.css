@@ -6,7 +6,7 @@
 [data-feed-variant="social"] #screenMe > :not(.thesis-root) { display: none; }
 [data-feed-variant="social"] #cards { padding-bottom: 64px; }
 [data-feed-variant="social"] .social-role { color: var(--n5); }
-[data-feed-variant="social"] #screenFeed .topbar { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
+[data-feed-variant="social"] #screenFeed .topbar { box-shadow: none; }
 [data-feed-variant="social"] #screenFeed .topbar h1 { margin: 12px 0; }
 .thesis-content { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-xs); padding: var(--space-s) var(--gutter) var(--space-xxxs); min-width: 0; letter-spacing: 0; color: var(--n9); }
 .thesis-content > * { min-width: 0; }
@@ -71,14 +71,17 @@
 .thesis-update-row.no-rail .thesis-update-body { padding-bottom: 20px; }
 .thesis-update-body .thesis-full { gap: 8px; padding: 0; }
 .thesis-update-body .thesis-body p + p, .thesis-detail .thesis-body p + p { margin-top: 0; }
-.thesis-detail .thesis-sources { margin-top: 0; }
-.thesis-detail .thesis-source-arrow { line-height: 12px; }
+.thesis-detail .thesis-sources { display: flex; align-items: center; height: 20px; margin-top: 0; }
+.thesis-detail .thesis-source-link { display: inline-flex; align-items: center; height: 20px; }
+.thesis-detail .thesis-source-arrow { display: inline-flex; align-items: center; height: 20px; line-height: 20px; }
 .thesis-update-body .thesis-charts, .thesis-update-body .thesis-tickers { margin-top: 0; }
 .thesis-update-body .thesis-charts { margin-left: 0; margin-right: -16px; padding-left: 0; padding-right: 16px; }
-.thesis-view-updates { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 36px; padding: 0 16px 12px 12px; color: var(--m1); text-align: left; font-size: 12px; line-height: 20px; }
-.thesis-view-dot { flex: 0 0 14px; margin-left: 5px; margin-right: 5px; border-color: var(--br05); background: var(--n2); }
+.thesis-view-updates { position: relative; display: flex; align-items: flex-start; gap: 12px; width: 100%; height: 20px; padding: 0 16px 0 12px; color: var(--m1); text-align: left; font-size: 12px; line-height: 20px; }
+.thesis-view-updates::before { position: absolute; top: 0; left: 23.75px; width: var(--hair); height: 3px; background: var(--l3); content: ''; }
+.thesis-view-dot { flex: 0 0 14px; margin: 3px 5px 0; border-color: var(--br05); background: var(--n2); }
+.thesis-view-link { display: flex; align-items: center; gap: var(--space-xxs); height: 20px; }
 .thesis-view-updates .ic { width: 12px; height: 12px; }
-.thesis-detail .social-detail-tabs { min-height: 100%; border: 0; padding: 0; }
+.thesis-detail .social-detail-tabs { min-height: 100%; border: 0; padding: var(--space-m) 0 0; }
 .thesis-detail .social-detail-tabs > .thesis-tabs { position: sticky; top: 0; z-index: 2; gap: var(--space-m); height: 32px; padding-top: var(--space-xxs); }
 .thesis-detail .social-detail-footer { padding: 0 16px; height: 43px; }
 .thesis-detail .social-detail-footer .thesis-actions { width: 100%; height: 43px; margin: 0; gap: 16px; }

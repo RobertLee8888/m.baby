@@ -66,11 +66,26 @@ export function createThesisTimeline(ui) {
     versions.forEach((version, index) => {
       const item = row(version, { status: index ? '' : 'Latest', expanded: false,
         onExpand(node, button, value, paint) {
+          if (value && active?.node !== node) active?.paint(false);
           if (value) { active = { node, button, paint }; }
           else if (active?.node === node) active = null;
           syncFloating();
         },
       });
+      if (index === 0) {
+        item.classList.add('is-current-version');
+        item.tabIndex = 0;
+        item.setAttribute('role', 'link');
+        item.setAttribute('aria-label', 'Back to current thesis');
+        const back = event => {
+          if (event.type === 'click' && event.target.closest('button, a')) return;
+          if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
+          event.preventDefault();
+          history.back();
+        };
+        item.addEventListener('click', back);
+        item.addEventListener('keydown', back);
+      }
       timeline.append(item);
     });
     floating.addEventListener('click', () => {

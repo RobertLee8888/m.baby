@@ -59,6 +59,21 @@
 .social-avatar-stack img + img { margin-left: -8px; }
 
 /* Full pages share device insets and keep the original bottom navigation visible. */
+.social-page-top.scroll-chrome-top,
+.thesis-root-title.scroll-chrome-top,
+.thesis-me-top.scroll-chrome-top { position: relative; z-index: 3; }
+.scroll-chrome-top::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--hair);
+  background: var(--l12);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+}
+.scroll-chrome-top.has-scroll-divider::after { opacity: 1; }
 .social-page { position: absolute; inset: var(--status-h) 0 calc(var(--tab-h) + var(--home-h)); display: flex; flex-direction: column; background: var(--bg-container); overflow: hidden; }
 .social-page[hidden] { display: none; }
 .social-page:focus { outline: none; }
@@ -110,7 +125,8 @@
 .social-signal-copy { font-size: 14px; line-height: 22px; }
 .social-inline-person { display: inline-flex; align-items: center; gap: var(--space-xxs); padding: var(--space-xxxs) 6px; margin-top: -2px; border-radius: var(--radius-btn-s); background: var(--br05); font-size: 14px; line-height: 22px; color: var(--n9); vertical-align: baseline; }
 .social-inline-person img { width: 16px; height: 16px; border-radius: 50%; }
-.social-detail-footer { display: flex; gap: var(--space-xs); flex: none; padding: var(--space-s) var(--gutter); box-shadow: 0 calc(-1 * var(--hair)) var(--l12); background: var(--bg-container); }
+.social-detail-footer { position: relative; display: flex; gap: var(--space-xs); flex: none; padding: var(--space-s) var(--gutter); background: var(--bg-container); }
+.social-detail-footer::before { position: absolute; top: 0; right: 0; left: 0; height: var(--hair); background: var(--l12); content: ''; pointer-events: none; }
 .social-detail-footer .social-cta:first-child { flex: 1; }
 .social-detail-footer .social-cta:nth-child(n+3) { display: none; }
 .social-empty { padding: 32px var(--gutter); text-align: center; font-size: 14px; line-height: 22px; color: var(--n5); }
