@@ -1,5 +1,5 @@
 import { PROFILES } from './mvp-social-detail-data.js';
-import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
+import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js?v=2';
 import { readStored, writeStored } from './mvp-thesis-controls.js?v=2';
 
 export function createThesisProfiles(ui, controls) {
@@ -57,10 +57,20 @@ export function createThesisProfiles(ui, controls) {
   function privateCards() {
     const section = el('div', 'thesis-private');
     const account = el('div', 'thesis-account');
-    const left = el('div'); const title = el('span', 'thesis-account-label');
-    title.append('Account assets', img(assets.profile.imgNameAlpaca), img('assets/mvp-broker-binance.svg'));
+    const left = el('div', 'thesis-account-summary'); const title = el('span', 'thesis-account-label');
+    const brokers = el('span', 'thesis-account-brokers');
+    const binance = el('span', 'thesis-account-broker is-binance');
+    binance.append(img(assets.profile.imgBinanceMark));
+    brokers.append(img(assets.profile.imgNameAlpaca), binance);
+    title.append('Account assets', brokers);
     left.append(title, el('strong', null, '$104,030.41'));
-    const right = el('div'); right.append(el('span', null, "Today's P&L"), el('strong', 'is-up', '+$1,234.36')); account.append(left, right);
+    const allocation = el('div', 'thesis-allocation');
+    const allocationBar = el('span', 'thesis-allocation-bar');
+    allocationBar.setAttribute('role', 'img');
+    allocationBar.setAttribute('aria-label', 'BTC 45%, ETH 25%, two other assets 30%');
+    allocationBar.append(el('i'), el('i'), el('i'));
+    allocation.append(el('span', null, 'Allocation'), allocationBar, el('span', 'thesis-allocation-legend', 'BTC 45% · ETH 25% · +2'));
+    account.append(left, allocation);
     const usage = el('div', 'thesis-usage'); const head = el('div', 'thesis-usage-head'); head.append(el('span', null, 'Usage'), el('strong', null, '12,000'));
     const amounts = el('div', 'thesis-usage-amounts');
     [['Daily', '1,000'], ['Monthly', '3,000'], ['Pack', '12,000']].forEach(([label, value]) => { const pair = el('span'); pair.append(label + ' ', el('b', null, value)); amounts.append(pair); });

@@ -140,7 +140,7 @@
 .social-profile-info { min-width: 0; flex: 1; }
 .social-profile-name { display: flex; align-items: center; gap: var(--space-xs); }
 .social-profile-name h2 { font-size: 18px; font-weight: 400; line-height: 28px; }
-.social-pro { background: var(--m1); color: var(--white); padding: 0 var(--space-xs); border-radius: var(--radius-ct-l); font-size: 10px; line-height: 18px; }
+.social-pro { background: var(--m1); color: var(--white); padding: 0 var(--space-xs); border: var(--hair) solid var(--l12); border-radius: var(--radius-ct-max); font-size: 11px; line-height: 18px; }
 .social-profile-role, .social-profile-handle, .social-profile-bio, .social-profile-channels { font-size: 12px; line-height: 20px; }
 .social-profile-role { color: var(--n7); }
 .social-profile-handle { color: var(--n5); }

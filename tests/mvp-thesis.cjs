@@ -73,6 +73,22 @@ fs.mkdirSync(output, { recursive: true });
     await shot('me');
     const me = page.locator('.thesis-me');
     const meScroll = me.locator('.thesis-root-scroll');
+    assert.equal(await me.getByText("Today's P&L", { exact: true }).count(), 0);
+    assert.equal(await me.getByText('Allocation', { exact: true }).count(), 1);
+    assert.equal(await me.locator('.thesis-allocation-bar > i').count(), 3);
+    const profileGeometry = await me.evaluate(node => {
+      const header = node.querySelector('.thesis-profile-header').getBoundingClientRect();
+      const privateSection = node.querySelector('.thesis-private').getBoundingClientRect();
+      const account = node.querySelector('.thesis-account').getBoundingClientRect();
+      const usage = node.querySelector('.thesis-usage').getBoundingClientRect();
+      const tabs = node.querySelector('.thesis-profile-pinned > .thesis-tabs').getBoundingClientRect();
+      const allocation = node.querySelector('.thesis-allocation-bar').getBoundingClientRect();
+      const segments = [...node.querySelectorAll('.thesis-allocation-bar > i')].map(item => item.getBoundingClientRect().width);
+      return { header: header.height, privateSection: privateSection.height, account: account.height, gap: usage.top - account.bottom,
+        usage: usage.height, tabsTop: tabs.top - header.top, allocation: allocation.width, segments };
+    });
+    assert.deepEqual({ ...profileGeometry, segments: undefined }, { header: 196, privateSection: 182, account: 74, gap: 8, usage: 68, tabsTop: 378, allocation: 160, segments: undefined });
+    assert.ok(profileGeometry.segments[0] > profileGeometry.segments[2] && profileGeometry.segments[2] > profileGeometry.segments[1]);
     await meScroll.evaluate(n => n.scrollTop = 20); await page.waitForTimeout(40);
     assert.equal(await me.locator('.thesis-me-top').evaluate(n => n.classList.contains('has-scroll-divider')), true);
     await meScroll.evaluate(n => n.scrollTop = n.scrollHeight); await page.waitForTimeout(40);

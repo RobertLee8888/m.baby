@@ -1,5 +1,5 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=7';
+import { createSocialPages } from './mvp-social-pages.js?v=8';
 import { thesisCards } from './mvp-thesis-data.js';
 import { createThesisCard } from './mvp-thesis-card.js?v=3';
 import { createThesisControls } from './mvp-thesis-controls.js?v=2';

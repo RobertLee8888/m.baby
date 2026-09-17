@@ -45,6 +45,7 @@ export const THESIS_ASSETS = {
   },
   "profile": {
     "imgNameAlpaca": "assets/thesis/profile-imgNameAlpaca.svg",
+    "imgBinanceMark": "assets/thesis/profile-imgBinanceMark.svg",
     "imgSettingsL": "assets/thesis/profile-imgSettingsL.svg",
     "imgShareL": "assets/thesis/profile-imgShareL.svg",
     "imgEditL1": "assets/thesis/profile-imgEditL1.svg"
