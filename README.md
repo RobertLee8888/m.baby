@@ -20,9 +20,10 @@ states. Me includes account/usage summaries, Theses, Bookmarks, Tickers,
 Playbooks and Automations. Profile, Sources, ticker and Alva navigation retain
 their context on return. All data remains a local demonstration.
 
-The September 16 detail update adds the author topbar, version capsules, an
-All updates timeline sheet and compact persistent actions. Existing card content
-is retained. See [detail acceptance notes](docs/thesis-detail-2026-09-16.md).
+The September 17 detail update adds the author topbar and update timeline, a
+pushed All updates page, expandable history, owner update/archive/privacy
+states, sticky Signals tabs and compact persistent actions. Existing card
+content is retained. See [detail acceptance notes](docs/thesis-detail-2026-09-16.md).
 
 Current references, implementation boundaries and browser checks are recorded in
 [Thesis acceptance notes](docs/thesis-2026-09-15.md). The older Social Feed

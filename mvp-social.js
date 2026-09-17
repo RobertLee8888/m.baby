@@ -1,5 +1,5 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=5';
+import { createSocialPages } from './mvp-social-pages.js?v=6';
 import { thesisCards } from './mvp-thesis-data.js';
 import { createThesisCard } from './mvp-thesis-card.js?v=3';
 import { createThesisControls } from './mvp-thesis-controls.js?v=2';
@@ -24,6 +24,8 @@ function readState() {
     const item = saved?.[key];
     return [key, {
       liked: item?.liked === true, bookmarked: typeof item?.bookmarked === 'boolean' ? item.bookmarked : ['S07', 'P07'].includes(key), tracked: item?.tracked === true,
+      archived: item?.archived === true, private: item?.private === true,
+      updates: Array.isArray(item?.updates) ? item.updates.filter(record => typeof record?.text === 'string' && typeof record?.date === 'string' && typeof record?.id === 'string').slice(0, 20) : [],
       replies: Array.isArray(item?.replies) ? item.replies.filter(text => typeof text === 'string' && text.trim()).slice(-100).map(text => text.slice(0, 2000)) : [],
     }];
   }));
@@ -68,14 +70,18 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
     catch { /* The current session remains usable without persistent storage. */ }
   }
 
+  function stateKey(card) {
+    return (card.social.owner ? 'owner:' : '') + card.social.key;
+  }
+
   function stateFor(card) {
-    const key = card.social.key;
-    if (!states.has(key)) states.set(key, { liked: false, bookmarked: false, tracked: false, replies: [] });
+    const key = stateKey(card);
+    if (!states.has(key)) states.set(key, { liked: false, bookmarked: false, tracked: false, archived: false, private: false, updates: [], replies: [] });
     return states.get(key);
   }
 
   function bind(card, node, paint) {
-    const key = card.social.key;
+    const key = stateKey(card);
     if (!bindings.has(key)) bindings.set(key, new Set());
     bindings.get(key).add({ node, paint });
     paint();
@@ -83,9 +89,9 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
 
   function update(card) {
     save();
-    for (const binding of bindings.get(card.social.key) || []) {
+    for (const binding of bindings.get(stateKey(card)) || []) {
       if (binding.node.isConnected) binding.paint();
-      else bindings.get(card.social.key).delete(binding);
+      else bindings.get(stateKey(card)).delete(binding);
     }
   }
 
@@ -130,6 +136,7 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
     const url = new URL('mvp.html', location.href);
     url.searchParams.set('feed', 'social');
     url.searchParams.set('post', card.social.key);
+    if (card.social.owner) url.searchParams.set('owner', '1');
     if (card.social.version) url.searchParams.set('version', card.social.version);
     await shareLink(card.sources[0].name + ' · Alva', url.href, 'Share post');
   }
@@ -233,7 +240,7 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
 
   function openLinkedPost() {
     const params = new URLSearchParams(location.search);
-    pages.openLinked(params.get('post'), params.get('profile'), params.get('version'));
+    pages.openLinked(params.get('post'), params.get('profile'), params.get('version'), params.get('owner') === '1');
   }
 
   const controls = createThesisControls({ el, img, btn, icon, stockLogo, tickerDirectory, followed, onFollowChange });
@@ -241,7 +248,7 @@ export function createSocialFeed({ el, img, btn, icon, stockLogo, openSources, o
     openDetail: card => pages.openDetail(card), ask: openConversation });
   const pages = createSocialPages({ el, img, btn, icon, cards, tickerDirectory, followed, onFollowChange, thesis: true, controls,
     content, analysis, actions, sourceLink, identity, stockLogo, openSources, footer: thesis.footer,
-    stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose, preview: thesis.preview,
+    stateFor, bind, update, sharePost, shareLink, openTicker, closeSheet, openSheet, sheetClose, toast, preview: thesis.preview,
   });
   const search = createThesisSearch({ el, img, btn, icon, stockLogo, openTicker, openProfile: pages.openProfile }, controls);
   document.getElementById('screenMarket').append(search.root);

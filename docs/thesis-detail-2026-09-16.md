@@ -1,58 +1,49 @@
-# Thesis Detail, September 16
+# Thesis Detail, September 17
 
-References: [detail 6908:68814](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7?node-id=6908-68814),
-[All updates 6720:91916](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7?node-id=6720-91916).
+Reference: [detail state set 5628:93373](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7?node-id=5628-93373).
 
 ## Implementation
 
-- The author identity and shared Follow control occupy the 56px topbar. The
-  content does not repeat that identity or the list's lifecycle badge.
-- Version capsules are 28px tall, with the independent 28px down-arrow, right
-  fade and chronological connector. The latest version carries a blue badge.
-  View latest appears only after the latest capsule scrolls completely out of
-  view. It selects the latest version and resets horizontal scroll.
-- The All updates sheet uses the shared modal, dialog surface, 12px top corners,
-  56px header, 24px timeline spacing, 12px rail and the original 8px SVG nodes.
-  The sheet begins 47px below the product viewport's safe top. Close, scrim,
-  Escape, drag, browser back and forward preserve the detail context.
-- Choosing a version replaces its body, source links, charts, tickers, Signals
-  and Related theses together. Bookmark identity remains the underlying thesis;
-  shared links and Ask Alva use the selected version.
-- Signals use the supplied gray source boxes, role subtitles, inline source
-  links and the original Alva identity SVG. Each evidence row has a bottom rule.
-- The fixed 48px footer contains Ask Alva, bookmark count and Share. The app tab
-  bar remains hidden in detail. Native mobile has no simulated system bars.
+- The 56px topbar keeps the author identity visible. Visitor pages reuse Follow;
+  owner pages use the supplied blue Update control and more menu.
+- The latest update uses the Figma 24px rail, 14px node, date/status row, source
+  links, original media and ticker components. A thesis without history omits
+  the rail and the View all action.
+- View all opens a secondary page through the existing navigation stack. It has
+  no detail footer. Updates expand in place; Show less remains available as a
+  floating 28px action when the inline control scrolls away.
+- Signals and Related theses share the sticky 32px tab component. Signals use
+  the supplied source boxes and Alva identity. Related theses uses the shared
+  cards or the supplied empty state. A newly created owner thesis shows the
+  generating state rather than an invented signal.
+- Owner archive/private states and authored demo updates persist locally under a
+  separate owner key, so they never mutate a same-key public Feed item. Shared
+  owner links preserve the owner identity. Old version links open the latest
+  update and show the supplied redirect toast.
+- The fixed 43px footer contains Ask Alva, bookmark count and Share. Native
+  mobile has no simulated status bar or home indicator.
 
-`mvp-thesis-detail.js` owns the detail layout; `mvp-thesis-version-nav.js` owns
-the version control and sheet; `mvp-thesis-versions.js` owns supplied historical
-records. Cards, identities, Follow, bookmark state, Sources, tickers and modals
-reuse the existing components. Page reset disposes navigation observers and
-listeners.
+`mvp-thesis-detail.js` owns detail state and actions;
+`mvp-thesis-timeline.js` owns the shared timeline and All updates page; and
+`mvp-thesis-versions.js` owns supplied historical records. Cards, media,
+identities, Follow, bookmark, Sources, tickers, page transitions and sheets
+reuse existing components.
 
 ## Content Boundaries
 
-The new layout is applied to each existing thesis, retaining its author, dates,
-body and original chart bitmaps. The reference's Traderstewie label, Gavin avatar
-and AMD label on a GOOGL chart are not substituted into unrelated feed entries.
-
-Gavin's latest remains Jul 13. Its five historical summaries and dates come from
-the supplied timeline. Jul 10's three full paragraphs come from 5689:96154;
-its Signals appear in the existing historical reference 6605:30792. Other
-historical records display the text and source supplied for that version; they
-do not inherit current charts, Signals or related cards where none were supplied.
-Other theses currently have one supplied version. This is local demo data.
+The layout is applied to existing theses without replacing their author, copy,
+dates, chart bitmaps or tickers with the reference frame's sample content.
+Gavin's latest remains Jul 13. The five historical records use the supplied
+timeline dates and text. Other theses start with one supplied version; owner
+updates are explicit local demo actions.
 
 ## Validation
 
-- `tests/mvp-thesis-detail.cjs`: version content ownership, return-to-latest
-  condition, six dismiss/navigation paths, shared bookmark state, version
-  links, Sources/Alva access and 320/360/393/430px layouts, Chromium and WebKit.
-- `tests/mvp-thesis.cjs`: all nine cards, search, profiles, Me, bookmarks,
-  related navigation and responsive previews.
-- `tests/mvp-social-device.cjs`: six device presets, safe areas, native system
-  bar omission and twenty repeated detail visits.
-- Figma screenshot comparison used the same sample text temporarily in a QA
-  browser to isolate layout from content differences. At 393px native width,
-  the body starts at y100, source y370, chart y402, tickers y549 and tabs y589,
-  matching the reference after excluding its status bar. Original chart data
-  and zero letter spacing remain consistent with the existing demo.
+- `tests/mvp-thesis-detail.cjs`: visitor and owner states, pushed history,
+  expansion/floating collapse, browser back/forward, sticky tabs, media
+  clipping, shared actions, empty/loading states, old links, owner persistence
+  and 320/360/393/430px layouts in Chromium and WebKit.
+- `tests/mvp-thesis.cjs`: nine Feed cards, Sources/Alva access, profiles,
+  bookmarks, search and responsive previews.
+- Screenshot review excludes Figma's 59px status bar and 34px home indicator,
+  since those are intentionally provided by the real mobile browser.

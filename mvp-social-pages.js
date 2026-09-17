@@ -1,6 +1,6 @@
 import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
-import { createThesisProfiles } from './mvp-thesis-profile.js?v=2';
-import { createThesisDetail } from './mvp-thesis-detail.js?v=2';
+import { createThesisProfiles } from './mvp-thesis-profile.js?v=3';
+import { createThesisDetail } from './mvp-thesis-detail.js?v=3';
 
 // Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {
@@ -233,7 +233,7 @@ export function createSocialPages(ui) {
     for (const v of EARLIER_VERSIONS) catalog.set(v.key, variant(primary, { blocks: [] }, { ...v, statements: [v.statement], hideSource: true }));
   }
 
-  function openLinked(post, profileId, version) {
+  function openLinked(post, profileId, version, owner = false) {
     if (profileId) {
       const identities = [];
       function collect(source) { identities.push(source); if (source.reference) collect(source.reference); }
@@ -241,7 +241,14 @@ export function createSocialPages(ui) {
       const profile = Object.values(PROFILES).find(p => p.id === profileId)
         || [...identities, ...SIGNALS, ...(ui.controls?.PEOPLE || [])].find(source => source.name === profileId);
       if (profile) openProfile(profile);
-    } else if (catalog.has(post)) openDetail(catalog.get(post), version);
+    } else if (catalog.has(post)) {
+      const card = catalog.get(post);
+      const authored = owner && PROFILES.owner.postKeys.includes(post)
+        ? { ...card, sources: [{ ...card.sources[0], ...PROFILES.owner, role: PROFILES.owner.handle,
+          handle: '', reference: undefined }], social: { ...card.social, owner: true, generationMode: 'auto' } }
+        : card;
+      openDetail(authored, version);
+    }
   }
   return { openDetail, openProfile, openOwner, openLinked, leave, reset,
     mountOwner: () => profiles?.mountOwner(), refreshOwner: () => profiles?.refresh() };

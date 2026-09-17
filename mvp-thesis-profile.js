@@ -145,7 +145,10 @@ export function createThesisProfiles(ui, controls) {
       if (selected === 'Theses') items = items.filter(card => (stateFor(card).archived ? 'Archived' : 'Active') === status);
       list.replaceChildren(...items.map(card => {
         const row = el('article', 'card social-card'); row.dataset.cardId = card.id;
-        const display = selected === 'Bookmarks' && card.social.key === 'P01' ? { ...card, social: { ...card.social, generationMode: 'auto' } } : card;
+        const display = { ...card, social: { ...card.social,
+          ...(selected === 'Bookmarks' && card.social.key === 'P01' ? { generationMode: 'auto' } : {}),
+          ...(stateFor(card).archived ? { thesisType: 'Archived' } : {}),
+        } };
         row.append(content(display, { compact: selected === 'Bookmarks' })); return row;
       }));
       if (!items.length) list.append(controls.empty(selected === 'Bookmarks' ? 'No bookmarks yet' : status === 'Archived' ? 'No archived theses' : 'No theses yet'));
