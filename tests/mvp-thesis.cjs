@@ -17,6 +17,18 @@ fs.mkdirSync(output, { recursive: true });
   const tab = name => page.locator('#tabBar [data-tab="' + name + '"]');
   async function settle() { await page.waitForTimeout(320); }
   async function shot(name) { await page.screenshot({ path: output + '/' + name + '.png' }); }
+  async function assertBottomDividers(nodes, label) {
+    const styles = await nodes.evaluateAll(items => items.map(n => {
+      const probe = document.createElement('div');
+      probe.style.boxShadow = 'inset 0 calc(-1 * var(--hair)) 0 var(--l12)';
+      n.append(probe);
+      const expected = getComputedStyle(probe).boxShadow;
+      probe.remove();
+      return { actual: getComputedStyle(n).boxShadow, expected };
+    }));
+    assert.ok(styles.length, label + ' must have cards');
+    styles.forEach((style, index) => assert.equal(style.actual, style.expected, label + ' card ' + index));
+  }
   try {
     await page.goto(base); await page.waitForTimeout(1900); await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.title(), 'Thesis · Alva prototypes');
@@ -50,7 +62,14 @@ fs.mkdirSync(output, { recursive: true });
         body: [body.fontSize, body.lineHeight], type: type.height, actions: actions.height };
     });
     assert.deepEqual(v5Geometry, { padding: '12px 16px 2px', gap: '8px', avatar: [32, 32], body: ['14px', '22px'], type: 22, actions: 36 });
-    assert.ok(await page.locator('#cards .card').evaluateAll(nodes => nodes.every(n => getComputedStyle(n).boxShadow !== 'none')));
+    for (const mode of ['light', 'dark']) {
+      await page.emulateMedia({ colorScheme: mode });
+      await assertBottomDividers(page.locator('#cards > .card'), mode + ' feed');
+      await page.locator('#feedTrack').evaluate(n => n.classList.add('pulled'));
+      await assertBottomDividers(page.locator('#cards > .card'), mode + ' pulled feed');
+      await page.locator('#feedTrack').evaluate(n => n.classList.remove('pulled'));
+    }
+    await page.emulateMedia({ colorScheme: 'light' });
     assert.equal(await page.locator('#screenFeed .topbar').evaluate(n => n.classList.contains('has-scroll-divider')), false);
     await page.locator('#feed').evaluate(n => n.scrollTop = 20); await page.waitForTimeout(40);
     assert.equal(await page.locator('#screenFeed .topbar').evaluate(n => n.classList.contains('has-scroll-divider')), true);
