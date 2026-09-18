@@ -24,7 +24,7 @@
 .thesis-charts { display: flex; gap: var(--space-xs); overflow: auto hidden; margin: var(--space-xxs) calc(-1 * var(--gutter)) 0; padding-inline: var(--gutter); overscroll-behavior-x: contain; scrollbar-width: none; }
 .thesis-chart { position: relative; flex: 0 0 240px; width: 240px; height: 135px; border-radius: var(--radius-ct-l); overflow: hidden; }
 .thesis-chart::after { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 var(--hair) var(--l2); border-radius: inherit; pointer-events: none; }
-.thesis-chart img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.thesis-chart img { display: block; width: 100%; height: 100%; object-fit: contain; filter: var(--media-filter); }
 .thesis-chart img.is-cover { object-fit: cover; }
 .thesis-tickers { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xxs); }
 .thesis-actions { display: flex; align-items: center; justify-content: space-between; min-height: 36px; margin-top: var(--space-xxs); }
