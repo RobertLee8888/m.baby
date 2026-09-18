@@ -44,8 +44,8 @@ fs.mkdirSync(output, { recursive: true });
     await search.fill('Microsoft'); await page.waitForTimeout(160);
     await page.getByRole('tab', { name: 'Tickers', exact: true }).click();
     assert.equal(await page.locator('.thesis-search-results h2').count(), 0);
-    const geometry = await page.locator('.thesis-search-results').evaluate(node => {
-      const tabs = node.previousElementSibling.getBoundingClientRect();
+    const geometry = await page.locator('.thesis-tab-panel[aria-hidden="false"] .thesis-search-results').evaluate(node => {
+      const tabs = node.closest('.thesis-search-panel').querySelector(':scope > .thesis-tabs').getBoundingClientRect();
       const filter = node.querySelector('.thesis-pills .thesis-tab').getBoundingClientRect();
       const row = node.querySelector('.thesis-stock-row').getBoundingClientRect();
       return { above: filter.top - tabs.bottom, below: row.top - filter.bottom };

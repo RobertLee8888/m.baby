@@ -84,7 +84,7 @@
 .social-page-back, .social-page-tool { display: grid; place-items: center; width: 40px; height: 56px; flex: 0 0 40px; color: var(--n9); }
 .social-page-back .ic { width: 20px; height: 20px; }
 .social-page-tool .ic { width: 16px; height: 16px; }
-.social-page-scroll { position: relative; flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; overflow-anchor: none; }
+.social-page-scroll { position: relative; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; overflow-anchor: none; }
 .social-page-scroll::-webkit-scrollbar { display: none; }
 .social-detail-intro { display: flex; flex-direction: column; gap: var(--space-s); padding: var(--space-m) var(--gutter) var(--space-s); }
 .social-detail-title { padding-top: var(--space-xxxs); font-size: 18px; font-weight: 500; line-height: 28px; overflow-wrap: anywhere; }

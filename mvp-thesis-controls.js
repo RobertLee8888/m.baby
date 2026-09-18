@@ -1,6 +1,8 @@
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 import { PEOPLE, SEARCH_TICKERS } from './mvp-thesis-data.js';
 
+let pagerSequence = 0;
+
 export function readStored(key, fallback) {
   try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
 }
@@ -36,6 +38,89 @@ export function createThesisControls(ui) {
       nav.append(tab);
     }
     return nav;
+  }
+  function pager(names, render, { selected = names[0], panelClass = '', onSelect } = {}) {
+    const id = 'thesis-pager-' + ++pagerSequence;
+    const viewport = el('div', 'thesis-tab-viewport');
+    const track = el('div', 'thesis-tab-track');
+    const panes = new Map();
+    let current = names.includes(selected) ? selected : names[0];
+
+    function paint(name) {
+      const pane = panes.get(name);
+      const children = render(name, pane);
+      if (children === undefined) return;
+      pane.replaceChildren(...(Array.isArray(children) ? children : [children]));
+    }
+    names.forEach((name, index) => {
+      const pane = el('section', 'thesis-tab-panel' + (panelClass ? ' ' + panelClass : ''));
+      pane.id = id + '-panel-' + index;
+      pane.setAttribute('role', 'tabpanel');
+      pane.setAttribute('aria-label', name);
+      panes.set(name, pane); track.append(pane);
+    });
+    const nav = tabs(names, activate, { selected: current });
+    nav.id = id + '-tabs';
+    [...nav.children].forEach((tab, index) => {
+      tab.id = id + '-tab-' + index;
+      tab.setAttribute('aria-controls', id + '-panel-' + index);
+      panes.get(names[index]).setAttribute('aria-labelledby', tab.id);
+    });
+    function sync() {
+      const index = names.indexOf(current);
+      track.style.setProperty('--thesis-tab-x', (-100 * index) + '%');
+      [...nav.children].forEach((tab, tabIndex) => {
+        const active = tabIndex === index;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+      });
+      panes.forEach((pane, name) => {
+        const active = name === current;
+        pane.inert = !active;
+        pane.setAttribute('aria-hidden', String(!active));
+      });
+    }
+    function activate(name) {
+      if (!panes.has(name) || name === current) return;
+      current = name; sync(); onSelect?.(name);
+    }
+    panes.forEach((_, name) => paint(name));
+    sync(); viewport.append(track);
+    return {
+      nav, viewport, track, panes,
+      get selected() { return current; },
+      select(name) {
+        activate(name);
+        nav.querySelector('#' + id + '-tab-' + names.indexOf(name))?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      },
+      refresh(name) { if (name) paint(name); else panes.forEach((_, key) => paint(key)); },
+    };
+  }
+  function fitPager(pager, scroll, chrome = pager.nav) {
+    let frame = 0;
+    function naturalHeight(pane) {
+      const style = getComputedStyle(pane);
+      const paddingBottom = parseFloat(style.paddingBottom) || 0;
+      return Math.max(0, ...[...pane.children].map(child => child.offsetTop + child.offsetHeight)) + paddingBottom;
+    }
+    function measure() {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const reserved = chrome?.offsetHeight || 0;
+        const viewportFloor = Math.max(0, scroll.clientHeight - reserved);
+        const contentHeight = Math.max(0, ...[...pager.panes.values()].map(naturalHeight));
+        const value = Math.ceil(Math.max(viewportFloor, contentHeight));
+        if (pager.viewport.style.getPropertyValue('--thesis-tab-min-height') !== value + 'px') {
+          pager.viewport.style.setProperty('--thesis-tab-min-height', value + 'px');
+        }
+      });
+    }
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroll);
+    observer.observe(chrome);
+    pager.panes.forEach(pane => observer.observe(pane));
+    measure();
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
   }
   function empty(text) {
     const node = el('div', 'thesis-empty'); node.setAttribute('role', 'status');
@@ -115,5 +200,5 @@ export function createThesisControls(ui) {
     const focus = document.activeElement; dialog.addEventListener('close', () => { dialog.remove(); focus?.focus({ preventScroll: true }); });
     dialog.showModal(); cancel.focus();
   }
-  return { tabs, empty, portrait, nameLabel, followButton, personRow, tickerRow, tickerData, isTickerFollowed, confirm, peopleFollowed, listeners, PEOPLE, SEARCH_TICKERS };
+  return { tabs, pager, fitPager, empty, portrait, nameLabel, followButton, personRow, tickerRow, tickerData, isTickerFollowed, confirm, peopleFollowed, listeners, PEOPLE, SEARCH_TICKERS };
 }

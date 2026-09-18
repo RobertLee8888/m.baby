@@ -1,11 +1,12 @@
 import { PROFILES } from './mvp-social-detail-data.js';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js?v=2';
-import { readStored, writeStored } from './mvp-thesis-controls.js?v=2';
+import { readStored, writeStored } from './mvp-thesis-controls.js?v=3';
+import { createThesisSettings } from './mvp-thesis-settings.js?v=1';
 
 export function createThesisProfiles(ui, controls) {
   const { el, img, btn, icon, cards, content, stateFor, pageShell, push, shareLink, openTicker, openSheet, closeSheet, sheetClose } = ui;
   const roots = new Set();
-  const appearance = document.getElementById('appearanceRow');
+  const settingsPage = createThesisSettings(ui, controls);
   const glyph = path => icon(path.replace(/^assets\//, ''));
   function profileFor(source) {
     if (source.owner || source.id === 'owner') {
@@ -31,11 +32,6 @@ export function createThesisProfiles(ui, controls) {
       writeStored('alva-thesis-profile', { name: profile.name, bio: profile.bio }); closeSheet(); refresh();
     });
     openSheet([sheetClose(), el('h2', null, 'Edit profile')], [form], { label: 'Edit profile' });
-  }
-  function settings() {
-    const shell = pageShell('Settings');
-    const row = btn('row', 'Appearance'); row.append(icon('ui-mode-night-l.svg'), el('span', 'row-label', 'Appearance'), icon('ui-arrow-right-l2.svg'));
-    row.addEventListener('click', () => appearance.click()); shell.scroll.append(row); push(shell.page);
   }
   function relations(profile, initial) {
     const { page, scroll } = pageShell(profile.name); page.dataset.socialPage = 'relations';
@@ -81,7 +77,7 @@ export function createThesisProfiles(ui, controls) {
     const shell = rootTab ? { page: el('div', 'thesis-root thesis-me'), top: el('header', 'thesis-me-top'), scroll: el('div', 'thesis-root-scroll') } : pageShell('Profile');
     const { page, top, scroll } = shell;
     page.dataset.socialPage = 'profile'; page.dataset.profile = profile.id;
-    if (rootTab) { top.append(el('h1', null, 'Me')); page.append(top, scroll); }
+    if (rootTab) { top.append(el('h1', null, 'Me')); page.append(top, scroll); scroll.append(el('div', 'thesis-root-lead')); }
     function tool(label, asset, run) {
       const b = btn('social-page-tool', label); b.append(glyph(asset)); b.addEventListener('click', run); return b;
     }
@@ -91,7 +87,7 @@ export function createThesisProfiles(ui, controls) {
       const url = new URL('mvp.html', location.href); url.searchParams.set('feed', 'social'); url.searchParams.set('profile', profile.id);
       shareLink(profile.name + ' · Alva', url.href, 'Share profile');
     }));
-    if (profile.owner) top.append(tool('Settings', assets.profile.imgSettingsL, settings));
+    if (profile.owner) top.append(tool('Settings', assets.profile.imgSettingsL, settingsPage.open));
     const header = el('div', 'thesis-profile-header');
     const collapsed = !rootTab ? el('span', 'thesis-profile-collapsed') : null;
     if (collapsed) { collapsed.setAttribute('aria-hidden', 'true'); top.querySelector('h1').append(collapsed); }
@@ -135,17 +131,20 @@ export function createThesisProfiles(ui, controls) {
     }
     refreshHeader(); scroll.append(header);
     if (profile.owner) scroll.append(privateCards());
-    const pinned = el('div', 'thesis-profile-pinned'); const list = el('div', 'thesis-profile-list'); list.setAttribute('role', 'tabpanel');
-    let selected = 'Theses', status = 'Active';
-    const statusTabs = controls.tabs(['Active', 'Archived'], value => { status = value; renderList(); }, { pills: !!profile.owner });
-    function renderList() {
-      list.setAttribute('aria-label', selected); statusTabs.hidden = selected !== 'Theses';
+    const pinned = el('div', 'thesis-profile-pinned');
+    let status = 'Active', pager;
+    const statusTabs = controls.tabs(['Active', 'Archived'], value => { status = value; pager.refresh('Theses'); }, { pills: !!profile.owner });
+    function setStatusVisibility(visible) {
+      statusTabs.classList.toggle('is-reserved', !visible);
+      statusTabs.inert = !visible;
+      statusTabs.setAttribute('aria-hidden', String(!visible));
+    }
+    function renderList(selected) {
       if (selected === 'Tickers') {
         const records = controls.SEARCH_TICKERS.filter(controls.isTickerFollowed);
-        list.replaceChildren(...records.map(record => controls.tickerRow(record, openTicker, true)));
-        if (!records.length) list.append(controls.empty('No tickers yet')); return;
+        return records.length ? records.map(record => controls.tickerRow(record, openTicker, true)) : controls.empty('No tickers yet');
       }
-      if (['Playbooks', 'Automations'].includes(selected)) { list.replaceChildren(controls.empty('No ' + selected.toLowerCase() + ' yet')); return; }
+      if (['Playbooks', 'Automations'].includes(selected)) return controls.empty('No ' + selected.toLowerCase() + ' yet');
       let items;
       if (selected === 'Bookmarks') items = cards.filter(card => stateFor(card).bookmarked);
       else if (profile.postKeys) items = profile.postKeys.map(key => cards.find(c => c.social.key === key)).filter(Boolean).map(card => ({ ...card,
@@ -153,24 +152,31 @@ export function createThesisProfiles(ui, controls) {
         social: { ...card.social, owner: !!profile.owner, generationMode: 'auto' } }));
       else items = cards.filter(card => card.sources[0].name === profile.name);
       if (selected === 'Theses') items = items.filter(card => (stateFor(card).archived ? 'Archived' : 'Active') === status);
-      list.replaceChildren(...items.map(card => {
+      const nodes = items.map(card => {
         const row = el('article', 'card social-card'); row.dataset.cardId = card.id;
         const display = { ...card, social: { ...card.social,
           ...(selected === 'Bookmarks' && card.social.key === 'P01' ? { generationMode: 'auto' } : {}),
           ...(stateFor(card).archived ? { thesisType: 'Archived' } : {}),
         } };
         row.append(content(display, { compact: selected === 'Bookmarks' })); return row;
-      }));
-      if (!items.length) list.append(controls.empty(selected === 'Bookmarks' ? 'No bookmarks yet' : status === 'Archived' ? 'No archived theses' : 'No theses yet'));
+      });
+      return nodes.length ? nodes : controls.empty(selected === 'Bookmarks' ? 'No bookmarks yet' : status === 'Archived' ? 'No archived theses' : 'No theses yet');
     }
-    if (profile.owner) pinned.append(controls.tabs(['Theses', 'Bookmarks', 'Tickers', 'Playbooks', 'Automations'], value => { selected = value; renderList(); }));
-    pinned.append(statusTabs); scroll.append(pinned, list); renderList();
+    const sections = profile.owner ? ['Theses', 'Bookmarks', 'Tickers', 'Playbooks', 'Automations'] : ['Theses'];
+    pager = controls.pager(sections, renderList, {
+      panelClass: 'thesis-profile-list',
+      onSelect(value) { setStatusVisibility(value === 'Theses'); },
+    });
+    if (profile.owner) pinned.append(pager.nav);
+    pinned.append(statusTabs); scroll.append(pinned, pager.viewport);
+    pager.viewport.classList.add('thesis-profile-pages');
+    const stopSizing = controls.fitPager(pager, scroll, pinned);
     if (collapsed) scroll.addEventListener('scroll', () => {
       const visible = scroll.scrollTop >= header.offsetHeight;
       collapsed.classList.toggle('is-visible', visible); collapsed.setAttribute('aria-hidden', String(!visible));
     }, { passive: true });
-    const refresh = () => { if (profile.owner) { profile = profileFor(source); refreshHeader(); } renderList(); ui.preview?.refresh(); };
-    if (rootTab) roots.add(refresh); else push(page, refresh);
+    const refresh = () => { if (profile.owner) { profile = profileFor(source); refreshHeader(); } pager.refresh(); ui.preview?.refresh(); };
+    if (rootTab) roots.add(refresh); else push(page, refresh, stopSizing);
     return page;
   }
   function open(source) { return create(source); }

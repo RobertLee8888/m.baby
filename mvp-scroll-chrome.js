@@ -6,7 +6,7 @@ const STICKY_EDGE_SELECTOR = [
   '.thesis-profile-pinned',
 ].join(',');
 
-export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SELECTOR, attached } = {}) {
+export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SELECTOR, attached, collapse = false } = {}) {
   if (!top || !scroll) return () => {};
 
   top.classList.add('scroll-chrome-top');
@@ -14,6 +14,10 @@ export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SEL
 
   function paint() {
     frame = 0;
+    if (collapse) {
+      const progress = Math.min(1, Math.max(0, scroll.scrollTop / 58));
+      top.parentElement?.style.setProperty('--thesis-bar-p', progress.toFixed(4));
+    }
     const viewport = scroll.getBoundingClientRect();
     const attachedVisible = attached && !attached.hidden && getComputedStyle(attached).display !== 'none'
       && attached.getBoundingClientRect().height > 0;
@@ -37,5 +41,6 @@ export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SEL
     scroll.removeEventListener('scroll', schedule);
     window.removeEventListener('resize', schedule);
     if (frame) cancelAnimationFrame(frame);
+    if (collapse) top.parentElement?.style.removeProperty('--thesis-bar-p');
   };
 }

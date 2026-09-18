@@ -1,11 +1,12 @@
 import { ASSET_TYPES, SEARCH_TICKERS, PEOPLE } from './mvp-thesis-data.js';
-import { readStored, writeStored } from './mvp-thesis-controls.js?v=2';
+import { readStored, writeStored } from './mvp-thesis-controls.js?v=3';
 
 export function createThesisSearch(ui, controls) {
   const { el, btn, icon, openTicker, openProfile } = ui;
   const root = el('div', 'thesis-root thesis-search');
-  root.append(el('h1', 'thesis-root-title', 'Search'));
+  const title = el('header', 'thesis-root-title'); title.append(el('h1', null, 'Search')); root.append(title);
   const scroll = el('div', 'thesis-root-scroll'); root.append(scroll);
+  scroll.append(el('div', 'thesis-root-lead'));
   const form = el('form', 'thesis-search-entry');
   const field = el('div', 'thesis-search-field'); field.append(icon('thesis/search-imgSearchL.svg'));
   const input = el('input'); input.type = 'search'; input.placeholder = 'Search tickers, people'; input.setAttribute('aria-label', 'Search tickers, people'); input.autocomplete = 'off'; input.maxLength = 200;
@@ -17,7 +18,7 @@ export function createThesisSearch(ui, controls) {
   const defaults = [{ kind: 'ticker', id: 'NVDA' }, { kind: 'person', id: 'Chamath Palihapitiya' }];
   const saved = readStored('alva-thesis-recent', defaults);
   let recent = (Array.isArray(saved) ? saved : defaults).filter(item => item && (item.kind === 'ticker' ? SEARCH_TICKERS.some(record => record.sym === item.id) : item.kind === 'person' && PEOPLE.some(record => record.name === item.id)));
-  let queryTab = 'All', assetType = 'All', timer;
+  let queryTab = 'Tickers', assetType = 'All', timer;
   function remember(kind, id) {
     recent = [{ kind, id }, ...recent.filter(item => item.kind !== kind || item.id !== id)];
     writeStored('alva-thesis-recent', recent);
@@ -71,33 +72,36 @@ export function createThesisSearch(ui, controls) {
     }); people.append(grid); panel.append(people);
   }
   function results(query) {
-    const result = el('div', 'thesis-search-results'); result.setAttribute('role', 'tabpanel'); result.setAttribute('aria-label', queryTab);
-    result.dataset.category = queryTab;
     const tickerMatches = SEARCH_TICKERS.filter(record => matches(record, query));
     const personMatches = PEOPLE.filter(record => matches(record, query));
-    const visibleStocks = queryTab !== 'People' && tickerMatches.length;
-    const visiblePeople = queryTab !== 'Tickers' && personMatches.length;
-    if (!visibleStocks && !visiblePeople) { result.classList.add('is-empty'); result.append(controls.empty('No results found')); }
-    if (visibleStocks) {
-      const group = el('section', 'thesis-results-group'); if (queryTab === 'All') group.append(heading('Tickers'));
-      const list = el('div', 'thesis-result-list');
-      const paint = () => {
-        const items = tickerMatches.filter(record => assetType === 'All' || record.assetType === assetType);
-        list.replaceChildren(...items.map(record => controls.tickerRow(record, visitTicker, true)));
-        if (!items.length) list.append(el('p', 'thesis-inline-empty', 'No results found'));
-      };
-      group.append(controls.tabs(ASSET_TYPES, value => { assetType = value; paint(); }, { pills: true, selected: assetType }), list); paint(); result.append(group);
-    }
-    if (visiblePeople) {
-      const group = el('section', 'thesis-results-group'); if (queryTab === 'All') group.append(heading('People'));
-      personMatches.forEach(person => group.append(controls.personRow(person, visitPerson))); result.append(group);
-    }
-    panel.append(result);
+    const pager = controls.pager(['Tickers', 'People'], name => {
+      const result = el('div', 'thesis-search-results'); result.dataset.category = name;
+      if (name === 'Tickers' && tickerMatches.length) {
+        const group = el('section', 'thesis-results-group');
+        const list = el('div', 'thesis-result-list');
+        const paint = () => {
+          const items = tickerMatches.filter(record => assetType === 'All' || record.assetType === assetType);
+          list.replaceChildren(...items.map(record => controls.tickerRow(record, visitTicker, true)));
+          if (!items.length) list.append(el('p', 'thesis-inline-empty', 'No results found'));
+        };
+        group.append(controls.tabs(ASSET_TYPES, value => { assetType = value; paint(); }, { pills: true, selected: assetType }), list);
+        paint(); result.append(group);
+      } else if (name === 'People' && personMatches.length) {
+        const group = el('section', 'thesis-results-group');
+        personMatches.forEach(person => group.append(controls.personRow(person, visitPerson)));
+        result.append(group);
+      } else {
+        result.classList.add('is-empty'); result.append(controls.empty('No results found'));
+      }
+      return result;
+    }, { selected: queryTab, onSelect(name) { queryTab = name; } });
+    pager.viewport.classList.add('thesis-search-pages');
+    panel.append(pager.nav, pager.viewport);
   }
   function render() {
     clearTimeout(timer); panel.replaceChildren(); const query = input.value.trim(); root.classList.toggle('has-query', !!query); clear.hidden = !query;
     if (query) {
-      panel.append(controls.tabs(['All', 'Tickers', 'People'], value => { queryTab = value; render(); }, { selected: queryTab })); results(query);
+      results(query);
     } else discovery();
   }
   input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(render, 120); });

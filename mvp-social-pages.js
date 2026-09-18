@@ -1,7 +1,7 @@
 import { SIGNALS, EARLIER_VERSIONS, PROFILES } from './mvp-social-detail-data.js';
-import { createThesisProfiles } from './mvp-thesis-profile.js?v=4';
-import { createThesisDetail } from './mvp-thesis-detail.js?v=4';
-import { bindScrollChrome } from './mvp-scroll-chrome.js?v=1';
+import { createThesisProfiles } from './mvp-thesis-profile.js?v=5';
+import { createThesisDetail } from './mvp-thesis-detail.js?v=5';
+import { bindScrollChrome } from './mvp-scroll-chrome.js?v=2';
 
 // Pages retain their DOM while stacked, preserving scroll and filters.
 export function createSocialPages(ui) {

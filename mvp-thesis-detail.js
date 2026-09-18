@@ -59,32 +59,38 @@ export function createThesisDetail(ui) {
     menuTrigger.setAttribute('aria-expanded', 'false');
     const menu = el('div', 'thesis-detail-menu'); menu.setAttribute('role', 'menu'); menu.hidden = true;
     const dismiss = el('div', 'thesis-menu-dismiss'); dismiss.hidden = true;
-    let activeTab = 'Signals', signalTimer;
+    let signalTimer;
     const intro = el('div', 'social-thesis-detail');
     const section = el('div', 'social-detail-tabs');
-    const panel = el('div', 'social-detail-panel'); panel.setAttribute('role', 'tabpanel');
-    const nav = controls.tabs(['Signals', 'Related theses'], name => {
-      const pinned = nav.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 1;
-      activeTab = name; renderPanel();
-      if (pinned) scroll.scrollTop += nav.getBoundingClientRect().top - scroll.getBoundingClientRect().top;
-    });
+    let nav;
     const bottom = el('footer', 'social-detail-footer');
 
     function versions() { return thesisVersions(base, relatedCards(base), state.updates || []); }
-    function renderPanel() {
-      panel.setAttribute('aria-label', activeTab);
-      if (activeTab === 'Related theses') {
+    function renderPanel(name) {
+      if (name === 'Related theses') {
         const related = relatedCards(base);
-        panel.replaceChildren(...(related.length ? related.map(cardNode) : [controls.empty('No related theses')]));
+        return related.length ? related.map(cardNode) : controls.empty('No related theses');
       } else if (ownership && versions().length === 1 && !state.signalsReady) {
-        panel.replaceChildren(generating());
         clearTimeout(signalTimer);
-        signalTimer = setTimeout(() => { state.signalsReady = true; if (page.isConnected && activeTab === 'Signals') renderPanel(); }, 1250);
+        signalTimer = setTimeout(() => {
+          state.signalsReady = true;
+          if (page.isConnected) pager.refresh('Signals');
+        }, 1250);
+        return generating();
       } else {
         const latest = versions()[0];
-        panel.replaceChildren(latest.signals.length ? signals(latest.signals, latest.card) : generating());
+        return latest.signals.length ? signals(latest.signals, latest.card) : generating();
       }
     }
+    const pager = controls.pager(['Signals', 'Related theses'], renderPanel, {
+      onSelect() {
+        if (nav.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 1) {
+          scroll.scrollTop += nav.getBoundingClientRect().top - scroll.getBoundingClientRect().top;
+        }
+      },
+    });
+    nav = pager.nav;
+    pager.viewport.classList.add('social-detail-panel');
     function setMenu(open) {
       menu.hidden = !open; dismiss.hidden = !open;
       menuTrigger.setAttribute('aria-expanded', String(open));
@@ -138,7 +144,7 @@ export function createThesisDetail(ui) {
         all.addEventListener('click', () => timeline.openUpdates(items));
         intro.append(all);
       }
-      renderMenu(); renderPanel();
+      renderMenu(); pager.refresh();
       const actions = footer(latest.card);
       const share = btn('thesis-action thesis-share', 'Share thesis');
       share.append(icon('social-share.svg')); share.addEventListener('click', () => sharePost(base));
@@ -150,8 +156,9 @@ export function createThesisDetail(ui) {
       dismiss.addEventListener('click', () => setMenu(false));
       page.addEventListener('keydown', event => { if (event.key === 'Escape' && !menu.hidden) { event.preventDefault(); setMenu(false); } });
     } else top.append(controls.followButton(base.sources[0]));
-    section.append(nav, panel); scroll.append(intro, section); page.append(bottom);
-    render(); push(page, () => { if (!menu.hidden) setMenu(false); }, () => clearTimeout(signalTimer));
+    section.append(nav, pager.viewport); scroll.append(intro, section); page.append(bottom);
+    const stopSizing = controls.fitPager(pager, scroll, nav);
+    render(); push(page, () => { if (!menu.hidden) setMenu(false); }, () => { clearTimeout(signalTimer); stopSizing(); });
     if (initialVersion && initialVersion !== 'latest') toast('This thesis was updated. Opened the latest version.');
   }
   return { open };
