@@ -1,11 +1,9 @@
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 import { ARTICLE } from './mvp-social-detail-data.js';
 
-const RESEARCH_TYPE = 'Research summary \u00b7 non-technical';
-
-// Content mirrors the mobile Thesis Evidence Feed supplied for this demo.
-// P01 keeps its authored history so the existing updates timeline remains a
-// coherent, fully interactive detail example.
+// Copy and identities mirror the supplied mobile reference feed. Visual
+// structure stays in the shared Figma Feed Item / V5 renderer.
+// P01 keeps its authored history so the updates timeline remains coherent.
 const HOME = [
   {
     key: 'P06', name: 'Tom Lee', role: 'Co-Founder and Head of Research, Fundstrat', age: 'Updated 11 Sept',
@@ -98,6 +96,21 @@ const TICKER_ASSETS = {
   SPY: 'assets/onboarding-spy.svg', NVDA: 'assets/feed-logo-nvda-real.png', MSFT: 'assets/feed-logo-msft-real.svg',
   GOOGL: 'assets/feed-logo-goog.svg', META: 'assets/feed-logo-meta.svg', AMD: 'assets/feed-logo-amd.svg',
   TSLA: 'assets/market-logo-tsla.svg', HOOD: 'assets/filter-logo-hood.svg', QQQ: 'assets/onboarding-qqq.svg',
+  USO: 'assets/thesis/reference-logo-uso.png', XYZ: 'assets/thesis/reference-logo-xyz.svg',
+};
+
+const CHART_ASSETS = {
+  SPY: 'assets/thesis/reference-chart-spy.png',
+  NVDA: 'assets/thesis/S02-imgChart1.png',
+  MSFT: 'assets/thesis/first-card-imgChart1.png',
+  GOOGL: 'assets/thesis/P01-imgChart1.png',
+  META: 'assets/thesis/reference-chart-meta.png',
+  AMD: 'assets/thesis/reference-chart-amd.png',
+  USO: 'assets/thesis/reference-chart-uso.png',
+  TSLA: 'assets/thesis/reference-chart-tsla.png',
+  XYZ: 'assets/thesis/reference-chart-xyz.png',
+  HOOD: 'assets/thesis/reference-chart-hood.png',
+  QQQ: 'assets/thesis/reference-chart-qqq.png',
 };
 
 function shuffled(items, random) {
@@ -113,13 +126,13 @@ function sourceRecords(record) {
   return record.links.map(url => ({
     id: record.name, name: record.name, role: record.role, handle: '',
     time: record.age, img: record.img, url, quote: record.thesis, summary: record.thesis,
-    attribution: record.name,
+    attribution: record.name, bot: record.name === 'Chamath Palihapitiya',
   }));
 }
 
 function tickerRecords(record) {
-  return record.tickers.map(([sym, evidenceLabel]) => ({
-    sym, co: sym, stance: 'flat', logo: TICKER_ASSETS[sym], evidenceLabel, interactive: false,
+  return record.tickers.map(([sym]) => ({
+    sym, co: sym, stance: 'flat', logo: TICKER_ASSETS[sym], interactive: false,
   }));
 }
 
@@ -132,15 +145,17 @@ export function thesisCards(cards, random = Math.random) {
       const source = { ...card.sources[0], img: record.img };
       const social = { ...card.social, nodeId: card.social.nodeId, generationMode: 'manual', thesisType: 'Thesis update',
         charts: Object.entries(art).filter(([name]) => /^imgChart/.test(name)).map(([, src]) => src),
-        paragraphs: ARTICLE.paragraphs, evidenceStyle: true, researchType: RESEARCH_TYPE,
-        sourceLinks: [source.url], proxyNote: '' };
+        paragraphs: ARTICLE.paragraphs };
       return { ...card, age: social.age, social, sources: [source], blocks: [] };
     }
     const sources = sourceRecords(record);
+    const paragraphs = [record.thesis];
+    if (record.proxyNote) paragraphs.push(record.proxyNote);
     const social = { ...card.social, age: record.age, generationMode: 'auto', thesisType: 'New thesis',
-      statements: [record.thesis], paragraphs: [record.thesis], analysis: record.thesis, charts: [], media: [],
-      evidenceStyle: true, researchType: RESEARCH_TYPE, sourceLinks: record.links, proxyNote: record.proxyNote || '' };
-    return { ...card, referenceNodeId: undefined, age: record.age, social, sources,
+      statements: [record.thesis], paragraphs, analysis: record.thesis,
+      charts: record.tickers.map(([sym]) => CHART_ASSETS[sym]), media: [] };
+    const referenceNodeId = record.tickers.length > 1 ? '5794:126758' : '5794:126878';
+    return { ...card, referenceNodeId, age: record.age, social, sources,
       tickers: tickerRecords(record), blocks: [] };
   });
   return shuffled(home, random);
