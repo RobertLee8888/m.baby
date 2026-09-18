@@ -15,10 +15,13 @@ Me navigation. Existing links remain valid.
 
 The homepage starts with the dismissible Portfolio Entry and then shuffles its
 11 thesis cards once per demo launch. Returning from a detail, profile or another
-tab preserves that order. Card structure and content follow the supplied mobile
-[Thesis Evidence Feed](https://alva.ai/u/harryzz/playbooks/baba-thesis-feed):
-real authors and role subtitles, update dates, expandable thesis summaries,
-original source links, ticker/proxy labels and compact Ask Alva/Save actions.
+tab preserves that order. Every list item keeps the Figma
+[Feed Item / V5](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5851-100223)
+structure: identity, thesis type, responsive preview, ticker chart gallery,
+ticker labels and the shared Ask Alva / Bookmark action row. Only the authors,
+roles, dates, thesis copy and sources come from the supplied mobile
+[Thesis feed](https://alva.ai/u/harryzz/playbooks/baba-thesis-feed). Source links
+remain in detail rather than introducing a second list-card design.
 Search includes recent history, asset filters, people, follow controls and empty
 states. Me includes account/usage summaries, Theses, Bookmarks, Tickers,
 Playbooks and Automations. Profile, Sources, ticker and Alva navigation retain
@@ -32,7 +35,7 @@ content is retained. See [detail acceptance notes](docs/thesis-detail-2026-09-16
 Current references, implementation boundaries and browser checks are recorded in
 [Thesis acceptance notes](docs/thesis-2026-09-15.md). The older Social Feed
 sections below describe historical versions and are superseded for this entry.
-`tests/mvp-thesis.cjs` covers the first-card contract, evidence-card anatomy,
+`tests/mvp-thesis.cjs` covers the first-card contract, V5 component anatomy,
 all 11 detail routes, responsive layouts and navigation state.
 
 ## MVP update: Sources and ticker filters (2026-09-09)
