@@ -1,39 +1,149 @@
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';
 import { ARTICLE } from './mvp-social-detail-data.js';
 
-// Figma 5851:100223. Lifecycle and generation mode are explicit content data.
+const RESEARCH_TYPE = 'Research summary \u00b7 non-technical';
+
+// Content mirrors the mobile Thesis Evidence Feed supplied for this demo.
+// P01 keeps its authored history so the existing updates timeline remains a
+// coherent, fully interactive detail example.
 const HOME = [
-  ['P06', '5742:114435', 'first-card'],
-  ['P01', '5742:114434', 'P01'],
-  ['S05', '5742:114441', 'S05'],
-  ['P04', '5742:114443', 'P04'],
-  ['S01', '5742:114437', 'S01'],
-  ['P07', '5742:114440', 'P07'],
-  ['P02', '5742:114438', 'P02'],
-  ['S02', '5742:114439', 'S02'],
-  ['S06', '5742:114442', 'S06'],
+  {
+    key: 'P06', name: 'Tom Lee', role: 'Co-Founder and Head of Research, Fundstrat', age: 'Updated 11 Sept',
+    img: 'assets/thesis/reference-tom-lee.png',
+    thesis: 'The S&P 500 remains set for another near-term rally. The latest setup points to a substantial September rally because bearish positioning and a potentially benign inflation reading leave room for a positive surprise.',
+    tickers: [['SPY', 'ETF proxy']],
+    proxyNote: 'Alva tracking proxy: S&P 500 to SPY. Not specified by the author. Price levels refer to the original asset.',
+    links: [
+      'https://fundstrat.com/client-portal/macro-strategy/flash/2026/03/10/prediction-markets-see-higher-oil-thru-june-longer-conflict-but-we-still-see-march-as-up-month/',
+      'https://fundstrat.com/client-portal/macro-strategy/flash/2026/04/28/this-wed-may-be-fed-chair-powell-last-presser-equity-returns-under-powell-8-3-cagr-nominal-4-7-real-very-good-returns/',
+      'https://fundstrat.com/client-portal/macro-strategy/flash/2026/08/06/markets-still-have-excessive-inflation-derangement-syndrome-and-july-jobs-and-july-cpi-should-quell-some-fears-we-see-sp-500-reaching-7900-8000-by-end-of-month/',
+      'https://fundstrat.com/client-portal/macro-strategy/flash/2026/09/11/we-continue-to-expect-a-benign-august-core-cpi-fri-am-this-likely-leads-to-a-face-ripper-rally-in-the-next-week-or-so/',
+    ],
+  },
+  {
+    key: 'S05', name: 'Raoul Pal', role: 'Co-founder & CEO of Real Vision', age: 'Updated 11 Sept',
+    img: 'assets/thesis/reference-raoul-pal.jpg',
+    thesis: "Nvidia's chip demand remains structurally strong despite an electricity bottleneck. Electricity, not demand or financing, is the binding constraint on AI infrastructure. Hyperscalers may temporarily slow chip purchases while waiting for power, but Nvidia's product cycle and double-exponential intelligence demand should sustain the need for increasingly powerful chips.",
+    tickers: [['NVDA']], links: ['https://x.com/RaoulGMI/status/2098230682518434014'],
+  },
+  {
+    key: 'P04', name: 'Raoul Pal', role: 'Co-founder & CEO of Real Vision', age: 'Updated 10 Sept',
+    img: 'assets/thesis/reference-raoul-pal.jpg',
+    thesis: "Named AI leaders cannot slow investment without conceding the frontier to rivals. Microsoft, Alphabet, Anthropic, OpenAI, Meta, Nvidia, and AMD are locked into a Red Queen competition in which pausing makes rivals' deployed capital more valuable. Even a frontier-lab failure should accelerate acquisition, compute concentration, and replacement capex rather than end the buildout.",
+    tickers: [['MSFT'], ['GOOGL'], ['META'], ['NVDA'], ['AMD']],
+    links: ['https://x.com/i/status/2097382441073741935', 'https://x.com/RaoulGMI/status/2097823101694189975'],
+  },
+  {
+    key: 'S01', name: 'Jim Rogers', role: '@AllJimRogers', age: 'Updated 8 Sept',
+    img: 'assets/thesis/reference-jim-rogers.jpg',
+    thesis: 'Oil can rise further if a genuine supply shortage develops. Oil has already risen too far to buy now, but a genuine shortage of available reserves would push prices higher.',
+    tickers: [['USO', 'ETF proxy']],
+    proxyNote: 'Alva tracking proxy: Crude oil to USO. Not specified by the author. Price levels refer to the original asset.',
+    links: ['https://en.oninvest.com/article/i-like-to-buy-things-that-nobody-else-is-interested-in-yet-an-interview-with-jim-rogers'],
+  },
+  {
+    key: 'P07', name: 'Chamath Palihapitiya', role: '@chamath', age: 'Updated 6 Sept',
+    img: 'assets/thesis/reference-chamath.jpg',
+    thesis: "Tesla's autonomy platform is compelling enough to support a robotaxi fleet. Tesla combines a sensor-rich vehicle, onboard computing, and a vertically integrated autonomy platform; after its Cybercab deployment, the opportunity is compelling enough to build a personal robotaxi fleet.",
+    tickers: [['TSLA']],
+    links: ['https://x.com/chamath/status/2051027755194806781', 'https://x.com/chamath/status/2083227594506592329', 'https://chamath.substack.com/p/uber-waymo-and-tesla-race-for-robotaxis'],
+  },
+  {
+    key: 'P02', name: 'Chamath Palihapitiya', role: '@chamath', age: 'Updated 6 Sept',
+    img: 'assets/thesis/reference-chamath.jpg',
+    thesis: "Nvidia can move up the AI stack as open models commoditize intelligence. Nvidia's margins, execution, and economically accretive products distinguish it from weaker software businesses; CUDA and expansion into open models, hosting, APIs, and cloud services can support a broader full-stack position.",
+    tickers: [['NVDA']],
+    links: [
+      'https://allinchamathjason.libsyn.com/anthropics-generational-run-openai-panics-ai-moats-meta-loses-lawsuits',
+      'https://x.com/chamath/status/2050275051761705133',
+      'https://allinchamathjason.libsyn.com/nvidias-historic-quarter-saas-comeback-bessent-vs-druck-americas-debt-crisis-cancer-vaccine',
+      'https://x.com/chamath/status/2095511879951192279',
+      'https://allinchamathjason.libsyn.com/gpt-6-hits-agi-tech-euphoria-20-sf-mansion-shortage-nyc-bans-ai-in-schools-venezuela-oil-deal',
+      'https://chamath.substack.com/p/uber-waymo-and-tesla-race-for-robotaxis',
+    ],
+  },
+  {
+    key: 'S02', name: 'Cathie Wood', role: '@CathieDWood', age: 'Updated 5 Sept',
+    img: 'assets/thesis/reference-cathie-wood.jpg',
+    thesis: "Tesla's vertical integration should produce the lowest-cost robotaxi network. Tesla's integrated vehicle, autonomy, and operating platform should drive robotaxi costs far below current ride-hailing prices and below less integrated autonomous competitors, while improving road safety.",
+    tickers: [['TSLA']],
+    links: ['https://www.bloomberg.com/news/audio/2026-05-06/bloomberg-businessweek-daily-cathie-wood-at-milken-podcast', 'https://x.com/CathieDWood/status/2064076685981696108', 'https://x.com/CathieDWood/status/2096167207705174265'],
+  },
+  {
+    key: 'S06', name: 'Cathie Wood', role: '@CathieDWood', age: 'Updated 5 Sept',
+    img: 'assets/thesis/reference-cathie-wood.jpg',
+    thesis: "Square's ManagerBot is an early example of embedded AI lowering operating burdens for merchants, and Block's post-reorganization product velocity shows AI translating into broad delivery across Cash App and Square.",
+    tickers: [['XYZ']], links: ['https://x.com/CathieDWood/status/2036491499039498376', 'https://x.com/CathieDWood/status/2096124645590126973'],
+  },
+  {
+    key: 'S04', name: 'Cathie Wood', role: '@CathieDWood', age: 'Updated 5 Sept',
+    img: 'assets/thesis/reference-cathie-wood.jpg',
+    thesis: "Robinhood can benefit from bringing net-new users on-chain because those users should expand liquidity and strengthen the platform's credibility in crypto.",
+    tickers: [['HOOD']], links: ['https://x.com/CathieDWood/status/2096108671180673044'],
+  },
+  {
+    key: 'S07', name: 'Raoul Pal', role: 'Co-founder & CEO of Real Vision', age: 'Updated 4 Sept',
+    img: 'assets/thesis/reference-raoul-pal.jpg',
+    thesis: 'The Nasdaq is highly correlated with global liquidity and has historically compounded above currency debasement because the economy keeps becoming more digital. That makes it a strong long-term asset even when weekly narratives focus on earnings or news.',
+    tickers: [['QQQ', 'ETF proxy']],
+    proxyNote: 'Alva tracking proxy: NDX to QQQ. Not specified by the author. Price levels refer to the original asset.',
+    links: ['https://x.com/i/status/2044478475516424388', 'https://x.com/RaoulGMI/status/2072716775557345660', 'https://raoulpal.substack.com/p/why-traditional-portfolios-stopped', 'https://x.com/RaoulGMI/status/2095890968876634193'],
+  },
+  {
+    key: 'P01', preserveDetail: true, img: 'assets/thesis/reference-gavin-baker.jpg',
+  },
 ];
 
-export function thesisCards(cards) {
-  return HOME.map(([key, nodeId, assetKey]) => {
-    const card = cards.find(item => item.social.key === key);
-    const art = assets[assetKey];
-    const social = { ...card.social, nodeId, generationMode: key === 'P01' ? 'manual' : 'auto',
-      thesisType: key === 'P01' ? 'Thesis update' : 'New thesis',
-      charts: Object.entries(art).filter(([name]) => /^imgChart/.test(name)).map(([, src]) => src) };
-    let sources = card.sources.map((source, index) => index ? source : { ...source, img: art.imgAvatar || source.img,
-      role: key.startsWith('S') ? '' : source.role, handle: key.startsWith('S') ? '' : source.handle });
-    if (key === 'P01') social.paragraphs = ARTICLE.paragraphs;
-    if (key === 'P02') social.statements = ["Altman would lead Microsoft's new AI group, drawing on Microsoft's experience giving founders room to build independent teams."];
-    if (key === 'P04') {
-      social.age = 'Sep 23, 2024';
-      social.statements = ['Broad access to AI depends on abundant, affordable compute, supported by enough energy and chips. Without that infrastructure, AI could become a scarce resource whose benefits concentrate among the wealthy.'];
-      sources = [{ ...sources[0], name: 'Sam Altman', role: 'Co-founder, OpenAI', reference: undefined, media: undefined,
-        url: 'https://ia.samaltman.com/', platform: 'website', summary: social.statements[0] }];
+const TICKER_ASSETS = {
+  SPY: 'assets/onboarding-spy.svg', NVDA: 'assets/feed-logo-nvda-real.png', MSFT: 'assets/feed-logo-msft-real.svg',
+  GOOGL: 'assets/feed-logo-goog.svg', META: 'assets/feed-logo-meta.svg', AMD: 'assets/feed-logo-amd.svg',
+  TSLA: 'assets/market-logo-tsla.svg', HOOD: 'assets/filter-logo-hood.svg', QQQ: 'assets/onboarding-qqq.svg',
+};
+
+function shuffled(items, random) {
+  const result = items.slice();
+  for (let index = result.length - 1; index > 0; index--) {
+    const target = Math.floor(random() * (index + 1));
+    [result[index], result[target]] = [result[target], result[index]];
+  }
+  return result;
+}
+
+function sourceRecords(record) {
+  return record.links.map(url => ({
+    id: record.name, name: record.name, role: record.role, handle: '',
+    time: record.age, img: record.img, url, quote: record.thesis, summary: record.thesis,
+    attribution: record.name,
+  }));
+}
+
+function tickerRecords(record) {
+  return record.tickers.map(([sym, evidenceLabel]) => ({
+    sym, co: sym, stance: 'flat', logo: TICKER_ASSETS[sym], evidenceLabel, interactive: false,
+  }));
+}
+
+export function thesisCards(cards, random = Math.random) {
+  const home = HOME.map(record => {
+    const card = cards.find(item => item.social.key === record.key);
+    if (!card) throw new Error('Missing Thesis card: ' + record.key);
+    if (record.preserveDetail) {
+      const art = assets.P01;
+      const source = { ...card.sources[0], img: record.img };
+      const social = { ...card.social, nodeId: card.social.nodeId, generationMode: 'manual', thesisType: 'Thesis update',
+        charts: Object.entries(art).filter(([name]) => /^imgChart/.test(name)).map(([, src]) => src),
+        paragraphs: ARTICLE.paragraphs, evidenceStyle: true, researchType: RESEARCH_TYPE,
+        sourceLinks: [source.url], proxyNote: '' };
+      return { ...card, age: social.age, social, sources: [source], blocks: [] };
     }
-    return { ...card, referenceNodeId: nodeId, age: social.age, social, sources,
-      tickers: key === 'P04' ? [] : card.tickers, blocks: [] };
+    const sources = sourceRecords(record);
+    const social = { ...card.social, age: record.age, generationMode: 'auto', thesisType: 'New thesis',
+      statements: [record.thesis], paragraphs: [record.thesis], analysis: record.thesis, charts: [], media: [],
+      evidenceStyle: true, researchType: RESEARCH_TYPE, sourceLinks: record.links, proxyNote: record.proxyNote || '' };
+    return { ...card, referenceNodeId: undefined, age: record.age, social, sources,
+      tickers: tickerRecords(record), blocks: [] };
   });
+  return shuffled(home, random);
 }
 
 export const ASSET_TYPES = ['All', 'US Stock', 'Non-US Stock', 'Binance Spot', 'Hyperliquid Spot'];

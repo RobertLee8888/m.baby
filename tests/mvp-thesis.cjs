@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const base = process.env.DEMO_URL || 'http://localhost:4173/mvp.html?feed=social';
 const output = process.env.QA_OUTPUT || '/tmp/alva-thesis-qa';
+const keys = ['P06','P01','S05','P04','S01','P07','P02','S02','S06','S04','S07'];
 fs.mkdirSync(output, { recursive: true });
 
 (async () => {
@@ -19,15 +20,28 @@ fs.mkdirSync(output, { recursive: true });
   try {
     await page.goto(base); await page.waitForTimeout(1900); await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.title(), 'Thesis · Alva prototypes');
-    assert.deepEqual(await page.locator('#cards .thesis-content').evaluateAll(nodes => nodes.map(n => n.dataset.thesis)), ['P06','P01','S05','P04','S01','P07','P02','S02','S06']);
+    const order = await page.locator('#cards .thesis-content').evaluateAll(nodes => nodes.map(n => n.dataset.thesis));
+    assert.deepEqual(order.slice().sort(), keys.slice().sort());
+    assert.equal(await page.locator('#cards > .card').first().evaluate(n => n.classList.contains('portfolio-entry')), true);
+    assert.equal(await page.locator('#cards .thesis-evidence').count(), keys.length);
+    await tab('market').click(); await settle(); await tab('feed').click(); await settle();
+    assert.deepEqual(await page.locator('#cards .thesis-content').evaluateAll(nodes => nodes.map(n => n.dataset.thesis)), order);
     assert.equal(await page.locator('.feed-filters').isVisible(), false);
     assert.equal(await page.locator('#cards .thesis-sources, #cards .social-analysis, #cards .social-engagement').count(), 0);
-    assert.equal(await page.locator('#cards .thesis-bookmark').count(), 9);
-    assert.equal(await card('P04').locator('.thesis-chart,.thesis-tickers').count(), 0);
+    assert.equal(await page.locator('#cards .thesis-evidence-save').count(), keys.length);
+    assert.equal(await page.locator('#cards .thesis-chart,.thesis-tickers').count(), 0);
     const preview = card('P01').locator('.thesis-content');
     await page.waitForFunction(() => document.querySelector('#cards [data-thesis="P01"]').dataset.previewReady === 'true');
     const before = await preview.locator('.thesis-body').textContent();
-    assert.ok(before.endsWith('…')); assert.ok((await preview.evaluate(n => n.offsetHeight)) <= 653);
+    assert.ok(before.includes('Baker frames this as a possible shift'));
+    const evidenceGeometry = await page.locator('#cards .thesis-evidence').first().evaluate(n => {
+      const style = getComputedStyle(n);
+      const avatar = n.querySelector('.social-avatar').getBoundingClientRect();
+      const body = getComputedStyle(n.querySelector('.thesis-evidence-open'));
+      const actions = n.querySelector('.thesis-evidence-actions').getBoundingClientRect();
+      return { padding: style.padding, avatar: [avatar.width, avatar.height], body: [body.fontSize, body.lineHeight], actions: actions.height };
+    });
+    assert.deepEqual(evidenceGeometry, { padding: '24px 20px 0px', avatar: [40, 40], body: ['15px', '24.75px'], actions: 36 });
     assert.ok(await page.locator('#cards .card').evaluateAll(nodes => nodes.every(n => getComputedStyle(n).boxShadow !== 'none')));
     assert.equal(await page.locator('#screenFeed .topbar').evaluate(n => n.classList.contains('has-scroll-divider')), false);
     await page.locator('#feed').evaluate(n => n.scrollTop = 20); await page.waitForTimeout(40);
@@ -37,10 +51,10 @@ fs.mkdirSync(output, { recursive: true });
     for (const width of [320,360,430,393]) {
       await page.setViewportSize({width,height:759}); await settle();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-      assert.ok(await preview.evaluate(n => n.offsetHeight <= Number(n.dataset.previewBudget) + 1));
+      assert.ok(await page.locator('#cards .thesis-evidence').evaluateAll(nodes => nodes.every(n => n.scrollWidth <= n.clientWidth + 1)));
       await shot('home-' + width);
     }
-    for (const key of ['P06','P01','S05','P04','S01','P07','P02','S02','S06']) {
+    for (const key of keys) {
       await card(key).scrollIntoViewIfNeeded(); await settle();
       assert.ok(await card(key).locator('img').evaluateAll(nodes => nodes.every(n => n.complete && n.naturalWidth > 0)));
       await shot('card-' + key);
@@ -50,10 +64,7 @@ fs.mkdirSync(output, { recursive: true });
       await active().locator('.social-page-back').click(); await settle();
     }
     await card('P01').scrollIntoViewIfNeeded(); await settle();
-    assert.equal(await preview.locator('.thesis-body').textContent(), before, 'scrolling must not change preview budget');
-    const gallery = card('P01').locator('.thesis-charts');
-    assert.equal(await gallery.evaluate(n => n.offsetWidth), 393);
-    await gallery.evaluate(n => n.scrollLeft = 100); await shot('gallery-clips-at-screen');
+    assert.equal(await preview.locator('.thesis-body').textContent(), before, 'scrolling must not change card content');
     await preview.locator('.thesis-body').click(); await settle();
     assert.equal(await active().getAttribute('data-post'), 'P01');
     assert.equal(await active().locator('.thesis-update-row > .thesis-update-body .thesis-body p').count(), 1);
@@ -68,7 +79,7 @@ fs.mkdirSync(output, { recursive: true });
     await page.locator('#sheetTop [aria-label="Close"]').click(); await settle();
     await active().locator('.social-page-back').click(); await settle();
     assert.equal(await page.locator('#tabBar').isVisible(), true);
-    await card('P06').locator('.thesis-bookmark').click();
+    await card('P06').getByRole('button', { name: 'Save this thesis', exact: true }).click();
     await tab('me').click(); await settle();
     await shot('me');
     const me = page.locator('.thesis-me');
@@ -143,6 +154,6 @@ fs.mkdirSync(output, { recursive: true });
     await active().getByRole('button', { name: 'Share profile', exact: true }).click();
     assert.equal(new URL(await page.evaluate(() => window.sharedProfile.url)).searchParams.get('profile'), 'Dario Amodei');
     assert.deepEqual(errors, []);
-    console.log('Thesis flow, preview, navigation, search, profile and responsive checks passed.');
+    console.log('Thesis evidence cards, navigation, search, profile and responsive checks passed.');
   } finally { await browser.close(); }
 })();

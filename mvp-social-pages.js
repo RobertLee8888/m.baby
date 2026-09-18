@@ -143,6 +143,7 @@ export function createSocialPages(ui) {
     const tickers = changes.tickers || base.tickers;
     return { ...base, ...changes, id: 'social-' + social.key, social: { ...base.social,
       generationMode: 'auto', paragraphs: undefined,
+      evidenceStyle: false, researchType: undefined, sourceLinks: undefined, proxyNote: undefined,
       charts: tickers.map(ticker => base.social.charts?.[base.tickers.findIndex(t => t.sym === ticker.sym)]).filter(Boolean), ...social } };
   }
 

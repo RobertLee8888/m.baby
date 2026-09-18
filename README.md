@@ -7,14 +7,18 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 
 ### ▶︎ [Open the live prototypes](https://robertlee8888.github.io/m.baby/)
 
-## Thesis (2026-09-15)
+## Thesis (2026-09-18)
 
 [Open Thesis](https://robertlee8888.github.io/m.baby/#/mvp-social). The former
 Social Feed entry now uses the current V5 homepage and For You / Alva / Search /
 Me navigation. Existing links remain valid.
 
-The nine supplied theses use explicit lifecycle tags, original chart bitmaps,
-Library SVG icons, shared color/spacing tokens and responsive text previews.
+The homepage starts with the dismissible Portfolio Entry and then shuffles its
+11 thesis cards once per demo launch. Returning from a detail, profile or another
+tab preserves that order. Card structure and content follow the supplied mobile
+[Thesis Evidence Feed](https://alva.ai/u/harryzz/playbooks/baba-thesis-feed):
+real authors and role subtitles, update dates, expandable thesis summaries,
+original source links, ticker/proxy labels and compact Ask Alva/Save actions.
 Search includes recent history, asset filters, people, follow controls and empty
 states. Me includes account/usage summaries, Theses, Bookmarks, Tickers,
 Playbooks and Automations. Profile, Sources, ticker and Alva navigation retain
@@ -28,6 +32,8 @@ content is retained. See [detail acceptance notes](docs/thesis-detail-2026-09-16
 Current references, implementation boundaries and browser checks are recorded in
 [Thesis acceptance notes](docs/thesis-2026-09-15.md). The older Social Feed
 sections below describe historical versions and are superseded for this entry.
+`tests/mvp-thesis.cjs` covers the first-card contract, evidence-card anatomy,
+all 11 detail routes, responsive layouts and navigation state.
 
 ## MVP update: Sources and ticker filters (2026-09-09)
 

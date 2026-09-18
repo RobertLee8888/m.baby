@@ -45,7 +45,84 @@ export function createThesisCard(ui) {
     save.addEventListener('click', () => { stateFor(card).bookmarked = !stateFor(card).bookmarked; update(card); });
     row.append(askButton, save); return row;
   }
+  function evidenceFooter(card) {
+    const row = el('nav', 'thesis-evidence-actions');
+    row.setAttribute('aria-label', 'Thesis actions');
+    const askButton = btn('thesis-evidence-action', 'Ask Alva about this thesis');
+    askButton.append(glyph(assets['first-card'].imgChatAiL));
+    askButton.addEventListener('click', () => ask(card, 'Ask Alva'));
+    const save = btn('thesis-evidence-action thesis-evidence-save', 'Save this thesis');
+    bind(card, save, () => {
+      const bookmarked = stateFor(card).bookmarked;
+      save.setAttribute('aria-pressed', String(bookmarked));
+      save.replaceChildren(bookmarked ? icon('ui-bookmark-f.svg') : glyph(assets['first-card'].imgBookmarkL));
+    });
+    save.addEventListener('click', () => { stateFor(card).bookmarked = !stateFor(card).bookmarked; update(card); });
+    row.append(askButton, save);
+    return row;
+  }
+  function evidenceContent(card) {
+    const source = card.sources[0];
+    const wrap = el('div', 'thesis-content thesis-evidence');
+    wrap.dataset.thesis = card.social.key;
+    wrap.dataset.generationMode = card.social.generationMode || 'auto';
+    wrap.dataset.previewReady = 'true';
+    const head = identity(source, card.social.age);
+    head.classList.add('thesis-evidence-identity');
+    const main = el('div', 'thesis-evidence-main');
+    const text = (card.social.paragraphs || card.social.statements || [''])[0];
+    const body = btn('thesis-body thesis-evidence-open', 'Read ' + card.tickers.map(ticker => ticker.sym).join(', ') + ' thesis');
+    const excerpt = el('p', 'thesis-evidence-excerpt', text);
+    const canExpand = text.length > 180;
+    if (canExpand) excerpt.classList.add('is-clamped');
+    body.append(excerpt);
+    body.addEventListener('click', () => openDetail(card));
+    main.append(body);
+    if (canExpand) {
+      const more = btn('thesis-evidence-more', 'Show more thesis by ' + source.name);
+      more.textContent = 'Show more';
+      more.setAttribute('aria-expanded', 'false');
+      more.addEventListener('click', () => {
+        const before = excerpt.offsetHeight;
+        excerpt.classList.remove('is-clamped');
+        const after = excerpt.scrollHeight;
+        more.setAttribute('aria-expanded', 'true');
+        more.remove();
+        if (before !== after && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          excerpt.animate([
+            { height: before + 'px', overflow: 'hidden' },
+            { height: after + 'px', overflow: 'hidden' },
+          ], { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        }
+      });
+      main.append(more);
+    }
+    main.append(el('p', 'thesis-evidence-note', card.social.researchType));
+    const links = el('div', 'thesis-evidence-sources');
+    card.social.sourceLinks.forEach((url, index) => {
+      const link = el('a');
+      link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+      link.textContent = 'Source ' + (index + 1) + ' \u2197';
+      links.append(link);
+    });
+    main.append(links);
+    if (card.tickers.length) {
+      const tickers = el('div', 'thesis-evidence-tickers');
+      card.tickers.forEach(ticker => {
+        const tag = el('span', 'thesis-evidence-ticker');
+        tag.append('$' + ticker.sym);
+        if (ticker.evidenceLabel) tag.append(el('small', null, ticker.evidenceLabel));
+        tickers.append(tag);
+      });
+      main.append(tickers);
+    }
+    if (card.social.proxyNote) main.append(el('p', 'thesis-evidence-proxy', card.social.proxyNote));
+    main.append(evidenceFooter(card));
+    wrap.append(head, main);
+    return wrap;
+  }
   function content(card, { full = false, compact = false, detail = false } = {}) {
+    if (card.social.evidenceStyle && !full && !compact) return evidenceContent(card);
     const wrap = el('div', 'thesis-content' + (compact ? ' thesis-compact' : '') + (full ? ' thesis-full' : ''));
     const source = card.sources[0];
     wrap.dataset.thesis = card.social.key;
@@ -71,8 +148,13 @@ export function createThesisCard(ui) {
     if (card.tickers.length) {
       const tickers = el('div', 'thesis-tickers');
       card.tickers.forEach(ticker => {
-        const tag = btn('social-ticker', ticker.sym + ' details'); tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym));
-        tag.addEventListener('click', () => openTicker(ticker)); tickers.append(tag);
+        if (ticker.interactive === false || !ticker.logo) {
+          const tag = el('span', 'social-ticker thesis-static-ticker');
+          tag.append(el('span', null, ticker.sym)); tickers.append(tag);
+        } else {
+          const tag = btn('social-ticker', ticker.sym + ' details'); tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym));
+          tag.addEventListener('click', () => openTicker(ticker)); tickers.append(tag);
+        }
       });
       wrap.append(tickers);
     }

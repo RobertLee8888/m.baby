@@ -24,7 +24,7 @@
 (async function () {
   'use strict';
   const socialModule = document.documentElement.dataset.feedVariant === 'social'
-    ? await import('./mvp-social.js?v=8') : null;
+    ? await import('./mvp-social.js?v=9') : null;
   let socialUI = null;
 
   const A = 'assets/';
@@ -2356,7 +2356,7 @@
       const boundary = visible.findIndex(card => !latestBatch.has(card));
       if (boundary > 0) nodes.splice(boundary, 0, seenLine());
     }
-    if (!socialModule && selectedTicker === 'All' && !portfolioEntryDismissed) {
+    if (selectedTicker === 'All' && !portfolioEntryDismissed) {
       if (!portfolioEntryNode) portfolioEntryNode = createPortfolioEntry();
       nodes.unshift(portfolioEntryNode);
     }

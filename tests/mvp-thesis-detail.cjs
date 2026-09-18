@@ -176,8 +176,8 @@ fs.mkdirSync(output, { recursive: true });
 
     await ready({ post: 'P04' });
     await detail().getByRole('tab', { name: 'Related theses' }).click();
-    assert.equal(await detail().locator('.thesis-empty').textContent(), 'No related theses');
-    await shot('related-empty-393');
+    assert.ok(await detail().locator('.social-detail-panel .card').count() > 0);
+    await shot('related-theses-393');
     await ready({ post: 'P01', version: 'P01-jul3' });
     assert.equal(await detail().getAttribute('data-version'), 'latest');
     assert.ok((await page.locator('#toast').textContent()).includes('Opened the latest version'));
