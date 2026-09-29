@@ -24,7 +24,7 @@
 (async function () {
   'use strict';
   const socialModule = document.documentElement.dataset.feedVariant === 'social'
-    ? await import('./mvp-social.js?v=12') : null;
+    ? await import('./mvp-social.js?v=13') : null;
   let socialUI = null;
 
   const A = 'assets/';

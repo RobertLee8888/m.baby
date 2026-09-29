@@ -136,8 +136,27 @@ fs.mkdirSync(output, { recursive: true });
     await cards.first().locator('.thesis-body').click(); await settle();
     assert.equal(await detail().locator('.thesis-owner-update').count(), 1);
     assert.equal(await detail().locator('.thesis-update-rail').count(), 0);
+    assert.deepEqual(await detail().evaluate(node => {
+      const box = selector => {
+        const value = node.querySelector(selector).getBoundingClientRect();
+        return [Math.round(value.x), Math.round(value.y), Math.round(value.width), Math.round(value.height)];
+      };
+      const update = node.querySelector('.thesis-owner-update').getBoundingClientRect();
+      const settings = node.querySelector('.thesis-detail-settings').getBoundingClientRect();
+      return {
+        update: box('.thesis-owner-update'),
+        settings: box('.thesis-detail-settings'),
+        icon: box('.thesis-detail-settings .ic'),
+        gap: Math.round(settings.left - update.right),
+        right: Math.round(innerWidth - settings.right),
+      };
+    }), {
+      update: [257, 14, 84, 28], settings: [357, 10, 20, 36],
+      icon: [357, 18, 20, 20], gap: 16, right: 16,
+    });
+    assert.equal(await page.evaluate(() => document.elementFromPoint(351, 28)?.closest('button')?.ariaLabel), 'Thesis settings');
     await shot('owner-393');
-    await detail().getByRole('button', { name: 'More thesis options' }).click();
+    await detail().getByRole('button', { name: 'Thesis settings' }).click();
     assert.deepEqual(await detail().getByRole('menuitem').allTextContents(), ['Archive thesis', 'Make private']);
     await page.waitForTimeout(160);
     assert.deepEqual(await detail().locator('.thesis-detail-menu').evaluate(node => {
@@ -148,15 +167,19 @@ fs.mkdirSync(output, { recursive: true });
     await detail().getByRole('menuitem', { name: 'Archive thesis' }).click();
     assert.equal(await detail().locator('.thesis-latest-badge').textContent(), 'Archived');
     assert.equal(await detail().locator('.thesis-owner-update').count(), 0);
+    assert.deepEqual(await detail().locator('.thesis-detail-settings').evaluate(node => {
+      const value = node.getBoundingClientRect();
+      return [Math.round(value.x), Math.round(value.y), Math.round(value.width), Math.round(value.height)];
+    }), [357, 10, 20, 36]);
     await page.evaluate(() => window.ownerState = JSON.parse(localStorage.getItem('alva-social-feed-v1')));
     assert.equal(await page.evaluate(() => window.ownerState['owner:P06'].archived), true);
     assert.equal(await page.evaluate(() => window.ownerState.P06.archived), false);
-    await detail().getByRole('button', { name: 'More thesis options' }).click();
+    await detail().getByRole('button', { name: 'Thesis settings' }).click();
     await detail().getByRole('menuitem', { name: 'Unarchive thesis' }).click();
-    await detail().getByRole('button', { name: 'More thesis options' }).click();
+    await detail().getByRole('button', { name: 'Thesis settings' }).click();
     await detail().getByRole('menuitem', { name: 'Make private' }).click();
     assert.deepEqual(await detail().locator('.thesis-latest-badge').allTextContents(), ['Latest', 'Private']);
-    await detail().getByRole('button', { name: 'More thesis options' }).click();
+    await detail().getByRole('button', { name: 'Thesis settings' }).click();
     await detail().getByRole('menuitem', { name: 'Make public' }).click();
     await page.evaluate(() => { Object.defineProperty(navigator, 'share', { configurable: true, value: async data => { window.ownerShare = data; } }); });
     await detail().getByRole('button', { name: 'Share thesis' }).click();

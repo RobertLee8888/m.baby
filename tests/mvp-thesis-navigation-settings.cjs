@@ -152,6 +152,24 @@ fs.mkdirSync(output, { recursive: true });
     await tab('me').click(); await settle();
     await assertMeChrome();
     const me = page.locator('.thesis-me');
+    assert.deepEqual(await me.locator('.thesis-me-top').evaluate(node => {
+      const box = element => {
+        const value = element.getBoundingClientRect();
+        return [Math.round(value.x), Math.round(value.y), Math.round(value.width), Math.round(value.height)];
+      };
+      const buttons = [...node.querySelectorAll('.social-page-tool')];
+      return {
+        buttons: buttons.map(box),
+        icons: buttons.map(button => box(button.querySelector('.ic'))),
+        gaps: buttons.slice(1).map((button, index) => Math.round(button.getBoundingClientRect().left - buttons[index].getBoundingClientRect().right)),
+        right: Math.round(innerWidth - buttons.at(-1).getBoundingClientRect().right),
+      };
+    }), {
+      buttons: [[285, 23, 20, 20], [321, 23, 20, 20], [357, 23, 20, 20]],
+      icons: [[285, 23, 20, 20], [321, 23, 20, 20], [357, 23, 20, 20]],
+      gaps: [16, 16], right: 16,
+    });
+    assert.equal(await page.evaluate(() => document.elementFromPoint(279, 31)?.closest('button')?.ariaLabel), 'Edit profile');
     const meScroll = me.locator('.thesis-root-scroll');
     await meScroll.evaluate(node => { node.scrollTop = 0; });
     const before = await meScroll.evaluate(node => node.scrollHeight);
@@ -163,8 +181,34 @@ fs.mkdirSync(output, { recursive: true });
     const after = await meScroll.evaluate(node => node.scrollHeight);
     assert.ok(Math.abs(after - before) <= 1, 'Me tab height must remain stable');
     assert.ok((await me.locator('.thesis-profile-pages').evaluate(node => node.offsetHeight)) >= (await meScroll.evaluate(node => node.clientHeight)) - 80);
-
     await me.getByRole('button', { name: 'Settings', exact: true }).click();
+    await settle();
+    assert.equal(await active().getAttribute('data-social-page'), 'settings');
+    await page.goBack(); await settle();
+
+    const ownerUrl = new URL(base); ownerUrl.searchParams.set('profile', 'owner');
+    await ready(ownerUrl.href);
+    const ownerProfile = active();
+    assert.equal(await ownerProfile.getAttribute('data-profile'), 'owner');
+    assert.deepEqual(await ownerProfile.locator('.social-page-top').evaluate(node => {
+      const box = element => {
+        const value = element.getBoundingClientRect();
+        return [Math.round(value.x), Math.round(value.y), Math.round(value.width), Math.round(value.height)];
+      };
+      const buttons = [...node.querySelectorAll('.social-page-tool')];
+      return {
+        buttons: buttons.map(box),
+        icons: buttons.map(button => box(button.querySelector('.ic'))),
+        gaps: buttons.slice(1).map((button, index) => Math.round(button.getBoundingClientRect().left - buttons[index].getBoundingClientRect().right)),
+        right: Math.round(innerWidth - buttons.at(-1).getBoundingClientRect().right),
+      };
+    }), {
+      buttons: [[285, 10, 20, 36], [321, 10, 20, 36], [357, 10, 20, 36]],
+      icons: [[285, 18, 20, 20], [321, 18, 20, 20], [357, 18, 20, 20]],
+      gaps: [16, 16], right: 16,
+    });
+    assert.equal(await page.evaluate(() => document.elementFromPoint(279, 28)?.closest('button')?.ariaLabel), 'Edit profile');
+    await ownerProfile.getByRole('button', { name: 'Settings', exact: true }).click();
     await settle();
     const settings = active();
     assert.equal(await settings.getAttribute('data-social-page'), 'settings');
