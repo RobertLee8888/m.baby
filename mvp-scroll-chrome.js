@@ -6,7 +6,13 @@ const STICKY_EDGE_SELECTOR = [
   '.thesis-profile-pinned',
 ].join(',');
 
-export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SELECTOR, attached, collapse = false } = {}) {
+export function bindScrollChrome(top, scroll, {
+  stickySelector = STICKY_EDGE_SELECTOR,
+  attached,
+  collapse = false,
+  divider = 'auto',
+  onPaint,
+} = {}) {
   if (!top || !scroll) return () => {};
 
   top.classList.add('scroll-chrome-top');
@@ -14,8 +20,9 @@ export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SEL
 
   function paint() {
     frame = 0;
+    const scrollTop = scroll.scrollTop;
+    const progress = Math.min(1, Math.max(0, scrollTop / 58));
     if (collapse) {
-      const progress = Math.min(1, Math.max(0, scroll.scrollTop / 58));
       top.parentElement?.style.setProperty('--thesis-bar-p', progress.toFixed(4));
     }
     const viewport = scroll.getBoundingClientRect();
@@ -26,7 +33,11 @@ export function bindScrollChrome(top, scroll, { stickySelector = STICKY_EDGE_SEL
       const bounds = node.getBoundingClientRect();
       return bounds.top <= viewport.top + 1 && bounds.bottom > viewport.top + 1;
     });
-    top.classList.toggle('has-scroll-divider', scroll.scrollTop > 0.5 && !pinned);
+    const dividerVisible = divider === 'always'
+      || (divider === 'scroll' && scrollTop > 0.5)
+      || (divider === 'auto' && scrollTop > 0.5 && !pinned);
+    top.classList.toggle('has-scroll-divider', dividerVisible);
+    onPaint?.({ scrollTop, progress, pinned, viewport });
   }
 
   function schedule() {
