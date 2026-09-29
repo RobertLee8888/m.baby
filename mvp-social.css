@@ -74,6 +74,7 @@
   content: '';
   opacity: 0;
   pointer-events: none;
+  transform: translateY(-100%);
 }
 .scroll-chrome-top.has-scroll-divider::after { opacity: 1; }
 .social-page { position: absolute; inset: var(--status-h) 0 calc(var(--tab-h) + var(--home-h)); display: flex; flex-direction: column; background: var(--bg-container); overflow: hidden; }

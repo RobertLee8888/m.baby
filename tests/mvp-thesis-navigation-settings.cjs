@@ -27,18 +27,62 @@ fs.mkdirSync(output, { recursive: true });
     await settle();
   }
 
-  async function assertCollapse(rootSelector, topSelector) {
-    const root = page.locator(rootSelector);
-    const top = root.locator(topSelector);
+  async function assertSearchChrome() {
+    const root = page.locator('.thesis-search');
+    const top = root.locator('.thesis-root-title');
     const scroll = root.locator('.thesis-root-scroll');
+    const form = root.locator('.thesis-search-entry');
     await scroll.evaluate(node => { node.scrollTop = 0; });
     assert.equal(Math.round(await top.evaluate(node => node.getBoundingClientRect().height)), 58);
+    assert.equal(Math.round(await form.evaluate(node => node.getBoundingClientRect().top)), 58);
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), false);
+    await scroll.evaluate(node => { node.scrollTop = 12; });
+    await page.waitForTimeout(40);
+    assert.ok(Math.abs((await top.evaluate(node => node.getBoundingClientRect().height)) - 46) < 1);
+    assert.ok((await top.locator('h1').evaluate(node => Number.parseFloat(getComputedStyle(node).opacity))) > 0);
     await scroll.evaluate(node => { node.scrollTop = 29; });
     await page.waitForTimeout(40);
-    assert.ok(Math.abs((await top.evaluate(node => node.getBoundingClientRect().height)) - 29) < 1);
+    assert.ok((await top.locator('h1').evaluate(node => Number.parseFloat(getComputedStyle(node).opacity))) < 0.1);
     await scroll.evaluate(node => { node.scrollTop = 58; });
     await page.waitForTimeout(40);
     assert.ok((await top.evaluate(node => node.getBoundingClientRect().height)) < 1);
+    assert.equal(Math.round(await form.evaluate(node => node.getBoundingClientRect().top)), 0);
+    assert.equal(await form.evaluate(node => node.classList.contains('is-pinned')), true);
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), false);
+    await scroll.evaluate(node => { node.scrollTop = 140; });
+    await page.waitForTimeout(40);
+    assert.equal(Math.round(await form.evaluate(node => node.getBoundingClientRect().top)), 0);
+  }
+
+  async function assertMeChrome() {
+    const root = page.locator('.thesis-me');
+    const top = root.locator('.thesis-me-top');
+    const scroll = root.locator('.thesis-root-scroll');
+    const title = top.locator('h1');
+    const compact = top.locator('.thesis-me-collapsed');
+    await scroll.evaluate(node => { node.scrollTop = 0; });
+    assert.equal(Math.round(await top.evaluate(node => node.getBoundingClientRect().height)), 58);
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), false);
+    assert.equal(await compact.getAttribute('aria-hidden'), 'true');
+    await scroll.evaluate(node => { node.scrollTop = 29; });
+    await page.waitForTimeout(40);
+    assert.equal(Math.round(await top.evaluate(node => node.getBoundingClientRect().height)), 58);
+    assert.ok((await title.evaluate(node => Number.parseFloat(getComputedStyle(node).opacity))) < 0.1);
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), true);
+    await scroll.evaluate(node => { node.scrollTop = 76; });
+    await page.waitForTimeout(100);
+    assert.equal(Math.round(await top.evaluate(node => node.getBoundingClientRect().height)), 58);
+    assert.equal(await compact.getAttribute('aria-hidden'), 'false');
+    assert.ok((await compact.boundingBox()).y >= 10);
+  }
+
+  async function assertFeedChrome() {
+    const top = page.locator('#screenFeed .topbar');
+    await tab('feed').click(); await settle();
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), true);
+    await page.locator('#feed').evaluate(node => { node.scrollTop = 58; });
+    await page.waitForTimeout(40);
+    assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), true);
   }
 
   try {
@@ -89,7 +133,7 @@ fs.mkdirSync(output, { recursive: true });
 
     await page.goto(base); await page.evaluate(() => document.fonts.ready); await settle();
     await tab('market').click(); await settle();
-    await assertCollapse('.thesis-search', '.thesis-root-title');
+    await assertSearchChrome();
     const searchRoot = page.locator('.thesis-search');
     await searchRoot.locator('.thesis-root-scroll').evaluate(node => { node.scrollTop = 0; });
     await searchRoot.getByRole('searchbox', { name: 'Search tickers, people' }).fill('Microsoft');
@@ -104,8 +148,9 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(await searchRoot.getByRole('button', { name: 'Satya Nadella profile' }).isVisible());
     await shot('search-people');
 
+    await assertFeedChrome();
     await tab('me').click(); await settle();
-    await assertCollapse('.thesis-me', '.thesis-me-top');
+    await assertMeChrome();
     const me = page.locator('.thesis-me');
     const meScroll = me.locator('.thesis-root-scroll');
     await meScroll.evaluate(node => { node.scrollTop = 0; });
@@ -148,7 +193,7 @@ fs.mkdirSync(output, { recursive: true });
     await settings.getByRole('tab', { name: 'Alva Agent', exact: true }).click(); await settle();
     await shot('settings-agent-dark');
     assert.deepEqual(errors, []);
-    console.log('Thesis detail media, tab motion, collapsing chrome, stable profile tabs and Settings checks passed.');
+    console.log('Thesis detail media, tab motion, scroll chrome, stable profile tabs and Settings checks passed.');
   } finally {
     await browser.close();
   }

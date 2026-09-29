@@ -1,6 +1,7 @@
 import { PROFILES } from './mvp-social-detail-data.js';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js?v=2';
 import { readStored, writeStored } from './mvp-thesis-controls.js?v=3';
+import { bindScrollChrome } from './mvp-scroll-chrome.js?v=3';
 import { createThesisSettings } from './mvp-thesis-settings.js?v=1';
 
 export function createThesisProfiles(ui, controls) {
@@ -77,7 +78,12 @@ export function createThesisProfiles(ui, controls) {
     const shell = rootTab ? { page: el('div', 'thesis-root thesis-me'), top: el('header', 'thesis-me-top'), scroll: el('div', 'thesis-root-scroll') } : pageShell('Profile');
     const { page, top, scroll } = shell;
     page.dataset.socialPage = 'profile'; page.dataset.profile = profile.id;
-    if (rootTab) { top.append(el('h1', null, 'Me')); page.append(top, scroll); scroll.append(el('div', 'thesis-root-lead')); }
+    const rootTitle = rootTab ? el('h1', null, 'Me') : null;
+    const rootIdentity = rootTab ? el('div', 'thesis-me-collapsed') : null;
+    if (rootTab) {
+      rootIdentity.setAttribute('aria-hidden', 'true'); rootIdentity.inert = true;
+      top.append(rootTitle, rootIdentity); page.append(top, scroll); scroll.append(el('div', 'thesis-root-lead'));
+    }
     function tool(label, asset, run) {
       const b = btn('social-page-tool', label); b.append(glyph(asset)); b.addEventListener('click', run); return b;
     }
@@ -89,12 +95,15 @@ export function createThesisProfiles(ui, controls) {
     }));
     if (profile.owner) top.append(tool('Settings', assets.profile.imgSettingsL, settingsPage.open));
     const header = el('div', 'thesis-profile-header');
+    let identityNode = null;
     const collapsed = !rootTab ? el('span', 'thesis-profile-collapsed') : null;
     if (collapsed) { collapsed.setAttribute('aria-hidden', 'true'); top.querySelector('h1').append(collapsed); }
     function refreshHeader() {
       header.replaceChildren();
-      const identity = el('div', 'thesis-profile-identity'); const portrait = controls.portrait(profile);
+      const identity = el('div', 'thesis-profile-identity'); identityNode = identity;
+      const portrait = controls.portrait(profile);
       if (collapsed) collapsed.replaceChildren(controls.portrait(profile), controls.nameLabel(profile));
+      if (rootIdentity) rootIdentity.replaceChildren(controls.portrait(profile), controls.nameLabel(profile));
       const info = el('div', 'thesis-profile-info'); const name = controls.nameLabel(profile);
       if (profile.pro) name.append(el('span', 'social-pro', 'Pro')); info.append(name);
       if (profile.joined) {
@@ -171,6 +180,22 @@ export function createThesisProfiles(ui, controls) {
     pinned.append(statusTabs); scroll.append(pinned, pager.viewport);
     pager.viewport.classList.add('thesis-profile-pages');
     const stopSizing = controls.fitPager(pager, scroll, pinned);
+    if (rootTab) {
+      bindScrollChrome(top, scroll, {
+        divider: 'scroll',
+        onPaint({ scrollTop }) {
+          const titleProgress = Math.min(1, Math.max(0, scrollTop / 32));
+          const identityBottom = identityNode.offsetTop + identityNode.offsetHeight;
+          const revealStart = Math.max(0, identityBottom - top.offsetHeight);
+          const identityProgress = Math.min(1, Math.max(0, (scrollTop - revealStart) / 20));
+          page.style.setProperty('--thesis-title-p', titleProgress.toFixed(4));
+          page.style.setProperty('--thesis-profile-p', identityProgress.toFixed(4));
+          const visible = identityProgress > 0.001;
+          rootIdentity.setAttribute('aria-hidden', String(!visible));
+          rootIdentity.inert = !visible;
+        },
+      });
+    }
     if (collapsed) scroll.addEventListener('scroll', () => {
       const visible = scroll.scrollTop >= header.offsetHeight;
       collapsed.classList.toggle('is-visible', visible); collapsed.setAttribute('aria-hidden', String(!visible));

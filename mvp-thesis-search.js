@@ -1,12 +1,13 @@
 import { ASSET_TYPES, SEARCH_TICKERS, PEOPLE } from './mvp-thesis-data.js';
 import { readStored, writeStored } from './mvp-thesis-controls.js?v=3';
+import { bindScrollChrome } from './mvp-scroll-chrome.js?v=3';
 
 export function createThesisSearch(ui, controls) {
   const { el, btn, icon, openTicker, openProfile } = ui;
   const root = el('div', 'thesis-root thesis-search');
   const title = el('header', 'thesis-root-title'); title.append(el('h1', null, 'Search')); root.append(title);
   const scroll = el('div', 'thesis-root-scroll'); root.append(scroll);
-  scroll.append(el('div', 'thesis-root-lead'));
+  const lead = el('div', 'thesis-root-lead'); scroll.append(lead);
   const form = el('form', 'thesis-search-entry');
   const field = el('div', 'thesis-search-field'); field.append(icon('thesis/search-imgSearchL.svg'));
   const input = el('input'); input.type = 'search'; input.placeholder = 'Search tickers, people'; input.setAttribute('aria-label', 'Search tickers, people'); input.autocomplete = 'off'; input.maxLength = 200;
@@ -107,5 +108,13 @@ export function createThesisSearch(ui, controls) {
   input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(render, 120); });
   form.addEventListener('submit', event => { event.preventDefault(); render(); input.blur(); });
   render();
-  return { root, refresh: render };
+  const chromeCleanup = bindScrollChrome(title, scroll, {
+    collapse: true,
+    divider: 'none',
+    onPaint({ scrollTop }) {
+      const pinned = scrollTop >= lead.offsetHeight - 0.5;
+      form.classList.toggle('is-pinned', pinned);
+    },
+  });
+  return { root, refresh: render, destroy: chromeCleanup };
 }
