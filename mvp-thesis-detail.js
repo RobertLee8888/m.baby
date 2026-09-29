@@ -54,8 +54,8 @@ export function createThesisDetail(ui) {
     page.classList.add('thesis-detail');
     top.querySelector('h1').remove();
     top.append(identity(base.sources[0]));
-    const menuTrigger = btn('thesis-detail-more', 'More thesis options');
-    menuTrigger.append(icon('thesis/detail/more.svg'));
+    const menuTrigger = btn('thesis-detail-settings', 'Thesis settings');
+    menuTrigger.append(icon('thesis/profile-imgSettingsL.svg'));
     menuTrigger.setAttribute('aria-expanded', 'false');
     const menu = el('div', 'thesis-detail-menu'); menu.setAttribute('role', 'menu'); menu.hidden = true;
     const dismiss = el('div', 'thesis-menu-dismiss'); dismiss.hidden = true;
