@@ -7,7 +7,7 @@
 [data-feed-variant="social"] #cards { padding-bottom: 64px; }
 [data-feed-variant="social"] .social-role { color: var(--n5); }
 [data-feed-variant="social"] #screenFeed .topbar { box-shadow: none; }
-[data-feed-variant="social"] #screenFeed .topbar h1 { margin: 12px 0; }
+[data-feed-variant="social"] #screenFeed .topbar h1 { margin: 12px 0; transform: none; }
 .thesis-content { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-xs); padding: var(--space-s) var(--gutter) var(--space-xxxs); min-width: 0; letter-spacing: 0; color: var(--n9); }
 .thesis-content > * { min-width: 0; }
 .thesis-create { position: absolute; z-index: 15; right: var(--gutter); bottom: calc(var(--tab-h) + var(--home-h) + var(--gutter)); display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--m1); color: var(--nr10); box-shadow: var(--shadow-xs); }
@@ -145,7 +145,7 @@
 .thesis-me-top { display: flex; align-items: flex-start; height: 58px; padding: 0 var(--gutter); gap: var(--space-m); }
 .thesis-me-top h1 { flex: 1; margin: 16px 0 8px; font-size: 24px; line-height: 34px; font-weight: 500; }
 .thesis-me-top h1 { opacity: calc(1 - var(--thesis-title-p)); transform: none; }
-.thesis-me-top .social-page-tool { position: relative; flex-basis: 20px; width: 20px; height: 20px; margin-top: 23px; }
+.thesis-me-top .social-page-tool { position: relative; flex-basis: 20px; width: 20px; height: 20px; margin-top: 23px; transform: translate3d(0, calc(-4px * var(--thesis-profile-p)), 0); will-change: transform; }
 .thesis-me-top .social-page-tool::before { position: absolute; inset: -8px; content: ''; }
 .thesis-me-top .ic { width: 20px; height: 20px; }
 .thesis-me-collapsed { position: absolute; top: 13px; left: var(--gutter); z-index: 1; display: flex; align-items: center; gap: var(--space-xs); max-width: calc(100% - 160px); color: var(--n9); opacity: var(--thesis-profile-p); transform: translate3d(0, calc(8px * (1 - var(--thesis-profile-p))), 0); pointer-events: none; will-change: opacity, transform; }
