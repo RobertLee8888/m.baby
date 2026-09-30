@@ -99,6 +99,11 @@ const TICKER_ASSETS = {
   USO: 'assets/thesis/reference-logo-uso.png', XYZ: 'assets/thesis/reference-logo-xyz.svg',
 };
 
+const TICKER_TRENDS = {
+  SPY: 'bull', NVDA: 'bull', MSFT: 'bull', GOOGL: 'bear', AMZN: 'bull', META: 'bull', AMD: 'bull',
+  USO: 'bull', TSLA: 'bull', XYZ: 'bull', HOOD: 'bull', QQQ: 'bull',
+};
+
 const CHART_ASSETS = {
   SPY: 'assets/thesis/reference-chart-spy.png',
   NVDA: 'assets/thesis/S02-imgChart1.png',
@@ -132,7 +137,7 @@ function sourceRecords(record) {
 
 function tickerRecords(record) {
   return record.tickers.map(([sym]) => ({
-    sym, co: sym, stance: 'flat', logo: TICKER_ASSETS[sym], interactive: false,
+    sym, co: sym, stance: TICKER_TRENDS[sym] || 'flat', logo: TICKER_ASSETS[sym], interactive: false,
   }));
 }
 
@@ -146,7 +151,8 @@ export function thesisCards(cards, random = Math.random) {
       const social = { ...card.social, nodeId: card.social.nodeId, generationMode: 'manual', thesisType: 'Thesis update',
         charts: Object.entries(art).filter(([name]) => /^imgChart/.test(name)).map(([, src]) => src),
         paragraphs: ARTICLE.paragraphs };
-      return { ...card, age: social.age, social, sources: [source], blocks: [] };
+      const tickers = card.tickers.map(ticker => ({ ...ticker, stance: TICKER_TRENDS[ticker.sym] || ticker.stance || 'flat' }));
+      return { ...card, age: social.age, social, sources: [source], tickers, blocks: [] };
     }
     const sources = sourceRecords(record);
     const paragraphs = [record.thesis];

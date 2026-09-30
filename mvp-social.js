@@ -1,7 +1,7 @@
 import { SOCIAL_POSTS } from './mvp-social-data.js?v=2';
-import { createSocialPages } from './mvp-social-pages.js?v=13';
-import { thesisCards } from './mvp-thesis-data.js?v=3';
-import { createThesisCard } from './mvp-thesis-card.js?v=5';
+import { createSocialPages } from './mvp-social-pages.js?v=14';
+import { thesisCards } from './mvp-thesis-data.js?v=4';
+import { createThesisCard } from './mvp-thesis-card.js?v=6';
 import { createThesisControls } from './mvp-thesis-controls.js?v=3';
 import { createThesisSearch } from './mvp-thesis-search.js?v=4';
 import { THESIS_ASSETS as assets } from './mvp-thesis-assets.js';

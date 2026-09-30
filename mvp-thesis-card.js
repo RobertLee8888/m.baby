@@ -5,6 +5,7 @@ import { thesisMedia } from './mvp-thesis-media.js';
 export function createThesisCard(ui) {
   const { el, img, btn, icon, identity, stockLogo, stateFor, bind, update, openTicker, openSources, openDetail, ask } = ui;
   const glyph = path => icon(path.replace(/^assets\//, ''));
+  const trendLabels = { bull: 'upward', bear: 'downward', flat: 'flat' };
   function sourceParagraph(card, { attributed = false } = {}) {
     const row = el('p', 'thesis-sources');
     const domains = new Map();
@@ -26,8 +27,17 @@ export function createThesisCard(ui) {
     return row;
   }
   const preview = createPreviewLayout({ el, sourceParagraph });
-  function typeTag(type = 'New thesis') {
-    return el('span', 'thesis-type ' + ({ 'New thesis': 'is-new', 'Thesis update': 'is-update', Archived: 'is-archived' }[type]), type);
+  function archivedTag() {
+    return el('span', 'thesis-type is-archived', 'Archived');
+  }
+  function tickerTrend(ticker) {
+    const stance = trendLabels[ticker.stance] ? ticker.stance : 'flat';
+    const trend = el('span', 'stance thesis-ticker-trend ' + stance);
+    const dial = el('span', 'stance-dial');
+    trend.setAttribute('aria-hidden', 'true');
+    dial.append(glyph('assets/ui-arrow-stance.svg'));
+    trend.append(dial);
+    return { trend, label: trendLabels[stance] };
   }
   function footer(card) {
     const row = el('div', 'thesis-actions');
@@ -50,7 +60,10 @@ export function createThesisCard(ui) {
     const source = card.sources[0];
     wrap.dataset.thesis = card.social.key;
     wrap.dataset.generationMode = card.social.generationMode || 'auto';
-    if (!detail) wrap.append(identity({ ...source, role: compact ? '' : source.role, handle: compact ? '' : source.handle }, card.social.age), typeTag(card.social.thesisType));
+    if (!detail) {
+      wrap.append(identity({ ...source, role: compact ? '' : source.role, handle: compact ? '' : source.handle }, card.social.age));
+      if (card.social.thesisType === 'Archived') wrap.append(archivedTag());
+    }
     const body = el(full ? 'div' : 'button', 'thesis-body');
     if (!full) { body.type = 'button'; body.setAttribute('aria-label', 'Open thesis'); body.addEventListener('click', () => openDetail(card)); }
     const paragraphs = full || card.social.generationMode === 'manual' ? card.social.paragraphs || card.social.statements : [summaryPreview(card.social.statements[0])];
@@ -71,12 +84,15 @@ export function createThesisCard(ui) {
     if (card.tickers.length) {
       const tickers = el('div', 'thesis-tickers');
       card.tickers.forEach(ticker => {
+        const { trend, label } = tickerTrend(ticker);
         if (ticker.interactive === false) {
           const tag = el('span', 'social-ticker thesis-static-ticker');
+          tag.setAttribute('aria-label', ticker.sym + ', ' + label + ' trend');
           if (ticker.logo) tag.append(stockLogo(ticker, 'social-stock-logo'));
-          tag.append(el('span', null, ticker.sym)); tickers.append(tag);
+          tag.append(el('span', null, ticker.sym), trend); tickers.append(tag);
         } else {
-          const tag = btn('social-ticker', ticker.sym + ' details'); tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym));
+          const tag = btn('social-ticker', ticker.sym + ', ' + label + ' trend, details');
+          tag.append(stockLogo(ticker, 'social-stock-logo'), el('span', null, ticker.sym), trend);
           tag.addEventListener('click', () => openTicker(ticker)); tickers.append(tag);
         }
       });
@@ -86,5 +102,5 @@ export function createThesisCard(ui) {
     if (!full && card.social.generationMode === 'manual') { wrap.dataset.previewReady = 'false'; preview.attach(wrap, card); }
     return wrap;
   }
-  return { content, footer, sourceParagraph, typeTag, preview };
+  return { content, footer, sourceParagraph, preview };
 }

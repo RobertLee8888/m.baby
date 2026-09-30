@@ -150,12 +150,12 @@ export function createSocialPages(ui) {
     if (card.social.key !== 'P01') return cards.filter(other => other !== card && other.tickers.some(t => card.tickers.some(c => c.sym === t.sym))).slice(0, 2);
     const g = cards.find(c => c.social.key === 'P01');
     return [
-      variant(g, { blocks: [], sources: [{ ...PROFILES.chamath, bot: true, handle: '@chamath', role: '@chamath', url: 'https://x.com/chamath' }], tickers: [g.tickers[0]].map(t => ({ ...t, stance: 'flat' })) }, {
+      variant(g, { blocks: [], sources: [{ ...PROFILES.chamath, bot: true, handle: '@chamath', role: '@chamath', url: 'https://x.com/chamath' }], tickers: [g.tickers[0]] }, {
         key: 'related-chamath', age: 'Updated Jul 24', actions: ['Dig Deeper'], counts: ['18', '218', '32'],
         statements: ['Google can monetize AI across chips, cloud, applications and advertising; a fragmented model landscape can still benefit an integrated platform with strong capital-allocation capabilities.'],
         analysis: 'His views evolved across the window. Historical ROIC cited in the interview has not been independently recalculated here.',
       }),
-      variant(g, { blocks: [], sources: [{ ...g.sources[0], role: '@GavinSBaker', url: 'https://x.com/GavinSBaker' }], tickers: [g.tickers[2], g.tickers[1], g.tickers[0]].map(t => ({ ...t, stance: 'flat' })) }, {
+      variant(g, { blocks: [], sources: [{ ...g.sources[0], role: '@GavinSBaker', url: 'https://x.com/GavinSBaker' }], tickers: [g.tickers[2], g.tickers[1], g.tickers[0]] }, {
         key: 'related-gavin', age: 'Jul 29', actions: ['Dig Deeper'], counts: ['18', '218', '32'],
         statements: ['1. Market is overreacting to hyperscale credit spreads widening.\n2. Spot pricing for renting GPU compute materially above contracted rates implies hyperscalers are under-earning on their installed fleet.\n3. Operating cash flow acceleration is an underestimated source of funds for AI.'],
         analysis: 'GPU rental rates and operating cash flow are the key checks on this returns thesis.',

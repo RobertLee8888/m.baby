@@ -13,8 +13,6 @@
 .thesis-create { position: absolute; z-index: 15; right: var(--gutter); bottom: calc(var(--tab-h) + var(--home-h) + var(--gutter)); display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--m1); color: var(--nr10); box-shadow: var(--shadow-xs); }
 .thesis-create .ic { width: 20px; height: 20px; }
 .thesis-type { align-self: flex-start; height: 22px; padding: 1px 6px; border-radius: var(--radius-btn-s); font-size: 12px; font-weight: 500; line-height: 20px; }
-.thesis-type.is-new { color: var(--m3); background: color-mix(in srgb, var(--m3) 10%, transparent); }
-.thesis-type.is-update { color: var(--m2); background: var(--m2-10); }
 .thesis-type.is-archived { color: var(--n5); background: var(--br05); }
 .thesis-body { display: block; width: 100%; text-align: left; color: var(--n9); font-size: 14px; line-height: 22px; font-weight: 400; overflow-wrap: anywhere; }
 .thesis-body p + p { margin-top: var(--space-s); }
@@ -28,6 +26,10 @@
 .thesis-chart img.is-cover { object-fit: cover; }
 .thesis-tickers { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs); margin-top: var(--space-xxs); }
 .thesis-actions { display: flex; align-items: center; justify-content: space-between; min-height: 36px; margin-top: var(--space-xxs); }
+.thesis-content:not(.thesis-full) { gap: var(--space-s); }
+.thesis-content:not(.thesis-full) > .thesis-charts,
+.thesis-content:not(.thesis-full) > .thesis-tickers,
+.thesis-content:not(.thesis-full) > .thesis-actions { margin-top: 0; }
 .thesis-action { display: flex; align-items: center; gap: var(--space-xxs); min-height: 36px; font-size: 12px; line-height: 20px; color: var(--n7); }
 .thesis-action .ic { width: 16px; height: 16px; }
 .thesis-action[aria-pressed="true"] { color: var(--m1); }
