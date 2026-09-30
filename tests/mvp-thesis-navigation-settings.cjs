@@ -19,6 +19,7 @@ fs.mkdirSync(output, { recursive: true });
   const tab = name => page.locator('#tabBar [data-tab="' + name + '"]');
   const settle = () => page.waitForTimeout(340);
   const shot = name => page.screenshot({ path: output + '/' + name + '.png' });
+  const near = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 0.5, `${label}: ${actual} != ${expected}`);
 
   async function ready(url = base) {
     await page.goto(url);
@@ -73,13 +74,41 @@ fs.mkdirSync(output, { recursive: true });
     await page.waitForTimeout(100);
     assert.equal(Math.round(await top.evaluate(node => node.getBoundingClientRect().height)), 58);
     assert.equal(await compact.getAttribute('aria-hidden'), 'false');
-    assert.ok((await compact.boundingBox()).y >= 10);
+    const collapsedGeometry = await top.evaluate(node => {
+      const center = element => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.top + bounds.height / 2;
+      };
+      const avatar = node.querySelector('.thesis-me-collapsed .thesis-portrait');
+      const icons = [...node.querySelectorAll('.social-page-tool .ic')];
+      return {
+        avatarSize: [avatar.getBoundingClientRect().width, avatar.getBoundingClientRect().height],
+        avatarCenter: center(avatar),
+        iconCenters: icons.map(center),
+      };
+    });
+    assert.deepEqual(collapsedGeometry.avatarSize.map(Math.round), [32, 32]);
+    collapsedGeometry.iconCenters.forEach(value => near(value, collapsedGeometry.avatarCenter, 'Me collapsed avatar/icon center'));
+    await shot('me-collapsed-topbar');
   }
 
   async function assertFeedChrome() {
     const top = page.locator('#screenFeed .topbar');
     await tab('feed').click(); await settle();
     assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), true);
+    const title = top.locator('h1');
+    await page.locator('#feed').evaluate(node => { node.scrollTop = 0; });
+    await page.waitForTimeout(40);
+    const titleStart = await title.evaluate(node => node.getBoundingClientRect().top);
+    assert.equal(await title.evaluate(node => getComputedStyle(node).transform), 'none');
+    await page.locator('#feed').evaluate(node => { node.scrollTop = 12; });
+    await page.waitForTimeout(40);
+    near(await title.evaluate(node => node.getBoundingClientRect().top), titleStart, 'For You title fixed Y during fade');
+    await shot('for-you-title-fade');
+    await page.locator('#feed').evaluate(node => { node.scrollTop = 29; });
+    await page.waitForTimeout(40);
+    near(await title.evaluate(node => node.getBoundingClientRect().top), titleStart, 'For You title fixed Y');
+    assert.equal(await title.evaluate(node => getComputedStyle(node).transform), 'none');
     await page.locator('#feed').evaluate(node => { node.scrollTop = 58; });
     await page.waitForTimeout(40);
     assert.equal(await top.evaluate(node => node.classList.contains('has-scroll-divider')), true);
@@ -152,6 +181,8 @@ fs.mkdirSync(output, { recursive: true });
     await tab('me').click(); await settle();
     await assertMeChrome();
     const me = page.locator('.thesis-me');
+    await me.locator('.thesis-root-scroll').evaluate(node => { node.scrollTop = 0; });
+    await page.waitForTimeout(40);
     assert.deepEqual(await me.locator('.thesis-me-top').evaluate(node => {
       const box = element => {
         const value = element.getBoundingClientRect();
