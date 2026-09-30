@@ -41,9 +41,28 @@ fs.mkdirSync(output, { recursive: true });
     assert.equal(await page.locator('.feed-filters').isVisible(), false);
     assert.equal(await page.locator('#cards .thesis-sources, #cards .social-analysis, #cards .social-engagement').count(), 0);
     assert.equal(await page.locator('#cards .thesis-bookmark').count(), keys.length);
-    assert.equal(await page.locator('#cards .thesis-type').count(), keys.length);
+    assert.equal(await page.locator('#cards .thesis-type').count(), 0);
     assert.equal(await page.locator('#cards .thesis-chart').count(), 17);
     assert.equal(await page.locator('#cards .social-ticker').count(), 17);
+    assert.equal(await page.locator('#cards .social-ticker .stance-dial').count(), 17);
+    assert.deepEqual(await card('P01').locator('.social-ticker').evaluateAll(nodes => nodes.map(node => {
+      const chip = node.getBoundingClientRect();
+      const stance = node.querySelector('.stance');
+      const dial = node.querySelector('.stance-dial').getBoundingClientRect();
+      const arrowNode = node.querySelector('.stance-dial .ic');
+      const arrow = arrowNode.getBoundingClientRect();
+      const arrowStyle = getComputedStyle(arrowNode);
+      return {
+        label: node.getAttribute('aria-label'), direction: [...stance.classList].find(name => ['bull', 'bear', 'flat'].includes(name)),
+        sizes: [chip.height, dial.width, dial.height, parseFloat(arrowStyle.width), parseFloat(arrowStyle.height)],
+        centered: Math.abs((chip.top + chip.height / 2) - (dial.top + dial.height / 2)) < .1,
+        arrowCentered: Math.abs((dial.top + dial.height / 2) - (arrow.top + arrow.height / 2)) < .1,
+      };
+    })), [
+      { label: 'GOOGL, downward trend, details', direction: 'bear', sizes: [28, 12, 12, 8, 8], centered: true, arrowCentered: true },
+      { label: 'AMZN, upward trend, details', direction: 'bull', sizes: [28, 12, 12, 8, 8], centered: true, arrowCentered: true },
+      { label: 'MSFT, upward trend, details', direction: 'bull', sizes: [28, 12, 12, 8, 8], centered: true, arrowCentered: true },
+    ]);
     assert.equal(await page.locator('#cards').getByText('Show more', { exact: true }).count(), 0);
     assert.equal(await page.locator('#cards').getByText(/Research summary|Source 1/).count(), 0);
     const preview = card('P01').locator('.thesis-content');
@@ -56,12 +75,11 @@ fs.mkdirSync(output, { recursive: true });
       const style = getComputedStyle(n);
       const avatar = n.querySelector('.social-avatar').getBoundingClientRect();
       const body = getComputedStyle(n.querySelector('.thesis-body'));
-      const type = n.querySelector('.thesis-type').getBoundingClientRect();
       const actions = n.querySelector('.thesis-actions').getBoundingClientRect();
       return { padding: style.padding, gap: style.gap, avatar: [avatar.width, avatar.height],
-        body: [body.fontSize, body.lineHeight], type: type.height, actions: actions.height };
+        body: [body.fontSize, body.lineHeight], actions: actions.height };
     });
-    assert.deepEqual(v5Geometry, { padding: '12px 16px 2px', gap: '8px', avatar: [32, 32], body: ['14px', '22px'], type: 22, actions: 36 });
+    assert.deepEqual(v5Geometry, { padding: '12px 16px 2px', gap: '12px', avatar: [32, 32], body: ['14px', '22px'], actions: 36 });
     for (const mode of ['light', 'dark']) {
       await page.emulateMedia({ colorScheme: mode });
       await assertBottomDividers(page.locator('#cards > .card'), mode + ' feed');
