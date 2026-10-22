@@ -1,6 +1,8 @@
 import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=4';
+import { CardTransition } from './thesis-card-transition.js?v=5';
 import { ProfileTransition } from './thesis-profile-transition.js?v=1';
+import { TickerTransition } from './thesis-ticker-transition.js?v=1';
+import { TICKERS, TICKER_POSTS, renderTicker } from './thesis-motion-ticker.js?v=1';
 import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
 import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=1';
 
@@ -79,11 +81,13 @@ function tickers(post) {
   const row = el('div', 'motion-tickers');
   row.setAttribute('aria-label', 'Tickers');
   post.tickers.forEach((ticker, index) => {
-    const chip = shared(el('span', 'motion-ticker'), 'ticker-' + index);
-    chip.setAttribute('aria-label', ticker.symbol + ', ' + ticker.stance + ' trend');
+    const chip = shared(button('motion-ticker', ticker.symbol + ', ' + ticker.stance + ' trend', event => {
+      event.stopPropagation(); openTicker(TICKERS.get(ticker.symbol), chip);
+    }), 'ticker-' + index);
+    chip.dataset.ticker = ticker.symbol;
     const trend = el('span', 'motion-trend ' + ticker.stance);
     trend.append(image('assets/social-stance-arrow.svg'));
-    chip.append(image(ticker.logo), document.createTextNode(ticker.symbol), trend); row.append(chip);
+    chip.append(image(ticker.logo, 'motion-ticker-logo'), el('span', 'motion-ticker-symbol', ticker.symbol), trend); row.append(chip);
   });
   return row;
 }
@@ -262,29 +266,42 @@ function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
 
 const postRoute = post => ({ key: 'detail/' + post.id, type: 'detail', id: post.id, hash: '#' + post.id });
 const profileRoute = person => ({ key: 'profile/' + person.id, type: 'profile', id: person.id, hash: '#profile/' + person.id });
+const tickerRoute = ticker => ({ key: 'ticker/' + ticker.symbol, type: 'ticker', id: ticker.symbol, hash: '#ticker/' + ticker.symbol });
+const findPost = id => postFor(id) || TICKER_POSTS.find(post => post.id === id);
 const navigation = new MotionNavigation({
   parse(hash) {
+    if (hash.startsWith('#ticker/')) {
+      const ticker = TICKERS.get(hash.slice(8)); return ticker ? [tickerRoute(ticker)] : [];
+    }
     if (hash.startsWith('#profile/')) {
       const person = PEOPLE.get(hash.slice(9)); return person ? [profileRoute(person)] : [];
     }
-    const post = postFor(hash.slice(1));
-    return !post ? [] : post.authorId ? [profileRoute(personFor(post)), postRoute(post)] : [postRoute(post)];
+    const post = findPost(hash.slice(1));
+    if (!post) return [];
+    if (post.tickerPage) return [tickerRoute(TICKERS.get(post.tickerPage)), postRoute(post)];
+    return post.authorId ? [profileRoute(personFor(post)), postRoute(post)] : [postRoute(post)];
   },
   create(route, source, parentFrame, onSettled) {
     const underlay = parentFrame?.root || feed;
-    const root = !parentFrame && route.type === 'detail' ? detail : el('section', route.type === 'profile' ? 'motion-profile' : 'motion-detail');
+    const root = !parentFrame && route.type === 'detail' ? detail : el('section', route.type === 'ticker' ? 'motion-ticker-page' : 'motion-' + route.type);
     if (!root.id) root.id = route.type === 'profile' && !document.querySelector('#profile') ? 'profile' : 'motion-page-' + ++pageSequence;
     if (!root.isConnected) app.append(root);
     root.hidden = false; root.inert = false; root.setAttribute('aria-hidden', 'false');
     let transition, dispose;
-    if (route.type === 'profile') {
+    if (route.type === 'ticker') {
+      const ticker = TICKERS.get(route.id);
+      source ||= underlay.querySelector(`[data-ticker="${ticker.symbol}"]`);
+      renderTicker(root, ticker, { el, image, icon, button, postCard, back: goBack,
+        settle: () => transition.settle(), share: shareTicker });
+      transition = new TickerTransition({ app, feed: underlay, detail: root, onSettled });
+    } else if (route.type === 'profile') {
       const person = PEOPLE.get(route.id);
       source ||= underlay.querySelector(`[data-person="${person.id}"]`);
       dispose = renderProfile(root, person, { el, image, icon, button, identity, followButton, postCard,
         back: goBack, settle: () => transition.settle(), share: shareProfile });
       transition = new ProfileTransition({ app, feed: underlay, detail: root, onSettled });
     } else {
-      const post = postFor(route.id);
+      const post = findPost(route.id);
       if (!source) {
         source = underlay.querySelector(`[data-post="${post.id}"]`);
         if (!source && !parentFrame) { topic = 'All'; renderFeed(); updateTopics(); source = cards.get(post.id); }
@@ -292,7 +309,7 @@ const navigation = new MotionNavigation({
       }
       if (!source) { root.hidden = true; return null; }
       root.setAttribute('aria-label', 'Thesis detail');
-      dispose = renderDetail(post, root, () => transition.settle(), parentFrame ? 'Back to profile' : 'Back to For You');
+      dispose = renderDetail(post, root, () => transition.settle(), parentFrame ? 'Back to ' + parentFrame.route.type : 'Back to For You');
       for (const selector of ['.motion-tickers', '.motion-charts']) {
         const from = source.querySelector(selector), to = root.querySelector(selector);
         if (from && to) to.scrollLeft = from.scrollLeft;
@@ -303,6 +320,11 @@ const navigation = new MotionNavigation({
   },
 });
 function navigate(post, card) { navigation.open(postRoute(post), card); }
+function openTicker(ticker, chip) {
+  const parent = navigation.frames.at(-2);
+  if (parent?.route.key === 'ticker/' + ticker.symbol) { goBack(); return; }
+  navigation.open(tickerRoute(ticker), chip);
+}
 function openProfile(person, row) {
   // The current author's profile is already directly underneath their thesis.
   const parent = navigation.frames.at(-2);
@@ -314,6 +336,13 @@ async function shareProfile(person) {
   const url = new URL(location.href); url.hash = 'profile/' + person.id;
   try {
     if (navigator.share) await navigator.share({ title: person.name + ' · Alva', url: url.href });
+    else { await navigator.clipboard.writeText(url.href); toast('Link copied'); }
+  } catch (error) { if (error.name !== 'AbortError') toast('Unable to share'); }
+}
+async function shareTicker(ticker) {
+  const url = new URL(location.href); url.hash = 'ticker/' + ticker.symbol;
+  try {
+    if (navigator.share) await navigator.share({ title: ticker.name + ' · Alva', url: url.href });
     else { await navigator.clipboard.writeText(url.href); toast('Link copied'); }
   } catch (error) { if (error.name !== 'AbortError') toast('Unable to share'); }
 }

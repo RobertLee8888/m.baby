@@ -201,6 +201,31 @@
 .motion-profile-anchor-meta > * { position: absolute; top: 0; left: 0; width: 100%; margin: 0; }
 .motion-profile-anchor-meta > .from { opacity: max(0, calc(1 - 2 * var(--p))); }
 .motion-profile-anchor-meta > .to { opacity: max(0, calc(2 * var(--p) - 1)); }
+
+/* Ticker / Theses: 6641:78529. The tabs own the single pinned divider. */
+.motion-ticker-page { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; background: var(--bg-container); }
+.motion-ticker-surface { position: absolute; inset: 0; background: var(--bg-container); }
+.motion-ticker-header { position: absolute; inset: 0 0 auto; height: 56px; padding: 0 4px; display: flex; align-items: center; background: var(--bg-container); }
+.motion-ticker-header > .motion-icon-button { flex-basis: 44px; width: 44px; height: 44px; }
+.motion-ticker-header [data-watch][aria-pressed="true"] { color: var(--m1); }
+.motion-ticker-identity { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.motion-ticker-identity > .motion-ticker-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; flex: none; }
+.motion-ticker-meta { font-size: 12px; line-height: 20px; margin-top: -2px; color: var(--n5); white-space: nowrap; }
+.motion-ticker-tabs { position: absolute; top: 56px; inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
+.motion-ticker-tabs button { flex: none; height: 28px; padding-bottom: 6px; }
+.motion-ticker-scroll { position: absolute; inset: 84px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-ticker-page.is-ticker-moving { background: transparent; }
+.motion-ticker-page.is-ticker-moving::before { content: ''; position: absolute; inset: 0; background: var(--bg-container); opacity: min(1, calc(4 * var(--ticker-progress))); }
+.is-ticker-moving > .motion-ticker-surface { background: transparent; opacity: clamp(0, calc((var(--ticker-progress) - .25) / .75), 1); transform: translateY(calc(8px * (1 - var(--ticker-progress)))); will-change: transform, opacity; }
+.motion-ticker-anchor {
+  --t: var(--ticker-progress);
+  position: absolute; z-index: 5; top: 0; left: 0; pointer-events: none;
+  transform: translate(calc(var(--t-x) + var(--t-dx) * var(--t) + 4 * var(--t-bend) * var(--t) * (1 - var(--t))), calc(var(--t-y) + var(--t-dy) * var(--t)));
+  will-change: transform;
+}
+.motion-ticker-anchor > .motion-ticker-logo { position: absolute; top: 0; left: 0; width: calc(var(--t-size) + var(--t-ds) * var(--t)); height: calc(var(--t-size) + var(--t-ds) * var(--t)); object-fit: contain; border-radius: 50%; }
+.motion-ticker-anchor > .motion-ticker-symbol { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; line-height: 20px; color: color-mix(in srgb, var(--n9), var(--n5) calc(var(--t) * 100%)); transform: translate(calc(var(--t-tx) + var(--t-dtx) * var(--t)), calc(var(--t-ty) + var(--t-dty) * var(--t))); }
+.motion-ticker-shell { position: absolute; left: var(--t-sx); top: var(--t-sy); width: var(--t-sw); height: var(--t-sh); opacity: max(0, calc(1 - 2 * var(--t))); }
 .motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .motion-desktop { display: none; }
 .motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: var(--bg-container); }
