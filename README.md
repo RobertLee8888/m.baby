@@ -7,11 +7,13 @@ A single-page gallery of interactive design prototypes for Alva. One page, two l
 
 ### ▶︎ [Open the live prototypes](https://robertlee8888.github.io/m.baby/)
 
-## Thesis Card Transition (2026-10-22)
+## Thesis Navigation Motion (2026-10-22)
 
-[Open the new list/detail demo](https://robertlee8888.github.io/m.baby/#/thesis-motion).
+[Open the list/detail/profile demo](https://robertlee8888.github.io/m.baby/#/thesis-motion).
 The selected card expands into detail while its author, text and charts move
 into place. Back reverses the transition and restores the list position.
+Author identities open Profile along a short curved path. Profile cards can
+open another detail; each return preserves its source page, tabs and scroll.
 See [design sources, motion behavior and verification](docs/thesis-card-transition.md).
 
 ## Thesis (2026-09-18)

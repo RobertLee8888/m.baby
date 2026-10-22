@@ -1,0 +1,183 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const { chromium, webkit } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const base = process.env.DEMO_URL || 'http://127.0.0.1:4177/';
+const output = process.env.QA_OUTPUT || '/tmp/thesis-card-expansion-qa';
+fs.mkdirSync(output, { recursive: true });
+
+(async () => {
+  const engine = process.env.QA_ENGINE === 'webkit' ? webkit : chromium;
+  const browser = await engine.launch({ headless: true, ...(engine === chromium && process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
+  const page = await browser.newPage({ viewport: { width: 393, height: 759 }, deviceScaleFactor: 2 });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('response', response => { if (response.status() >= 400) errors.push(response.status() + ' ' + response.url()); });
+  const near = (a, b) => assert.ok(Math.abs(a - b) < .6, `${a} differs from ${b}`);
+  const openProfile = () => page.waitForFunction(() => document.querySelector('#profile')?.dataset.transition === 'open');
+  const noProfile = () => page.waitForFunction(() => !document.querySelector('.motion-profile'));
+  const ready = () => page.evaluate(async () => {
+    await document.fonts.ready;
+    await Promise.all([...document.images].map(image => image.decode().catch(() => {})));
+  });
+  const fresh = async (hash = '') => { await page.goto(base + 'thesis-motion.html' + hash); await ready(); };
+  try {
+    await fresh();
+    const source = await page.locator('[data-post="satya"] .motion-avatar').boundingBox();
+    await page.evaluate(() => {
+      document.querySelector('[data-post="satya"] .motion-person-link').click();
+      document.getAnimations().forEach(animation => { animation.pause(); animation.currentTime = 0; });
+    });
+    assert.equal(await page.locator('#detail').isHidden(), true, 'identity opens profile, not the thesis behind it');
+    const start = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();
+    near(start.x, source.x); near(start.y, source.y); near(start.width, source.width);
+    assert.equal(await page.evaluate(() => document.getAnimations().length), 1);
+    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+    assert.equal(duration, 240);
+    let bend = 0;
+    for (const fraction of [.1, .3, .5, .7, .999]) {
+      await page.evaluate(t => document.getAnimations()[0].currentTime = t, duration * fraction);
+      const frame = await page.evaluate(() => {
+        const root = document.querySelector('#profile');
+        const copy = root.querySelector('.motion-profile-anchor .motion-avatar').getBoundingClientRect();
+        return { x: copy.x, y: copy.y, width: copy.width,
+          p: Number(getComputedStyle(root).getPropertyValue('--profile-progress')),
+          surface: Number(getComputedStyle(root.querySelector('.motion-profile-surface')).opacity),
+          cover: Number(getComputedStyle(root, '::before').opacity) };
+      });
+      bend = Math.max(bend, frame.x - source.x);
+      near(frame.y, source.y + (56 - source.y) * frame.p);
+      near(frame.width, 32 + 24 * frame.p);
+      if (frame.surface > .001) near(frame.cover, 1); // No two pages of overlapping text.
+    }
+    assert.ok(bend > 2 && bend <= 8.1, 'identity follows a restrained curved path');
+    const end = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();
+    await page.evaluate(() => document.getAnimations()[0].play()); await openProfile();
+    const hero = await page.locator('#profile .motion-profile-hero .motion-avatar').boundingBox();
+    near(end.x, hero.x); near(end.y, hero.y); near(end.width, hero.width);
+    await page.locator('#profile').getByRole('button', { name: 'Follow Satya Nadella', exact: true }).click();
+    assert.equal(await page.locator('#profile [data-follow]').getAttribute('aria-pressed'), 'true');
+
+    // Even the empty tab can pin; switching back keeps the header stationary.
+    await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop = 1000);
+    await page.waitForFunction(() => Number(getComputedStyle(document.querySelector('#profile')).getPropertyValue('--profile-header-p')) === 1);
+    const pinned = await page.locator('#profile .motion-profile-tabs').boundingBox(); near(pinned.y, 56);
+    const before = await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop);
+    await page.getByRole('tab', { name: 'Archived', exact: true }).click();
+    assert.equal(await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop), before);
+    near((await page.locator('#profile .motion-profile-tabs').boundingBox()).y, 56);
+    await page.getByRole('tab', { name: 'Active', exact: true }).click();
+
+    const compact = await page.locator('#profile .motion-profile-collapsed .motion-avatar').boundingBox();
+    await page.evaluate(() => {
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        Element.prototype.animate = original;
+        const animation = original.apply(this, args); animation.pause(); animation.currentTime = 0; return animation;
+      };
+      document.querySelector('[aria-label="Back from profile"]').click();
+    });
+    await page.waitForFunction(() => document.querySelector('#profile')?.dataset.transition === 'closing');
+    const closeStart = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();
+    near(closeStart.y, compact.y); near(closeStart.x, compact.x); near(closeStart.width, compact.width);
+    assert.equal(await page.locator('.motion-profile-anchor-meta .to').count(), 0, 'compact header never grows an extra subtitle on return');
+    await page.evaluate(() => document.getAnimations().forEach(animation => animation.play())); await noProfile();
+    assert.equal(await page.locator('#feed').getAttribute('aria-hidden'), 'false');
+
+    // Interrupt entry, reverse, then redirect forward without a jump.
+    await page.evaluate(() => {
+      document.querySelector('[data-post="satya"] .motion-person-link').click();
+      const animation = document.getAnimations()[0]; animation.pause(); animation.currentTime = 80;
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        Element.prototype.animate = original;
+        const next = original.apply(this, args); next.pause(); next.currentTime = 0; return next;
+      };
+    });
+    const interrupted = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();
+    await page.evaluate(() => document.querySelector('[aria-label="Back from profile"]').click());
+    await page.waitForFunction(() => document.querySelector('#profile')?.dataset.transition === 'closing');
+    const reversed = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();
+    near(interrupted.x, reversed.x); near(interrupted.y, reversed.y);
+    await page.evaluate(() => history.forward()); await openProfile();
+    await page.getByRole('button', { name: 'Back from profile' }).click(); await noProfile();
+
+    // Detail -> profile -> another detail: preserve every underlying viewport.
+    await page.locator('[data-post="gavin"]').scrollIntoViewIfNeeded();
+    const feedTop = await page.locator('#feedScroll').evaluate(node => node.scrollTop);
+    await page.locator('[data-post="gavin"] .motion-open').click();
+    await page.waitForFunction(() => document.querySelector('#detail').dataset.transition === 'open');
+    await page.locator('#detail .motion-detail-scroll').evaluate(node => node.scrollTop = 80);
+    await page.locator('#detail .motion-detail-header .motion-person-link').click(); await openProfile();
+    await page.locator('#profile .motion-open').click();
+    await page.waitForFunction(() => document.querySelector('.motion-detail:not(#detail)')?.dataset.transition === 'open');
+    assert.equal(await page.locator('#profile').getAttribute('aria-hidden'), 'true');
+    await page.evaluate(() => history.go(-2)); await noProfile();
+    assert.equal(await page.locator('.motion-detail:not(#detail)').count(), 0);
+    assert.equal(await page.locator('#detail .motion-detail-scroll').evaluate(node => node.scrollTop), 80);
+    await page.getByRole('button', { name: 'Back to For You' }).click();
+    await page.waitForFunction(() => document.querySelector('#detail').hidden);
+    assert.equal(await page.locator('#feedScroll').evaluate(node => node.scrollTop), feedTop);
+    await page.evaluate(() => history.go(3));
+    await page.waitForFunction(() => document.querySelector('.motion-detail:not(#detail)')?.dataset.transition === 'open');
+    assert.equal(await page.locator('.motion-profile').count(), 1, 'multiple-step Forward reconstructs one copy of each page');
+    await page.evaluate(() => history.go(-3));
+    await noProfile(); await page.waitForFunction(() => document.querySelector('#detail').hidden);
+
+    for (const width of [320, 360, 393, 430]) {
+      await page.setViewportSize({ width, height: 759 }); await fresh('#profile/maya'); await openProfile();
+      const scale = Math.min(1, width / 360);
+      const metrics = await page.evaluate(() => {
+        const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height }; };
+        return { hero: rect('.motion-profile-hero .motion-avatar'), bio: rect('.motion-profile-bio'), tabs: rect('.motion-profile-tabs'),
+          gallery: rect('#profile .motion-charts'), overflow: document.documentElement.scrollWidth > innerWidth,
+          avatarPixels: document.querySelector('.motion-profile-hero .motion-avatar').naturalWidth };
+      });
+      near(metrics.hero.width, 56 * scale); near(metrics.hero.y, 56 * scale);
+      near(metrics.gallery.x, 0); near(metrics.gallery.width, width);
+      assert.equal(metrics.overflow, false); assert.ok(metrics.avatarPixels >= 112);
+      if (width === 393) { near(metrics.bio.y, 156); near(metrics.tabs.y, 252); }
+      await page.screenshot({ path: output + '/profile-' + width + '.png' });
+      await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop = 190);
+      const scroll = await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop);
+      await page.getByRole('tab', { name: 'Archived', exact: true }).click();
+      assert.equal(await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop), scroll);
+      await page.getByRole('button', { name: 'Back from profile' }).click(); await noProfile();
+      assert.equal(new URL(page.url()).hash, '');
+    }
+
+    await fresh('#maya-satya');
+    await page.waitForFunction(() => document.querySelector('.motion-detail:not(#detail)')?.dataset.transition === 'open');
+    await page.getByRole('button', { name: 'Back to profile' }).click(); await openProfile();
+    assert.equal(new URL(page.url()).hash, '#profile/maya');
+    await page.getByRole('button', { name: 'Back from profile' }).click(); await noProfile();
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.locator('.motion-recommendation .motion-person-link').click(); await openProfile();
+    assert.deepEqual(await page.evaluate(() => document.getAnimations().map(a => a.playState)), []);
+    assert.equal(await page.locator('.motion-profile-anchor').count(), 0);
+    await page.keyboard.press('Escape'); await noProfile();
+
+    await page.setViewportSize({ width: 1440, height: 1080 });
+    await page.goto(base + 'index.html#/thesis-motion');
+    const frame = page.frameLocator('iframe');
+    await frame.locator('[data-post="satya"] .motion-person-link').click();
+    await frame.locator('#profile[data-transition="open"]').waitFor();
+    await page.locator('#deviceTrigger').click(); await page.getByRole('option', { name: /Galaxy A16/ }).click();
+    // WebKit reports the iframe's new viewport before delivering its resize
+    // event. Measure only after the demo has fitted that viewport.
+    await page.waitForFunction(() => {
+      const win = document.querySelector('iframe').contentWindow;
+      const app = win.document.querySelector('#motionApp').getBoundingClientRect();
+      return Math.abs(app.height - win.innerHeight) < .5 && Math.abs(app.width - win.innerWidth) < .5;
+    });
+    const insets = await frame.locator('#profile').evaluate(node => {
+      const rect = node.getBoundingClientRect(), header = node.querySelector('header').getBoundingClientRect();
+      const css = getComputedStyle(document.documentElement);
+      return { top:rect.top, bottom:innerHeight-rect.bottom, status:parseFloat(css.getPropertyValue('--status-h')), home:parseFloat(css.getPropertyValue('--home-h')), header:header.height };
+    });
+    near(insets.top, insets.status); near(insets.bottom, insets.home); near(insets.header, 56);
+    await page.screenshot({ path: output + '/profile-android.png' });
+    assert.deepEqual(errors, []);
+    console.log('PASS: profile design coordinates, high-resolution identity, curved shared anchor, no overlapping page text, reversal, nested history/scroll, compact header return, stable empty tabs, responsive widths, deep links, reduced motion and Android insets.');
+  } finally { await browser.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

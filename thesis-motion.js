@@ -1,5 +1,8 @@
 import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=3';
+import { CardTransition } from './thesis-card-transition.js?v=4';
+import { ProfileTransition } from './thesis-profile-transition.js?v=1';
+import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
+import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=1';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
@@ -9,11 +12,9 @@ const detail = document.querySelector('#detail');
 const cards = new Map();
 const saved = new Set();
 const followed = new Set();
-let activePost = null;
 let topic = 'All';
-let historyDepth = 0;
-let pendingBack = false;
 let toastTimer;
+let pageSequence = 0;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -39,15 +40,17 @@ function shared(node, key) { node.dataset.shared = key; return node; }
 function reveal(node, kind = 'chrome') { node.dataset.reveal = kind; return node; }
 
 function followButton(post, withPlus = false) {
+  post = personFor(post) || post;
   const node = button('motion-follow', 'Follow ' + post.name, () => {
     followed.has(post.id) ? followed.delete(post.id) : followed.add(post.id);
     document.querySelectorAll(`[data-follow="${post.id}"]`).forEach(render);
   });
   node.dataset.follow = post.id;
+  node.dataset.plus = String(withPlus);
   function render(target) {
     const on = followed.has(post.id);
     target.replaceChildren();
-    if (withPlus && !on) target.append(icon('ui-add-l2.svg'));
+    if (target.dataset.plus === 'true' && !on) target.append(icon('ui-add-l2.svg'));
     target.append(document.createTextNode(on ? 'Following' : 'Follow'));
     target.setAttribute('aria-pressed', String(on));
     target.setAttribute('aria-label', (on ? 'Unfollow ' : 'Follow ') + post.name);
@@ -55,11 +58,19 @@ function followButton(post, withPlus = false) {
   render(node); return node;
 }
 
-function identity(post, age = false) {
+function identity(post, age = false, interactive = true) {
   const row = el('div', 'motion-identity');
   const person = el('div', 'motion-person');
-  person.append(shared(el('span', 'motion-name', post.name), 'name'), shared(el('span', 'motion-role', post.role), 'role'));
-  row.append(shared(image(post.avatar, 'motion-avatar'), 'avatar'), person);
+  person.append(shared(el('span', 'motion-name', post.name), 'name'));
+  if (post.role) person.append(shared(el('span', 'motion-role', post.role), 'role'));
+  const author = personFor(post);
+  const link = el(interactive && author ? 'a' : 'div', 'motion-person-link');
+  if (interactive && author) {
+    link.href = '#profile/' + author.id; link.setAttribute('aria-label', 'View ' + author.name + ' profile');
+    row.dataset.person = author.id;
+    link.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openProfile(author, row); });
+  }
+  link.append(shared(image(post.avatar, 'motion-avatar'), 'avatar'), person); row.append(link);
   if (age) row.append(el('span', 'motion-age', post.age));
   return row;
 }
@@ -127,7 +138,7 @@ function actions(post, withShare = false) {
   return row;
 }
 
-function postCard(post) {
+function postCard(post, register = true) {
   const card = el('article', 'motion-post'); card.dataset.post = post.id;
   card.setAttribute('aria-label', post.name + ' thesis');
   card.append(identity(post, true));
@@ -136,7 +147,7 @@ function postCard(post) {
   open.setAttribute('aria-label', 'Open ' + post.name + ' thesis'); open.append(body(post));
   open.addEventListener('click', event => {
     event.preventDefault();
-    if (!String(getSelection())) navigate(post);
+    if (!String(getSelection())) navigate(post, card);
   });
   card.append(open);
   if (post.charts.length) card.append(charts(post));
@@ -146,9 +157,9 @@ function postCard(post) {
   card.addEventListener('click', event => {
     if (event.target.closest('button,a') || String(getSelection())) return;
     if (event.detail > 0 && pointerStart && Math.hypot(event.clientX - pointerStart.x, event.clientY - pointerStart.y) > 8) return;
-    navigate(post);
+    navigate(post, card);
   });
-  cards.set(post.id, card); return card;
+  if (register) cards.set(post.id, card); return card;
 }
 
 function recommendation() {
@@ -156,7 +167,7 @@ function recommendation() {
   const top = el('div', 'motion-recommendation-top');
   const close = button('motion-icon-button', 'Dismiss recommendation', () => section.remove());
   close.append(icon('close-l1.svg')); top.append(el('h2', '', 'People you might like'), close);
-  const person = { id: 'chamath', name: 'Chamath Palihapitiya', role: 'Founder & CEO, Social Capital', avatar: 'assets/social-chamath.png' };
+  const person = PEOPLE.get('chamath');
   const row = identity(person);
   row.querySelector('.motion-name').append(image('assets/thesis/search-imgBotNotOnAlva.svg', 'motion-bot'));
   row.append(followButton(person, true));
@@ -176,9 +187,9 @@ function renderFeed() {
   feedScroll.scrollTop = 0;
 }
 
-function renderDetail(post) {
+function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
   const header = el('header', 'motion-detail-header');
-  const back = reveal(button('motion-icon-button', 'Back to For You', goBack));
+  const back = reveal(button('motion-icon-button', backLabel, goBack)); back.dataset.back = '';
   back.append(icon('onboarding-arrow-left-l1.svg'));
   header.append(back, identity(post), reveal(followButton(post)));
   const scroll = el('div', 'motion-detail-scroll');
@@ -189,7 +200,7 @@ function renderDetail(post) {
   timeline.append(body(post));
   if (post.charts.length) timeline.append(charts(post));
   // Every card previews the supplied detail template, including its update rail.
-  // The history destination is outside this two-screen transition prototype.
+  // The update-history destination remains outside this transition prototype.
   const history = reveal(button('motion-history', 'View all 12 updates'));
   history.setAttribute('aria-disabled', 'true');
   history.append(document.createTextNode('View all 12 updates'), icon('ui-arrow-right-l2.svg'));
@@ -198,7 +209,7 @@ function renderDetail(post) {
   const secondary = reveal(el('section', 'motion-detail-secondary'), 'content');
   const tabs = el('div', 'motion-detail-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Thesis context');
   const panels = el('div', 'motion-panels'); const track = el('div', 'motion-panel-track');
-  const signals = el('div', 'motion-panel'); signals.id = 'signals'; signals.setAttribute('role', 'tabpanel');
+  const signals = el('div', 'motion-panel'); signals.id = detail.id + '-signals'; signals.setAttribute('role', 'tabpanel');
   const source = el('div', 'motion-signal-source');
   source.append(identity({ name: SIGNAL.name, role: SIGNAL.role, avatar: SIGNAL.avatar, age: SIGNAL.time }, true));
   // Signal identity is secondary content, not a duplicate shared source.
@@ -210,7 +221,7 @@ function renderDetail(post) {
   const brand = el('span', 'motion-analysis-brand'); brand.append(image('assets/thesis/detail/alva.svg'), 'Alva');
   tag.append(brand, el('span', 'motion-analysis-verdict', 'Mixed'));
   analysis.append(tag, SIGNAL.analysis); signals.append(source, analysis);
-  const related = el('div', 'motion-panel'); related.id = 'related'; related.setAttribute('role', 'tabpanel'); related.setAttribute('aria-hidden', 'true'); related.inert = true;
+  const related = el('div', 'motion-panel'); related.id = detail.id + '-related'; related.setAttribute('role', 'tabpanel'); related.setAttribute('aria-hidden', 'true'); related.inert = true;
   const relatedPost = POSTS.find(item => item.id === 'gavin');
   related.append(identity(relatedPost), body(relatedPost));
   related.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
@@ -219,7 +230,7 @@ function renderDetail(post) {
     const tab = button('', label, () => selectTab(index));
     tab.textContent = label;
     tab.setAttribute('role', 'tab'); tab.setAttribute('aria-selected', String(index === 0));
-    tab.setAttribute('aria-controls', index ? 'related' : 'signals'); tab.id = 'tab-' + index;
+    tab.setAttribute('aria-controls', [signals, related][index].id); tab.id = detail.id + '-tab-' + index;
     tab.tabIndex = index ? -1 : 0; tabs.append(tab);
     [signals, related][index].setAttribute('aria-labelledby', tab.id);
     tab.addEventListener('keydown', event => {
@@ -241,44 +252,71 @@ function renderDetail(post) {
   const footer = reveal(el('footer', 'motion-detail-footer')); footer.append(actions(post, true));
   detail.replaceChildren(header, scroll, footer);
   scroll.addEventListener('scroll', () => {
-    transition.settle();
+    settle();
     // Once tabs join the header, their bottom rule is the only divider.
     header.classList.toggle('is-scrolled', scroll.scrollTop > 0 && scroll.scrollTop < secondary.offsetTop);
   }, { passive: true });
   requestAnimationFrame(() => panels.style.setProperty('--panel-min-height', Math.max(0, scroll.clientHeight - tabs.offsetHeight) + 'px'));
+  return () => clearTimeout(tabTimer);
 }
 
-const transition = new CardTransition({ app, feed, detail, onSettled(open, source) {
-  if (open) detail.querySelector('[aria-label="Back to For You"]').focus({ preventScroll: true });
-  else source.querySelector('.motion-open').focus({ preventScroll: true });
-} });
-
-function navigate(post, push = true) {
-  if (transition.running && post.id !== activePost?.id) return;
-  if (!cards.has(post.id)) { topic = 'All'; renderFeed(); updateTopics(); }
-  const card = cards.get(post.id);
-  if (activePost?.id !== post.id || detail.hidden) {
-    renderDetail(post); activePost = post;
-    detail.hidden = false;
-    for (const selector of ['.motion-tickers', '.motion-charts']) {
-      const source = card.querySelector(selector), target = detail.querySelector(selector);
-      if (source && target) target.scrollLeft = source.scrollLeft;
+const postRoute = post => ({ key: 'detail/' + post.id, type: 'detail', id: post.id, hash: '#' + post.id });
+const profileRoute = person => ({ key: 'profile/' + person.id, type: 'profile', id: person.id, hash: '#profile/' + person.id });
+const navigation = new MotionNavigation({
+  parse(hash) {
+    if (hash.startsWith('#profile/')) {
+      const person = PEOPLE.get(hash.slice(9)); return person ? [profileRoute(person)] : [];
     }
-  }
-  if (push) { historyDepth++; history.pushState({ thesisMotion: post.id, depth: historyDepth }, '', '#' + post.id); }
-  transition.setOpen(true, card);
-}
-function goBack() {
-  if (!transition.opened || pendingBack) return;
-  if (history.state?.depth) { pendingBack = true; history.back(); }
-  else { history.replaceState({ thesisMotion: null, depth: 0 }, '', location.pathname + location.search); transition.setOpen(false, cards.get(activePost.id)); }
-}
-window.addEventListener('popstate', () => {
-  pendingBack = false;
-  const post = POSTS.find(item => item.id === location.hash.slice(1));
-  if (post) navigate(post, false);
-  else if (activePost) transition.setOpen(false, cards.get(activePost.id));
+    const post = postFor(hash.slice(1));
+    return !post ? [] : post.authorId ? [profileRoute(personFor(post)), postRoute(post)] : [postRoute(post)];
+  },
+  create(route, source, parentFrame, onSettled) {
+    const underlay = parentFrame?.root || feed;
+    const root = !parentFrame && route.type === 'detail' ? detail : el('section', route.type === 'profile' ? 'motion-profile' : 'motion-detail');
+    if (!root.id) root.id = route.type === 'profile' && !document.querySelector('#profile') ? 'profile' : 'motion-page-' + ++pageSequence;
+    if (!root.isConnected) app.append(root);
+    root.hidden = false; root.inert = false; root.setAttribute('aria-hidden', 'false');
+    let transition, dispose;
+    if (route.type === 'profile') {
+      const person = PEOPLE.get(route.id);
+      source ||= underlay.querySelector(`[data-person="${person.id}"]`);
+      dispose = renderProfile(root, person, { el, image, icon, button, identity, followButton, postCard,
+        back: goBack, settle: () => transition.settle(), share: shareProfile });
+      transition = new ProfileTransition({ app, feed: underlay, detail: root, onSettled });
+    } else {
+      const post = postFor(route.id);
+      if (!source) {
+        source = underlay.querySelector(`[data-post="${post.id}"]`);
+        if (!source && !parentFrame) { topic = 'All'; renderFeed(); updateTopics(); source = cards.get(post.id); }
+        source?.scrollIntoView({ block: 'center' });
+      }
+      if (!source) { root.hidden = true; return null; }
+      root.setAttribute('aria-label', 'Thesis detail');
+      dispose = renderDetail(post, root, () => transition.settle(), parentFrame ? 'Back to profile' : 'Back to For You');
+      for (const selector of ['.motion-tickers', '.motion-charts']) {
+        const from = source.querySelector(selector), to = root.querySelector(selector);
+        if (from && to) to.scrollLeft = from.scrollLeft;
+      }
+      transition = new CardTransition({ app, feed: underlay, detail: root, onSettled });
+    }
+    return { root, transition, source, dispose };
+  },
 });
+function navigate(post, card) { navigation.open(postRoute(post), card); }
+function openProfile(person, row) {
+  // The current author's profile is already directly underneath their thesis.
+  const parent = navigation.frames.at(-2);
+  if (parent?.route.key === 'profile/' + person.id) { goBack(); return; }
+  navigation.open(profileRoute(person), row);
+}
+function goBack() { navigation.back(); }
+async function shareProfile(person) {
+  const url = new URL(location.href); url.hash = 'profile/' + person.id;
+  try {
+    if (navigator.share) await navigator.share({ title: person.name + ' · Alva', url: url.href });
+    else { await navigator.clipboard.writeText(url.href); toast('Link copied'); }
+  } catch (error) { if (error.name !== 'AbortError') toast('Unable to share'); }
+}
 window.addEventListener('keydown', event => { if (event.key === 'Escape') goBack(); });
 
 function updateTopics() {
@@ -304,12 +342,13 @@ function toast(message) {
   toastTimer = setTimeout(() => { node.hidden = true; }, 1800);
 }
 function resize() {
-  transition.settle();
+  navigation.settle();
   const scale = Math.min(1, innerWidth / 360);
   app.style.width = innerWidth / scale + 'px'; app.style.height = innerHeight / scale + 'px';
   app.style.transformOrigin = 'top left'; app.style.transform = `scale(${scale})`;
-  const scroll = detail.querySelector('.motion-detail-scroll');
-  if (scroll) detail.querySelector('.motion-panels').style.setProperty('--panel-min-height', scroll.clientHeight - detail.querySelector('.motion-detail-tabs').offsetHeight + 'px');
+  document.querySelectorAll('.motion-detail-scroll').forEach(scroll => {
+    scroll.querySelector('.motion-panels').style.setProperty('--panel-min-height', scroll.clientHeight - scroll.querySelector('.motion-detail-tabs').offsetHeight + 'px');
+  });
 }
 window.addEventListener('resize', resize);
 const systemTheme = matchMedia('(prefers-color-scheme: dark)');
@@ -324,10 +363,5 @@ window.addEventListener('message', event => {
 });
 systemTheme.addEventListener('change', () => applyAppearance(appearance));
 renderFeed(); updateTopics(); resize();
-const initial = POSTS.find(post => post.id === location.hash.slice(1));
-history.replaceState({ thesisMotion: initial?.id || null, depth: 0 }, '');
-if (initial) {
-  await document.fonts.ready;
-  cards.get(initial.id).scrollIntoView({ block: 'center' });
-  navigate(initial, false);
-}
+await document.fonts.ready;
+navigation.start();

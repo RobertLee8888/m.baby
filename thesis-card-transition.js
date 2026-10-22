@@ -1,19 +1,12 @@
 // One progress value expands the card surface and its normal-flow layout.
 // Text uses two fixed line wraps within that layout; no per-element flights.
-const progressProperty = '--thesis-progress';
-// Alva motion roles: enter-large, sheet, layout and micro feedback.
-const timing = { near: 240, far: 280, retarget: 200, short: 120, easing: 'cubic-bezier(.4,0,.2,1)' };
-if (CSS.registerProperty) {
-  CSS.registerProperty({ name: progressProperty, syntax: '<number>', inherits: true, initialValue: '1' });
-}
+import { ProgressTransition } from './thesis-motion-progress.js?v=1';
 
-export class CardTransition {
+export class CardTransition extends ProgressTransition {
   constructor({ app, feed, detail, onSettled }) {
+    super(detail, '--thesis-progress');
     Object.assign(this, { app, feed, detail, onSettled });
-    this.opened = false;
-    this.running = false;
     this.targets = [];
-    this.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
   }
 
   setOpen(open, source) {
@@ -41,7 +34,7 @@ export class CardTransition {
     }
     const sourceRect = source.getBoundingClientRect();
     const detailRect = detail.getBoundingClientRect();
-    const viewport = source.parentElement.parentElement.getBoundingClientRect();
+    const viewport = source.closest('.motion-feed-scroll, .motion-profile-scroll').getBoundingClientRect();
     const scale = app.getBoundingClientRect().width / app.offsetWidth;
     const offset = (sourceRect.top - detailRect.top) / scale;
     const clipTop = Math.max(0, (viewport.top - sourceRect.top) / scale);
@@ -63,11 +56,13 @@ export class CardTransition {
     const sourceIdentity = source.querySelector('.motion-identity');
     const targetIdentity = detail.querySelector('.motion-detail-header > .motion-identity');
     const distance = Math.abs(sourceIdentity.getBoundingClientRect().top - targetIdentity.getBoundingClientRect().top) / scale;
-    this.duration = distance <= 160 ? timing.near : timing.far;
+    this.setDistance(distance);
     // The shared content bends inward, then approaches its header alignment
     // vertically. Short or nearly horizontal moves need less curvature.
     copy.style.setProperty('--card-bend', Math.min(1, distance / 96));
     copy.style.setProperty('--identity-width', sourceIdentity.offsetWidth + 'px');
+    copy.style.setProperty('--identity-height', sourceIdentity.offsetHeight + 'px');
+    copy.style.setProperty('--identity-height-delta', targetIdentity.offsetHeight - sourceIdentity.offsetHeight + 'px');
     copy.style.setProperty('--identity-width-delta', targetIdentity.getBoundingClientRect().width / scale - sourceIdentity.offsetWidth + 'px');
     copy.style.setProperty('--identity-age-space', (sourceIdentity.querySelector('.motion-age')?.getBoundingClientRect().width || 0) / scale + 8 + 'px');
     const date = detail.querySelector('.motion-date').cloneNode(true);
@@ -117,51 +112,6 @@ export class CardTransition {
     this.animateTo(open);
   }
 
-  sampleMotion() {
-    const animation = this.animation;
-    const time = Number(animation.currentTime) || 0;
-    animation.pause();
-    animation.currentTime = time;
-    const value = () => this.from + (this.to - this.from) * (animation.effect.getComputedTiming().progress || 0);
-    const current = value();
-    const step = Math.min(1, time);
-    animation.currentTime = time - step;
-    const velocity = step ? (current - value()) / step : 0;
-    animation.currentTime = time;
-    return { value: current, velocity };
-  }
-
-  animateTo(open, current) {
-    const from = current?.value ?? (open ? 0 : 1), to = open ? 1 : 0;
-    const remaining = Math.abs(to - from);
-    if (remaining < .0001) { this.finish(); return; }
-    const duration = !current || remaining > .65 ? this.duration
-      : remaining > .25 ? timing.retarget : timing.short;
-    let easing = timing.easing;
-    if (current && Math.abs(current.velocity) > .000001) {
-      // Match the previous tangent: slope = velocity * duration / distance.
-      // Bound the first control point so braking cannot leave the 0..1 path.
-      const room = current.velocity > 0 ? 1 - from : from;
-      const x = Math.min(.2, room / (2 * Math.abs(current.velocity) * duration));
-      const y = current.velocity * duration * x / (to - from);
-      easing = `cubic-bezier(${x},${y},.2,1)`;
-    }
-    const previous = this.animation;
-    const animation = this.detail.animate([
-      { [progressProperty]: from }, { [progressProperty]: to },
-    ], {
-      duration, easing, fill: 'both',
-    });
-    this.animation = animation;
-    this.from = from; this.to = to;
-    previous?.cancel();
-    animation.finished.then(() => {
-      if (this.animation === animation) this.finish();
-    }).catch(error => {
-      if (error.name !== 'AbortError') throw error;
-    });
-  }
-
   finish() {
     this.animation?.cancel();
     this.animation = null;
@@ -178,9 +128,5 @@ export class CardTransition {
     this.feed.setAttribute('aria-hidden', String(this.opened));
     this.source.style.visibility = '';
     this.onSettled(this.opened, this.source);
-  }
-
-  settle() {
-    if (this.running) this.finish();
   }
 }

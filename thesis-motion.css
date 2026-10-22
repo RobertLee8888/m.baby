@@ -20,12 +20,14 @@
 .motion-feed-scroll { position: absolute; inset: 94px 0 48px; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: none; }
 .motion-post { padding: 12px 16px 2px; cursor: pointer; }
 .motion-identity { display: flex; align-items: center; min-width: 0; height: 36px; gap: 8px; }
+.motion-person-link { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; height: 100%; color: inherit; text-decoration: none; }
 .motion-avatar { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; border-radius: 50%; }
 .motion-person { flex: 1; min-width: 0; }
 .motion-name { display: block; font-size: 14px; font-weight: 500; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .motion-role { display: block; font-size: 12px; line-height: 20px; margin-top: -2px; color: var(--n5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .motion-post > .motion-identity { height: 42px; }
 .motion-post > .motion-identity .motion-role { margin-top: 0; }
+.motion-post:not(.motion-card-copy) > .motion-identity:not(:has(.motion-role)) { height: 32px; }
 .motion-age { font-size: 12px; line-height: 20px; color: var(--n5); align-self: flex-start; flex: none; }
 .motion-tickers { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 8px -16px 0; padding: 0 16px; }
 .motion-ticker { flex: none; height: 28px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--br05); border-radius: 6px; font-size: 12px; line-height: 20px; white-space: nowrap; }
@@ -122,7 +124,7 @@
   pointer-events: none; cursor: default; box-shadow: none !important;
 }
 .motion-card-copy > .motion-identity {
-  position: relative; height: calc(42px - 6px * var(--thesis-progress));
+  position: relative; height: calc(var(--identity-height) + var(--identity-height-delta) * var(--thesis-progress));
   width: calc(var(--identity-width) + var(--identity-width-delta) * var(--thesis-progress));
   padding-right: calc(var(--identity-age-space) * (1 - var(--thesis-progress)));
 }
@@ -147,6 +149,58 @@
 .motion-feed-header, .motion-post, .motion-recommendation, .motion-detail-tabs { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
 .motion-nav, .motion-detail-footer { box-shadow: inset 0 var(--hair) var(--l12); }
 .motion-detail.is-morphing .motion-detail-header, .motion-detail.is-morphing .motion-detail-footer { background: transparent; box-shadow: none; }
+
+/* Visitor profile: Figma 5545:96427. System chrome remains outside the page. */
+.motion-profile { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; background: var(--bg-container); }
+.motion-profile-surface { position: absolute; inset: 0; background: var(--bg-container); }
+.motion-profile-header { position: absolute; inset: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; z-index: 3; background: var(--bg-container); }
+.motion-profile-header > .motion-icon-button { position: relative; flex-basis: 20px; width: 20px; height: 20px; }
+.motion-profile-header > .motion-icon-button::after { content: ''; position: absolute; inset: -12px; }
+.motion-profile-header > .motion-follow { min-width: 60px; }
+.motion-profile-header.is-scrolled { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
+.motion-profile-collapsed { flex: 1; opacity: var(--profile-header-p, 0); transform: translateY(calc(8px * (1 - var(--profile-header-p, 0)))); pointer-events: none; }
+.motion-profile-collapsed .motion-role { display: none; }
+.motion-profile-scroll { position: absolute; inset: 56px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-profile-about { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 24px; }
+.motion-profile-hero { height: 56px; }
+.motion-profile-hero .motion-person-link { gap: 12px; }
+.motion-profile-hero .motion-avatar { width: 56px; height: 56px; flex-basis: 56px; object-fit: cover; }
+.motion-profile-hero .motion-name { font-size: 18px; line-height: 28px; font-weight: 400; }
+.motion-profile-hero .motion-role { margin-top: 0; color: var(--n7); }
+.motion-profile-pro { display: inline-flex; vertical-align: 2px; margin-left: 8px; padding: 0 8px; height: 18px; align-items: center; border-radius: 96px; background: var(--m1); color: var(--nr10); font-size: 11px; line-height: 18px; box-shadow: inset 0 0 0 var(--hair) var(--l12); }
+.motion-profile-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--n5); font-size: 12px; line-height: 20px; }
+.motion-profile-stats { display: flex; gap: 24px; font-size: 12px; line-height: 20px; font-weight: 500; }
+.motion-profile-bio { font-size: 12px; line-height: 20px; color: var(--n9); }
+.motion-profile-bio.is-truncated:not(.is-expanded) { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.motion-profile-more { color: var(--m1); font-size: 12px; line-height: 20px; }
+.motion-profile-channels { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; font-size: 12px; line-height: 20px; color: var(--n7); }
+.motion-profile-channels a { display: inline-flex; gap: 4px; align-items: center; color: inherit; text-decoration: none; }
+.motion-profile-channels img { width: 14px; height: 14px; }
+.motion-profile-note { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 4px; background: var(--br03); color: var(--n7); font-size: 12px; line-height: 20px; }
+.motion-profile-note .motion-icon { width: 14px; height: 14px; flex-basis: 14px; color: var(--m2); }
+.motion-profile-tabs { height: 28px; gap: 24px; }
+.motion-profile-tabs button { height: 28px; padding-bottom: 6px; }
+.motion-profile-list { padding: 0; }
+.motion-profile-list .motion-post { padding-top: 12px; }
+.motion-profile-empty { text-align: center; color: var(--n5); font-size: 14px; line-height: 22px; padding: 64px 16px; }
+.motion-profile.is-profile-moving { background: transparent; }
+.motion-profile.is-profile-moving::before { content: ''; position: absolute; inset: 0; background: var(--bg-container); opacity: min(1, calc(4 * var(--profile-progress))); }
+.is-profile-moving > .motion-profile-surface { background: transparent; opacity: clamp(0, calc((var(--profile-progress) - .25) / .75), 1); transform: translateY(calc(8px * (1 - var(--profile-progress)))); will-change: transform, opacity; }
+.motion-profile-anchor {
+  --p: var(--profile-progress);
+  position: absolute; z-index: 5; top: 0; left: 0; display: flex; align-items: start;
+  gap: calc(var(--p-gap) + var(--p-dg) * var(--p)); pointer-events: none;
+  transform: translate(calc(var(--p-x) + var(--p-dx) * var(--p) + 4 * var(--p-bend) * var(--p) * (1 - var(--p))), calc(var(--p-y) + var(--p-dy) * var(--p)));
+  will-change: transform;
+}
+.motion-profile-anchor > .motion-avatar { flex: none; width: calc(var(--p-size) + var(--p-ds) * var(--p)); height: calc(var(--p-size) + var(--p-ds) * var(--p)); }
+.motion-profile-anchor > .motion-person { flex: none; width: calc(var(--p-width) + var(--p-dw) * var(--p)); transform: translateY(calc(var(--p-textY) + var(--p-dt) * var(--p))); }
+.motion-profile-anchor .motion-name { font-size: calc(var(--p-font) + var(--p-df) * var(--p)); line-height: calc(var(--p-line) + var(--p-dl) * var(--p)); font-weight: calc(var(--p-weight) + var(--p-dwgt) * var(--p)); }
+.motion-profile-anchor .motion-profile-pro { opacity: var(--p); }
+.motion-profile-anchor-meta { position: relative; }
+.motion-profile-anchor-meta > * { position: absolute; top: 0; left: 0; width: 100%; margin: 0; }
+.motion-profile-anchor-meta > .from { opacity: max(0, calc(1 - 2 * var(--p))); }
+.motion-profile-anchor-meta > .to { opacity: max(0, calc(2 * var(--p) - 1)); }
 .motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .motion-desktop { display: none; }
 .motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: var(--bg-container); }
