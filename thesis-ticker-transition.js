@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=1';
+import { ProgressTransition } from './thesis-motion-progress.js?v=2';
 
 // The entire company identity travels with the chip, including incoming labels.
 export class TickerTransition extends ProgressTransition {
@@ -40,7 +40,7 @@ export class TickerTransition extends ProgressTransition {
       const marketRange = document.createRange();
       marketRange.setStartAfter(toSymbol); marketRange.setEnd(toSymbol.parentElement, toSymbol.parentElement.childNodes.length);
       const marketWidth = marketRange.getBoundingClientRect().width / scale;
-      detail.style.setProperty('--ticker-travel-y', a.y - b.y + 'px');
+      this.contain(source, fromLogo, toLogo, scale);
       this.setDistance(Math.hypot(b.x - a.x, b.y - a.y));
       const copy = document.createElement('div'); copy.className = 'motion-ticker-anchor';
       copy.inert = true; copy.setAttribute('aria-hidden', 'true');
@@ -54,7 +54,7 @@ export class TickerTransition extends ProgressTransition {
       if (trend) person.append(trend.cloneNode(true));
       person.append(name, meta);
       copy.append(shell, fromLogo.cloneNode(true), person);
-      const vars = { x: a.x, y: a.y, dx: b.x - a.x, dy: b.y - a.y, size: a.w, ds: b.w - a.w,
+      const vars = { x: a.x, y: b.y, dx: b.x - a.x, size: a.w, ds: b.w - a.w,
         tx: c.x - a.x, ty: c.y - a.y, dtx: d.x - b.x - c.x + a.x, dty: d.y - b.y - c.y + a.y,
         nameY: nameBounds.y - d.y, textWidth: personBounds.w, symbolWidth: c.w, marketWidth,
         sx: chip.x - a.x, sy: chip.y - a.y, sw: chip.w, sh: chip.h,
@@ -73,6 +73,7 @@ export class TickerTransition extends ProgressTransition {
     this.copy?.remove(); this.copy = null;
     this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; }); this.hiddenNodes = [];
     this.running = false; this.detail.classList.remove('is-ticker-moving');
+    this.clearContainer();
     this.detail.hidden = !this.opened; this.detail.inert = !this.opened;
     this.detail.dataset.transition = this.opened ? 'open' : 'closed';
     this.feed.inert = this.opened; this.feed.setAttribute('aria-hidden', String(this.opened));

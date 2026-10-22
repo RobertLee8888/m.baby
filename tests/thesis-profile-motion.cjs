@@ -51,7 +51,7 @@ fs.mkdirSync(output, { recursive: true });
           metaHeight: root.querySelector('.motion-profile-anchor-meta').getBoundingClientRect().height,
           p: Number(getComputedStyle(root).getPropertyValue('--profile-progress')),
           surface: Number(getComputedStyle(root.querySelector('.motion-profile-surface')).opacity),
-          cover: Number(getComputedStyle(root, '::before').opacity) };
+          background: getComputedStyle(root).backgroundColor };
       });
       bend = Math.max(bend, frame.x - source.x);
       near(frame.y, source.y + (56 - source.y) * frame.p);
@@ -61,7 +61,7 @@ fs.mkdirSync(output, { recursive: true });
       near(frame.names[0].opacity, 1 - frame.p); near(frame.names[1].opacity, frame.p);
       near(frame.names[0].width, frame.names[1].width); near(frame.names[0].x, frame.names[1].x);
       near(frame.metaHeight, 20); // WebKit needs bounds for the isolated text blend to paint.
-      if (frame.surface > .001) near(frame.cover, 1); // No two pages of overlapping text.
+      if (frame.surface > .001) assert.equal(frame.background, 'rgb(255, 255, 255)', 'the expanding container has an opaque surface');
     }
     assert.ok(bend > 2 && bend <= 8.1, 'identity follows a restrained curved path');
     const end = await page.locator('.motion-profile-anchor .motion-avatar').boundingBox();

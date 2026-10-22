@@ -183,14 +183,19 @@
 .motion-profile-list { padding: 0; }
 .motion-profile-list .motion-post { padding-top: 12px; }
 .motion-profile-empty { text-align: center; color: var(--n5); font-size: 14px; line-height: 22px; padding: 64px 16px; }
-.motion-profile.is-profile-moving { background: transparent; }
-.motion-profile.is-profile-moving::before { content: ''; position: absolute; inset: 0; background: var(--bg-container); opacity: min(1, calc(4 * var(--profile-progress))); }
-.is-profile-moving > .motion-profile-surface { background: transparent; opacity: clamp(0, calc((var(--profile-progress) - .25) / .75), 1); transform: translateY(calc(8px * (1 - var(--profile-progress)))); will-change: transform, opacity; }
+.is-container-transform {
+  --remaining: calc(1 - var(--container-progress));
+  transform: translateY(calc(var(--container-y) * var(--remaining)));
+  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--container-radius) * var(--remaining)));
+  will-change: transform, clip-path;
+}
+.is-profile-moving > .motion-profile-surface { opacity: var(--profile-progress); will-change: opacity; }
 .motion-profile-anchor {
   --p: var(--profile-progress);
   position: absolute; z-index: 5; top: 0; left: 0; display: flex; align-items: start;
   gap: calc(var(--p-gap) + var(--p-dg) * var(--p)); pointer-events: none;
-  transform: translate(calc(var(--p-x) + var(--p-dx) * var(--p) + 4 * var(--p-bend) * var(--p) * (1 - var(--p))), calc(var(--p-y) + var(--p-dy) * var(--p)));
+  transform: translate(calc(var(--p-x) + var(--p-dx) * var(--p) + 4 * var(--p-bend) * var(--p) * (1 - var(--p))), var(--p-y));
+  clip-path: inset(calc(var(--p-clipTop) * var(--p)) 0 0 0);
   will-change: transform;
 }
 .motion-profile-anchor > .motion-avatar { flex: none; width: calc(var(--p-size) + var(--p-ds) * var(--p)); height: calc(var(--p-size) + var(--p-ds) * var(--p)); }
@@ -216,13 +221,11 @@
 .motion-ticker-tabs { position: absolute; top: 56px; inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
 .motion-ticker-tabs button { flex: none; height: 28px; padding-bottom: 6px; }
 .motion-ticker-scroll { position: absolute; inset: 84px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
-.motion-ticker-page.is-ticker-moving { background: transparent; }
-.motion-ticker-page.is-ticker-moving::before { content: ''; position: absolute; inset: 0; background: var(--bg-container); opacity: min(1, calc(4 * var(--ticker-progress))); }
-.is-ticker-moving > .motion-ticker-surface { background: transparent; opacity: clamp(0, calc((var(--ticker-progress) - .25) / .75), 1); transform: translateY(calc(var(--ticker-travel-y, 8px) * (1 - var(--ticker-progress)))); will-change: transform, opacity; }
+.is-ticker-moving > .motion-ticker-surface { opacity: var(--ticker-progress); will-change: opacity; }
 .motion-ticker-anchor {
   --t: var(--ticker-progress);
   position: absolute; z-index: 5; top: 0; left: 0; pointer-events: none;
-  transform: translate(calc(var(--t-x) + var(--t-dx) * var(--t) + 4 * var(--t-bend) * var(--t) * (1 - var(--t))), calc(var(--t-y) + var(--t-dy) * var(--t)));
+  transform: translate(calc(var(--t-x) + var(--t-dx) * var(--t) + 4 * var(--t-bend) * var(--t) * (1 - var(--t))), var(--t-y));
   will-change: transform;
 }
 .motion-ticker-anchor > .motion-ticker-logo { position: absolute; top: 0; left: 0; width: calc(var(--t-size) + var(--t-ds) * var(--t)); height: calc(var(--t-size) + var(--t-ds) * var(--t)); object-fit: contain; border-radius: 50%; }
