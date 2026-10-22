@@ -1,5 +1,5 @@
 // Shared timing and velocity continuity for card, profile and ticker navigation.
-const timing = { near: 240, far: 280, retarget: 200, short: 120, easing: 'cubic-bezier(.4,0,.2,1)' };
+const timing = { near: 400, far: 440, retarget: 260, short: 160, easing: 'cubic-bezier(.22,.75,.3,1)' };
 const registered = new Set();
 
 export class ProgressTransition {
@@ -18,16 +18,12 @@ export class ProgressTransition {
         registered.add(name);
       });
     }
-    const phase = `var(${this.property})`;
-    this.driver.style.setProperty('--navigation-progress', `calc(${phase} + var(--travel-advance, 0) * ${phase} * (1 - ${phase}))`);
+    this.driver.style.setProperty('--navigation-progress', `var(${this.property})`);
     target.style.setProperty(property, 'var(--navigation-progress)');
   }
 
   setDistance(distance) {
     this.duration = distance <= 160 ? timing.near : timing.far;
-    // Longer paths cover more ground early without changing the shared clock.
-    // The same monotonic mapping runs backwards when navigation is reversed.
-    this.driver.style.setProperty('--travel-advance', .8 * Math.max(0, Math.min(1, (distance - 160) / 400)));
   }
 
   // Measure the source in its resting geometry before applying depth again.
@@ -52,7 +48,7 @@ export class ProgressTransition {
     }
     const values = { y: travel, top: (visible.top - page.top) / scale - travel,
       right: (page.right - visible.right) / scale, bottom: (page.bottom - visible.bottom) / scale + travel,
-      left: (visible.left - page.left) / scale, radius: parseFloat(getComputedStyle(source).borderTopLeftRadius) || 0 };
+      left: (visible.left - page.left) / scale };
     Object.entries(values).forEach(([key, value]) => this.target.style.setProperty('--container-' + key, value + 'px'));
     this.target.style.setProperty('--container-progress', `var(${this.progressProperty})`);
     this.target.classList.add('is-container-transform');

@@ -37,7 +37,8 @@ fs.mkdirSync(output, { recursive: true });
       const surface = document.querySelector(root);
       const rect = selector => surface.querySelector(selector).getBoundingClientRect().toJSON();
       return { identity: rect(moving), body: rect(body), page: surface.getBoundingClientRect().toJSON(),
-        underlay: document.querySelector('#feed').getBoundingClientRect().toJSON() };
+        underlay: document.querySelector('#feed > .motion-page-content').getBoundingClientRect().toJSON(),
+        background: document.querySelector('#feed').getBoundingClientRect().toJSON() };
     }, spec);
   };
   const specs = [
@@ -63,7 +64,7 @@ fs.mkdirSync(output, { recursive: true });
         await page.locator(spec.source).evaluate((node, trigger) => (trigger ? node.querySelector(trigger) : node).click(), spec.trigger);
         await page.waitForFunction(selector => document.querySelector(selector)?.dataset.transition === 'opening', spec.root);
         const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-        assert.equal(duration, 280, 'long journeys stay within the motion budget');
+        assert.equal(duration, 440, 'long journeys use a slightly longer settling tail');
         const start = await sample(spec, 0);
         near(start.identity.x, source.x); near(start.identity.y, source.y); near(start.identity.width, source.width);
         near(start.underlay.width, restingFeed.width); near(start.underlay.y, restingFeed.y);
@@ -72,7 +73,8 @@ fs.mkdirSync(output, { recursive: true });
         for (const fraction of [.15, .3, .5, .75, .999]) {
           const frame = await sample(spec, duration * fraction); frames.push(frame);
           assert.ok(frame.body.top >= frame.identity.bottom, 'incoming body never overtakes the moving identity');
-          assert.ok(frame.underlay.width < restingFeed.width && frame.underlay.width > restingFeed.width * .96, 'the entire underlay recedes gently');
+          near(frame.background.width, restingFeed.width); near(frame.background.y, restingFeed.y);
+          assert.ok(frame.underlay.width < restingFeed.width && frame.underlay.width > restingFeed.width * .96, 'the content recedes while its background stays full-screen');
           near(frame.underlay.x + frame.underlay.width / 2, restingFeed.x + restingFeed.width / 2);
           near(frame.underlay.y + frame.underlay.height / 2, restingFeed.y + restingFeed.height / 2);
           if (width === 393) await page.screenshot({ path: `${output}/container-${spec.name}-${fraction}.png` });
@@ -95,7 +97,7 @@ fs.mkdirSync(output, { recursive: true });
         await page.evaluate(() => history.forward()); await settled();
         const target = await page.locator(spec.root).locator(spec.target).first().boundingBox();
         near(end.x, target.x); near(end.y, target.y); near(end.width, target.width);
-        const held = await page.locator('#feed').boundingBox(); near(held.width, frames.at(-1).underlay.width);
+        const held = await page.locator('#feed > .motion-page-content').boundingBox(); near(held.width, frames.at(-1).underlay.width);
 
         await pauseNext(); await page.evaluate(() => history.back());
         await page.waitForFunction(selector => document.querySelector(selector)?.dataset.transition === 'closing', spec.root);
@@ -116,15 +118,16 @@ fs.mkdirSync(output, { recursive: true });
     // A deeper page moves its immediate parent, while older layers stay put.
     await page.setViewportSize({ width: 393, height: 759 }); await fresh();
     await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
-    const olderLayer = await page.locator('#feed').boundingBox();
+    const olderLayer = await page.locator('#feed > .motion-page-content').boundingBox();
     await pauseNext(); await page.locator('#profile .motion-open').evaluate(node => node.click());
     await page.evaluate(() => document.getAnimations()[0].currentTime = 100);
-    near((await page.locator('#feed').boundingBox()).width, olderLayer.width);
-    assert.ok((await page.locator('#profile').boundingBox()).width < 393, 'only the immediate profile moves back');
+    near((await page.locator('#feed > .motion-page-content').boundingBox()).width, olderLayer.width);
+    assert.ok((await page.locator('#profile > .motion-page-content').boundingBox()).width < 393, 'only the immediate profile content moves back');
+    near((await page.locator('#profile').boundingBox()).width, 393);
     await page.evaluate(() => document.getAnimations()[0].finish()); await settled();
     await page.evaluate(() => history.back()); await settled();
-    near((await page.locator('#profile').boundingBox()).width, 393);
-    near((await page.locator('#feed').boundingBox()).width, olderLayer.width);
+    near((await page.locator('#profile > .motion-page-content').boundingBox()).width, 393);
+    near((await page.locator('#feed > .motion-page-content').boundingBox()).width, olderLayer.width);
     await page.evaluate(() => history.back()); await settled();
     assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
 

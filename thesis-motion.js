@@ -1,7 +1,7 @@
 import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=7';
-import { ProfileTransition } from './thesis-profile-transition.js?v=4';
-import { TickerTransition } from './thesis-ticker-transition.js?v=4';
+import { CardTransition } from './thesis-card-transition.js?v=8';
+import { ProfileTransition } from './thesis-profile-transition.js?v=5';
+import { TickerTransition } from './thesis-ticker-transition.js?v=5';
 import { TICKERS, TICKER_POSTS, renderTicker } from './thesis-motion-ticker.js?v=1';
 import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
 import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=1';
@@ -13,7 +13,7 @@ const feedItems = document.querySelector('#feedItems');
 const feedTitle = feed.querySelector('.motion-title h1');
 const detail = document.querySelector('#detail');
 const pageChrome = document.querySelector('#motionPageChrome');
-feed.append(pageChrome.content.cloneNode(true));
+mountPageContent(feed);
 const cards = new Map();
 const saved = new Set();
 const followed = new Set();
@@ -26,6 +26,11 @@ function el(tag, className, text) {
   if (className) node.className = className;
   if (text != null) node.textContent = text;
   return node;
+}
+function mountPageContent(root) {
+  const content = el('div', 'motion-page-content');
+  content.append(...root.childNodes, pageChrome.content.cloneNode(true));
+  root.append(content);
 }
 function icon(path) {
   const node = el('span', 'motion-icon');
@@ -314,13 +319,15 @@ const navigation = new MotionNavigation({
       if (!source) { root.hidden = true; return null; }
       root.setAttribute('aria-label', 'Thesis detail');
       dispose = renderDetail(post, root, () => transition.settle(), parentFrame ? 'Back to ' + parentFrame.route.type : 'Back to For You');
+      transition = new CardTransition({ app, feed: underlay, detail: root, onSettled });
+    }
+    mountPageContent(root);
+    if (route.type === 'detail') {
       for (const selector of ['.motion-tickers', '.motion-charts']) {
         const from = source.querySelector(selector), to = root.querySelector(selector);
         if (from && to) to.scrollLeft = from.scrollLeft;
       }
-      transition = new CardTransition({ app, feed: underlay, detail: root, onSettled });
     }
-    root.append(pageChrome.content.cloneNode(true));
     return { root, transition, source, dispose };
   },
 });

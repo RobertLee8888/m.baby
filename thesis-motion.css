@@ -1,23 +1,24 @@
 /* The existing MVP stylesheet owns the Library tokens and Delight fonts. */
-:root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); --motion-page-radius: var(--device-screen-radius, 32px); }
+:root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); --motion-expansion-radius: 32px; }
 .motion-demo { background: var(--bg-container); letter-spacing: 0; }
 .motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: rgb(from var(--scrim) r g b / 1); isolation: isolate; }
-/* One rounded clip owns resting and moving surfaces, including safe areas. */
+/* The background stays edge-to-edge; only its content recedes. */
 .motion-feed, .motion-detail, .motion-profile, .motion-ticker-page {
-  position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg-container); clip-path: inset(0 round var(--motion-page-radius)); outline: none;
+  position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg-container); outline: none;
 }
-.is-recessed, .is-depth-underlay {
-  --depth-progress: 1;
-  background: var(--bg-container);
+.motion-page-content { position: absolute; inset: 0; isolation: isolate; }
+.is-recessed, .is-depth-underlay { --depth-progress: 1; }
+:is(.is-recessed, .is-depth-underlay) > .motion-page-content {
   transform-origin: center;
-  /* Project the same Z travel to 2D so the rounded clip includes the surface. */
   transform: scale(calc(1000 / (1000 + 40 * var(--depth-progress))));
+  filter: blur(calc(1.5px * var(--depth-progress)));
 }
 .is-recessed::after, .is-depth-underlay::after {
   content: ''; position: absolute; inset: 0; z-index: 90; pointer-events: none;
-  background: var(--scrim); opacity: var(--depth-progress); border-radius: inherit;
+  background: var(--scrim); opacity: var(--depth-progress);
 }
-.is-depth-underlay { --depth-progress: var(--navigation-progress); will-change: transform; }
+.is-depth-underlay { --depth-progress: var(--navigation-progress); }
+.is-depth-underlay > .motion-page-content { will-change: transform, filter; }
 .motion-app button, .motion-app a { touch-action: manipulation; }
 .motion-app button:focus-visible, .motion-app a:focus-visible { outline: 2px solid var(--m1); outline-offset: 2px; }
 .motion-app button:active:not([aria-disabled]) { opacity: .65; }
@@ -130,7 +131,7 @@
 .motion-detail-footer .motion-save { margin-left: auto; }
 .motion-detail.is-morphing {
   transform: translateY(calc(var(--card-offset) * (1 - var(--thesis-progress))));
-  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0 round calc(var(--motion-page-radius) * var(--thesis-progress)));
+  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0 round calc(var(--motion-expansion-radius) * (1 - var(--thesis-progress))));
   will-change: transform, clip-path;
 }
 .motion-detail.is-morphing [data-reveal] { opacity: var(--thesis-progress); }
@@ -203,11 +204,11 @@
 .is-container-transform {
   --remaining: calc(1 - var(--container-progress));
   transform: translateY(calc(var(--container-y) * var(--remaining)));
-  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--container-radius) * var(--remaining) + var(--motion-page-radius) * var(--container-progress)));
+  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--motion-expansion-radius) * var(--remaining)));
   will-change: transform, clip-path;
 }
 /* Opaque endpoints flatten into the page clip without a second edge blend. */
-.is-profile-moving > .motion-profile-surface { opacity: var(--profile-progress); }
+.is-profile-moving > .motion-page-content > .motion-profile-surface { opacity: var(--profile-progress); }
 .motion-profile-anchor {
   --p: var(--profile-progress);
   position: absolute; z-index: 5; top: 0; left: 0; display: flex; align-items: start;
@@ -238,7 +239,7 @@
 .motion-ticker-tabs { position: absolute; top: calc(var(--status-h) + 56px); inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
 .motion-ticker-tabs button { flex: none; height: 28px; padding-bottom: 6px; }
 .motion-ticker-scroll { position: absolute; inset: calc(var(--status-h) + 84px) 0 var(--home-h); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
-.is-ticker-moving > .motion-ticker-surface { opacity: var(--ticker-progress); }
+.is-ticker-moving > .motion-page-content > .motion-ticker-surface { opacity: var(--ticker-progress); }
 .motion-ticker-anchor {
   --t: var(--ticker-progress);
   position: absolute; z-index: 5; top: 0; left: 0; pointer-events: none;
@@ -260,8 +261,8 @@
 html[data-device-platform] .motion-device-cutout { display: block; }
 html[data-device-platform] .motion-demo .system-bar { display: grid; }
 html[data-device-platform] .motion-demo .home-indicator { display: block; }
-.is-morphing > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--thesis-progress) - .85) / .15), 1); }
-.is-container-transform > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--container-progress) - .85) / .15), 1); }
+.is-morphing > .motion-page-content > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--thesis-progress) - .85) / .15), 1); }
+.is-container-transform > .motion-page-content > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--container-progress) - .85) / .15), 1); }
 @media (min-width: 768px) {
   .motion-app { display: none; }
   .motion-desktop { display: grid; height: 100%; place-items: center; text-align: center; padding: 24px; color: var(--n5); }

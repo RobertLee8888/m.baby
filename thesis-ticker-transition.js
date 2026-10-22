@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=3';
+import { ProgressTransition } from './thesis-motion-progress.js?v=4';
 
 // The entire company identity travels with the chip, including incoming labels.
 export class TickerTransition extends ProgressTransition {

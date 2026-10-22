@@ -43,7 +43,7 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(Math.abs(firstAvatar.x - startAvatar.x) < 1 && Math.abs(firstAvatar.y - startAvatar.y) < 1, 'entry starts at the source avatar');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'one animation drives the entire card');
     const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-    assert.equal(duration, 240, 'near card uses the large-element motion budget');
+    assert.equal(duration, 400, 'near card leaves room for a gentle settling tail');
     let previousChartY = initial.chart.y;
     let pathBend = 0;
     const progressSamples = [];
@@ -67,7 +67,8 @@ fs.mkdirSync(output, { recursive: true });
     }
     assert.ok(pathBend > 6 && pathBend <= 8.1, 'shared content follows a restrained arc rather than a straight diagonal');
     const steps = progressSamples.slice(1).map((p, i) => p - progressSamples[i]);
-    assert.ok(steps[0] < Math.max(...steps) && steps.at(-1) < steps[0], 'motion accelerates briefly and settles with a slower arrival');
+    assert.ok(steps.every((step, i) => !i || step < steps[i - 1]), 'each equal-time interval travels less than the previous one');
+    assert.ok(progressSamples[5] > .85 && progressSamples[5] < .95, 'half time leaves a visible but restrained settling distance');
     const lastFrameChart = await page.locator('[data-motion-shared="chart-0"]').boundingBox();
     await page.evaluate(t => document.getAnimations().forEach(a => a.currentTime = t), duration / 2);
     const midAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
@@ -231,6 +232,6 @@ fs.mkdirSync(output, { recursive: true });
     await page.waitForFunction(() => document.querySelector('iframe').contentDocument.documentElement.dataset.theme === document.documentElement.dataset.theme);
     assert.equal(await frame.locator('html').getAttribute('data-theme'), shellTheme);
     assert.deepEqual(errors, []);
-    console.log('PASS: Figma geometry, shared arc, acceleration/settling, velocity-preserving reversal, visible text and monotonic charts, complete timelines, history, gallery continuity, pinned tabs, 320/360/393/430, reduced motion and Android gallery.');
+    console.log('PASS: Figma geometry, shared arc, decelerating arrival, velocity-preserving reversal, visible text and monotonic charts, complete timelines, history, gallery continuity, pinned tabs, 320/360/393/430, reduced motion and Android gallery.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
