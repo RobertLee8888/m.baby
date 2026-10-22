@@ -87,7 +87,8 @@ fs.mkdirSync(output, { recursive: true });
           return { top: rect.top + values[0], right: rect.right - (values[1] ?? values[0]),
             bottom: rect.bottom - (values[2] ?? values[0]), left: rect.left + (values[3] ?? values[1] ?? values[0]), radius: parseFloat(rounding) };
         });
-        assert.ok(clip.radius > 0 && clip.radius < 32, 'foreground rounding reduces as the page expands');
+        near(clip.radius, 32, .01);
+        assert.ok(clip.left >= 11.9 && device.width - clip.right >= 11.9, 'both sides remain inset while the page is still expanding vertically');
         const shot = await page.locator('iframe').screenshot();
         fs.writeFileSync(`${output}/${device.width}-${device.height}-${route.name}-mid.png`, shot);
         const pixels = await sharp(shot).removeAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -109,7 +110,7 @@ fs.mkdirSync(output, { recursive: true });
         for (const fraction of [.5, .7, .9, 1]) {
           await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * fraction);
           const radius = await frame.locator(route.root).evaluate(root => parseFloat(getComputedStyle(root).clipPath.split(' round ')[1]) || 0);
-          assert.ok(radius < previousRadius, 'foreground corners shrink throughout the settling tail');
+          assert.ok(radius < previousRadius, 'foreground corners shrink during the final approach to full screen');
           previousRadius = radius;
         }
         near(previousRadius, 0, .01);

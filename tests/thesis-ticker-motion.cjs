@@ -46,11 +46,19 @@ fs.mkdirSync(output, { recursive: true });
         const name = root.querySelector('.motion-ticker-anchor-person > .motion-name');
         const symbol = root.querySelector('.motion-ticker-anchor-meta > .motion-ticker-symbol').getBoundingClientRect();
         const market = root.querySelector('.motion-ticker-market').getBoundingClientRect();
-        const trend = root.querySelector('.motion-ticker-anchor-person > .motion-trend').getBoundingClientRect();
+        const pageBounds = root.getBoundingClientRect();
+        const insets = getComputedStyle(root).clipPath.slice(6).split(' round ')[0].split(' ').map(parseFloat);
         return { x: logo.x, y: logo.y, w: logo.width, p: Number(getComputedStyle(root).getPropertyValue('--ticker-progress')),
           nameX: name.getBoundingClientRect().x, nameY: name.getBoundingClientRect().y, symbolX: symbol.x,
           metaY: root.querySelector('.motion-ticker-anchor-meta').getBoundingClientRect().y,
-          nameOpacity: Number(getComputedStyle(name).opacity), trendX: trend.x, marketRight: market.right,
+          nameOpacity: Number(getComputedStyle(name).opacity),
+          marketWidth: market.width, marketTextWidth: (() => {
+            const range = document.createRange(); range.selectNodeContents(root.querySelector('.motion-ticker-market'));
+            return range.getBoundingClientRect().width;
+          })(),
+          marketOpacity: Number(getComputedStyle(root.querySelector('.motion-ticker-market')).opacity),
+          marketRight: market.right, clipRight: pageBounds.right - (insets[1] ?? insets[0]),
+          trendOpacity: Number(getComputedStyle(root.querySelector('.motion-ticker-anchor-person > .motion-trend')).opacity),
           headerY: root.querySelector('header').getBoundingClientRect().y,
           targetHidden: getComputedStyle(root.querySelector('.motion-ticker-identity > .motion-person')).visibility,
           background: getComputedStyle(root).backgroundColor, surface: Number(getComputedStyle(root.querySelector('.motion-ticker-surface')).opacity) };
@@ -60,7 +68,9 @@ fs.mkdirSync(output, { recursive: true });
       near(frame.nameX, frame.symbolX); near(frame.nameY + 20, frame.metaY);
       near(frame.nameOpacity, frame.p); near(frame.headerY + 12, frame.y);
       assert.equal(frame.targetHidden, 'hidden', 'company name must travel with the shared identity, not appear again at the destination');
-      assert.ok(frame.trendX >= frame.marketRight, 'the outgoing trend never overlaps the incoming exchange');
+      near(frame.marketWidth, frame.marketTextWidth);
+      if (frame.marketOpacity > .01) assert.ok(frame.marketRight <= frame.clipRight, 'the entire visible exchange label fits inside the page clip');
+      assert.ok(frame.marketOpacity < .001 || frame.trendOpacity < .001, 'the trend leaves before the whole exchange label fades in');
       if (frame.surface > .001) assert.equal(frame.background, 'rgb(255, 255, 255)', 'the expanding container has an opaque surface');
       if (fraction === .3) await page.screenshot({ path: output + '/ticker-motion-midpoint.png' });
     }
