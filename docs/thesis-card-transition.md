@@ -39,6 +39,12 @@ Paragraphs use two fixed line wraps inside one interpolated-height block. Their 
 
 Back reverses toward the original card and preserves the feed and galleries' scroll positions. Returning from a scrolled detail keeps the current viewport rather than jumping to its top. A scroll during entry settles the transition immediately so reading is not blocked. Browser back/forward, interruption, keyboard entry/exit and reduced motion remain supported. Browsers without registered custom properties use an immediate transition.
 
+### Underlying page depth
+
+The same Web Animation now drives an inherited progress value on the app, shared by the foreground and its immediate underlay. The underlay recedes around its center with `perspective(1000px) translateZ(-40px * p)`, reaching about 96.15% of its original visual size. Brightness decreases to 94% and the page corners round to 16 px with the same progress. The page remains an opaque surface. There is no extra delay, tilt, bounce or separate animation clock.
+
+A covered page holds its recessed state until the page above it closes. In nested navigation, older covered pages stay still while only the immediate underlay moves. Return measurements temporarily restore the source's untransformed geometry within the same task, then traverse the same forward path in reverse. Completion restores the active page's full size, brightness and corner shape without touching its scroll state. Reduced motion skips both foreground and depth movement.
+
 ### Profile and ticker continuity
 
 `thesis-profile-transition.js` moves the avatar/name as one identity group to the profile's 56 px portrait. `thesis-ticker-transition.js` retains the company logo and symbol while introducing the company name and exchange. A shallow inward arc, capped at 8 px, connects source and destination. The same 240/280 ms timing and velocity-preserving retargeting apply in both directions.
@@ -57,6 +63,6 @@ For You's 50 px title area collapses with the first 50 px of scroll, leaving the
 
 `tests/thesis-profile-motion.cjs` adds profile coordinates, image resolution, shared identity endpoints and curve, non-overlapping body content, entry reversal, nested detail/profile history, compact-header return, stable empty panels, profile/detail deep links, the same four widths, reduced motion and Android insets. Both suites run in Chromium and WebKit. The exported 2x Figma profile is compared to a 393x759 viewport after excluding its 59 px system status bar and 34 px home bar.
 
-`tests/thesis-container-motion.cjs` exercises low profile, ticker and card entries at widths 320/393/430. It checks that body content never overtakes the identity, the identity is within 60 px of arrival at half time, interrupted journeys retain their position, return endpoints restore the original scroll, and a partly obscured profile hero does not change the header's pixels when returning. It saves intermediate frames for Chromium and WebKit visual review.
+`tests/thesis-container-motion.cjs` exercises low profile, ticker and card entries at widths 320/393/430. It checks that body content never overtakes the identity, the identity is within 60 px of arrival at half time, and foreground/depth use one driver without jumps when reversed. It also covers centered, monotonic underlay recession, nested depth stability, full restoration, reduced motion, preserved scroll, and pixel-identical header occlusion when a partly obscured profile hero returns. It saves intermediate frames for Chromium and WebKit visual review.
 
 `tests/thesis-scroll.cjs` checks reversible header collapse at 320/360/393/430 px, stationary title glyphs, a single bottom divider, one-to-one content displacement, short filters, navigation restoration, independent horizontal scrolling, reduced motion and Android preview insets. It captures expanded, intermediate and collapsed states in Chromium and WebKit.

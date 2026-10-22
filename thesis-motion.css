@@ -2,6 +2,15 @@
 :root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
 .motion-demo { background: var(--bg-container); letter-spacing: 0; }
 .motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg-container); isolation: isolate; }
+.is-recessed, .is-depth-underlay {
+  --depth-progress: 1;
+  background: var(--bg-container);
+  transform-origin: center;
+  transform: perspective(1000px) translateZ(calc(-40px * var(--depth-progress)));
+  filter: brightness(calc(1 - .06 * var(--depth-progress)));
+  border-radius: calc(16px * var(--depth-progress));
+}
+.is-depth-underlay { --depth-progress: var(--navigation-progress); will-change: transform, filter; }
 .motion-app button, .motion-app a { touch-action: manipulation; }
 .motion-app button:focus-visible, .motion-app a:focus-visible { outline: 2px solid var(--m1); outline-offset: 2px; }
 .motion-app button:active:not([aria-disabled]) { opacity: .65; }

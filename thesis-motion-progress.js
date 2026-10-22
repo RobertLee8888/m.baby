@@ -5,27 +5,38 @@ const registered = new Set();
 export class ProgressTransition {
   constructor(target, property) {
     this.target = target;
-    this.property = property.replace('-progress', '-phase');
+    this.driver = target.parentElement;
+    this.property = '--navigation-phase';
     this.progressProperty = property;
     this.opened = false;
     this.running = false;
     this.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
     if (CSS.registerProperty) {
-      [property, this.property].forEach(name => {
+      [property, this.property, '--navigation-progress'].forEach(name => {
         if (registered.has(name)) return;
         CSS.registerProperty({ name, syntax: '<number>', inherits: true, initialValue: '1' });
         registered.add(name);
       });
     }
     const phase = `var(${this.property})`;
-    target.style.setProperty(property, `calc(${phase} + var(--travel-advance, 0) * ${phase} * (1 - ${phase}))`);
+    this.driver.style.setProperty('--navigation-progress', `calc(${phase} + var(--travel-advance, 0) * ${phase} * (1 - ${phase}))`);
+    target.style.setProperty(property, 'var(--navigation-progress)');
   }
 
   setDistance(distance) {
     this.duration = distance <= 160 ? timing.near : timing.far;
     // Longer paths cover more ground early without changing the shared clock.
     // The same monotonic mapping runs backwards when navigation is reversed.
-    this.target.style.setProperty('--travel-advance', .8 * Math.max(0, Math.min(1, (distance - 160) / 400)));
+    this.driver.style.setProperty('--travel-advance', .8 * Math.max(0, Math.min(1, (distance - 160) / 400)));
+  }
+
+  // Measure the source in its resting geometry before applying depth again.
+  // This happens within the same task, including when a recessed page returns.
+  prepareDepth() { this.feed.classList.remove('is-depth-underlay', 'is-recessed'); }
+
+  finishDepth() {
+    this.feed.classList.remove('is-depth-underlay');
+    this.feed.classList.toggle('is-recessed', this.opened && !this.reduceMotion.matches && Boolean(CSS.registerProperty));
   }
 
   contain(source, fromAnchor, toAnchor, scale) {
@@ -78,10 +89,11 @@ export class ProgressTransition {
       easing = `cubic-bezier(${x},${y},.2,1)`;
     }
     const previous = this.animation;
-    const animation = this.target.animate([
+    const animation = this.driver.animate([
       { [this.property]: from }, { [this.property]: to },
     ], { duration, easing, fill: 'both' });
     this.animation = animation;
+    this.feed.classList.add('is-depth-underlay');
     this.from = from; this.to = to;
     previous?.cancel();
     animation.finished.then(() => {

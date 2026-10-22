@@ -36,7 +36,8 @@ fs.mkdirSync(output, { recursive: true });
     return page.evaluate(({ root, moving, body }) => {
       const surface = document.querySelector(root);
       const rect = selector => surface.querySelector(selector).getBoundingClientRect().toJSON();
-      return { identity: rect(moving), body: rect(body), page: surface.getBoundingClientRect().toJSON() };
+      return { identity: rect(moving), body: rect(body), page: surface.getBoundingClientRect().toJSON(),
+        underlay: document.querySelector('#feed').getBoundingClientRect().toJSON() };
     }, spec);
   };
   const specs = [
@@ -57,6 +58,7 @@ fs.mkdirSync(output, { recursive: true });
         }, spec.y);
         const scrollTop = await page.locator('#feedScroll').evaluate(node => node.scrollTop);
         const source = await page.locator(spec.source).locator(spec.original).first().boundingBox();
+        const restingFeed = await page.locator('#feed').boundingBox();
         await pauseNext();
         await page.locator(spec.source).evaluate((node, trigger) => (trigger ? node.querySelector(trigger) : node).click(), spec.trigger);
         await page.waitForFunction(selector => document.querySelector(selector)?.dataset.transition === 'opening', spec.root);
@@ -64,15 +66,23 @@ fs.mkdirSync(output, { recursive: true });
         assert.equal(duration, 280, 'long journeys stay within the motion budget');
         const start = await sample(spec, 0);
         near(start.identity.x, source.x); near(start.identity.y, source.y); near(start.identity.width, source.width);
+        near(start.underlay.width, restingFeed.width); near(start.underlay.y, restingFeed.y);
+        assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'foreground and depth share one animation');
         const frames = [];
         for (const fraction of [.15, .3, .5, .75, .999]) {
           const frame = await sample(spec, duration * fraction); frames.push(frame);
           assert.ok(frame.body.top >= frame.identity.bottom, 'incoming body never overtakes the moving identity');
+          assert.ok(frame.underlay.width < restingFeed.width && frame.underlay.width > restingFeed.width * .96, 'the entire underlay recedes gently');
+          near(frame.underlay.x + frame.underlay.width / 2, restingFeed.x + restingFeed.width / 2);
+          near(frame.underlay.y + frame.underlay.height / 2, restingFeed.y + restingFeed.height / 2);
           if (width === 393) await page.screenshot({ path: `${output}/container-${spec.name}-${fraction}.png` });
         }
         const end = frames.at(-1).identity;
         assert.ok(frames[2].identity.y - end.y < 60, 'a bottom entry is within 60px of arrival halfway through');
-        for (let i = 1; i < frames.length; i++) assert.ok(frames[i].identity.y < frames[i - 1].identity.y, 'entry never stalls or reverses on its way up');
+        for (let i = 1; i < frames.length; i++) {
+          assert.ok(frames[i].identity.y < frames[i - 1].identity.y, 'entry never stalls or reverses on its way up');
+          assert.ok(frames[i].underlay.width < frames[i - 1].underlay.width, 'depth advances together with the foreground');
+        }
 
         // Reversing a long journey must not jump position or reset the page.
         const interrupted = await sample(spec, 85);
@@ -81,22 +91,49 @@ fs.mkdirSync(output, { recursive: true });
         const reversed = await sample(spec, 0);
         near(reversed.identity.x, interrupted.identity.x); near(reversed.identity.y, interrupted.identity.y);
         near(reversed.page.y, interrupted.page.y); near(reversed.body.y, interrupted.body.y);
+        near(reversed.underlay.width, interrupted.underlay.width); near(reversed.underlay.y, interrupted.underlay.y);
         await page.evaluate(() => history.forward()); await settled();
         const target = await page.locator(spec.root).locator(spec.target).first().boundingBox();
         near(end.x, target.x); near(end.y, target.y); near(end.width, target.width);
+        const held = await page.locator('#feed').boundingBox(); near(held.width, frames.at(-1).underlay.width);
 
         await pauseNext(); await page.evaluate(() => history.back());
         await page.waitForFunction(selector => document.querySelector(selector)?.dataset.transition === 'closing', spec.root);
         const returnStart = await sample(spec, 0);
         near(returnStart.identity.x, target.x); near(returnStart.identity.y, target.y);
+        near(returnStart.underlay.width, held.width);
         const returnDuration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
         const returnEnd = await sample(spec, returnDuration * .999);
         near(returnEnd.identity.x, source.x); near(returnEnd.identity.y, source.y);
         await page.evaluate(() => document.getAnimations()[0].finish()); await settled();
         assert.equal(await page.locator('#feedScroll').evaluate(node => node.scrollTop), scrollTop);
         assert.equal(await page.locator('.is-container-transform').count(), 0);
+        assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
+        near((await page.locator('#feed').boundingBox()).width, restingFeed.width);
       }
     }
+
+    // A deeper page moves its immediate parent, while older layers stay put.
+    await page.setViewportSize({ width: 393, height: 759 }); await fresh();
+    await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
+    const olderLayer = await page.locator('#feed').boundingBox();
+    await pauseNext(); await page.locator('#profile .motion-open').evaluate(node => node.click());
+    await page.evaluate(() => document.getAnimations()[0].currentTime = 100);
+    near((await page.locator('#feed').boundingBox()).width, olderLayer.width);
+    assert.ok((await page.locator('#profile').boundingBox()).width < 393, 'only the immediate profile moves back');
+    await page.evaluate(() => document.getAnimations()[0].finish()); await settled();
+    await page.evaluate(() => history.back()); await settled();
+    near((await page.locator('#profile').boundingBox()).width, 393);
+    near((await page.locator('#feed').boundingBox()).width, olderLayer.width);
+    await page.evaluate(() => history.back()); await settled();
+    assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
+
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
+    assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
+    assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
+    await page.evaluate(() => history.back()); await settled();
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
 
     // Returning from a partly scrolled hero preserves the header's occlusion.
     await page.setViewportSize({ width: 393, height: 759 }); await fresh();
@@ -110,6 +147,6 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(headerBefore.equals(headerAfter), 'the hidden hero must not flash over the header on return');
     await page.evaluate(() => document.getAnimations()[0].finish()); await settled();
     assert.deepEqual(errors, []);
-    console.log('PASS: low profile/ticker/card entries at 320/393/430, coordinated content, half-time arrival, interruption, reverse endpoints, scroll restoration, and partial-hero header occlusion.');
+    console.log('PASS: low profile/ticker/card entries at 320/393/430, coordinated content/depth, one driver, half-time arrival, interruption, reverse endpoints, nested depth, reduced motion, scroll restoration, and partial-hero header occlusion.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
