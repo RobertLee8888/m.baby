@@ -1,5 +1,5 @@
-import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js';
-import { CardTransition } from './thesis-card-transition.js';
+import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
+import { CardTransition } from './thesis-card-transition.js?v=2';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
@@ -188,11 +188,12 @@ function renderDetail(post) {
   if (post.tickers.length) timeline.append(tickers(post));
   timeline.append(body(post));
   if (post.charts.length) timeline.append(charts(post));
-  if (post.updates) {
-    const history = reveal(el('div', 'motion-history'));
-    history.append(document.createTextNode('View all 12 updates'), icon('ui-arrow-right-l2.svg'));
-    timeline.append(history, reveal(el('div', 'motion-dot end')));
-  } else timeline.querySelector('.motion-rail').remove();
+  // Every card previews the supplied detail template, including its update rail.
+  // The history destination is outside this two-screen transition prototype.
+  const history = reveal(button('motion-history', 'View all 12 updates'));
+  history.setAttribute('aria-disabled', 'true');
+  history.append(document.createTextNode('View all 12 updates'), icon('ui-arrow-right-l2.svg'));
+  timeline.append(history, reveal(el('div', 'motion-dot end')));
 
   const secondary = reveal(el('section', 'motion-detail-secondary'), 'content');
   const tabs = el('div', 'motion-detail-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Thesis context');
@@ -240,6 +241,7 @@ function renderDetail(post) {
   const footer = reveal(el('footer', 'motion-detail-footer')); footer.append(actions(post, true));
   detail.replaceChildren(header, scroll, footer);
   scroll.addEventListener('scroll', () => {
+    transition.settle();
     // Once tabs join the header, their bottom rule is the only divider.
     header.classList.toggle('is-scrolled', scroll.scrollTop > 0 && scroll.scrollTop < secondary.offsetTop);
   }, { passive: true });

@@ -24,7 +24,7 @@ export const POSTS = [
     id: 'traderstewie', name: 'Traderstewie', role: 'Trader · Trade setup', age: '13 Sep',
     avatar: A + 'thesis/P01-imgAvatar.png', tickers: [ticker('GOOGL')],
     text: 'AMD is approaching its summer high as more buyers join the advance.\nThe stock has broken higher after its last pullback stopped above the previous low. Rising trading volume makes the recovery more convincing.',
-    charts: [A + 'thesis/P01-imgChart1.png'], saved: 68, date: '13 Sep, 08:12', updates: 12,
+    charts: [A + 'thesis/P01-imgChart1.png'], saved: 68, date: '13 Sep, 08:12',
   },
   {
     id: 'berkshire', name: 'Berkshire Hathaway', role: 'Conglomerate', age: '1h ago',

@@ -108,8 +108,41 @@
 .motion-detail-footer .motion-action { font-size: 14px; }
 .motion-detail-footer .motion-action .motion-icon { width: 20px; height: 20px; flex-basis: 20px; }
 .motion-detail-footer .motion-save { margin-left: auto; }
-.motion-detail.is-morphing { will-change: clip-path; }
-.motion-shared-layer { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
+.motion-detail.is-morphing {
+  transform: translateY(calc(var(--card-offset) * (1 - var(--thesis-progress))));
+  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0);
+  will-change: transform, clip-path;
+}
+.motion-detail.is-morphing [data-reveal] { opacity: var(--thesis-progress); }
+.motion-card-copy {
+  --card-inset: calc(16px + 32px * var(--thesis-progress));
+  position: absolute; z-index: 4; top: 0; left: 0; width: 100%;
+  padding: calc(12px - 2px * var(--thesis-progress)) 16px 0 var(--card-inset);
+  pointer-events: none; cursor: default; box-shadow: none !important;
+}
+.motion-card-copy > .motion-identity {
+  position: relative; height: calc(42px - 6px * var(--thesis-progress));
+  width: calc(var(--identity-width) + var(--identity-width-delta) * var(--thesis-progress));
+  padding-right: calc(var(--identity-age-space) * (1 - var(--thesis-progress)));
+}
+.motion-card-copy > .motion-identity .motion-role { margin-top: calc(-2px * var(--thesis-progress)); }
+.motion-card-copy .motion-age { position: absolute; top: 0; right: 0; }
+.motion-card-copy .motion-age, .motion-card-copy > .motion-actions { opacity: max(0, calc(1 - 3 * var(--thesis-progress))); }
+.motion-detail.is-morphing .motion-detail-header > [data-reveal] { opacity: clamp(0, calc((var(--thesis-progress) - .35) / .65), 1); }
+.motion-card-date { height: calc(20px * var(--thesis-progress)); margin-top: calc(22px * var(--thesis-progress)); overflow: hidden; }
+.motion-card-copy .motion-body {
+  --wrap-progress: clamp(0, calc((var(--thesis-progress) - .9) / .08), 1);
+  position: relative; height: calc(var(--body-from-height) + var(--body-height-delta) * var(--thesis-progress));
+}
+.motion-body-wrap { position: absolute; top: 0; left: 0; }
+.motion-body-wrap.from { opacity: calc(1 - var(--wrap-progress)); }
+.motion-body-wrap.to { opacity: var(--wrap-progress); }
+.motion-card-copy > .motion-tickers, .motion-card-copy > .motion-charts { margin-left: calc(-1 * var(--card-inset)); padding-left: var(--card-inset); }
+.motion-card-copy > .motion-charts { margin-top: calc(12px - 4px * var(--thesis-progress)); }
+.motion-gallery-copy { display: flex; flex: none; gap: 8px; transform: translateX(calc(var(--gallery-offset) * var(--thesis-progress))); }
+.motion-detail.is-scrolled-return > :not(.motion-card-copy) { opacity: min(1, calc(var(--thesis-progress) * 2)); }
+.motion-detail.is-scrolled-return .motion-card-copy { opacity: max(0, calc(1 - var(--thesis-progress) * 2)); }
+.motion-detail.is-morphing.is-scrolled-return [data-reveal] { opacity: 1; }
 .motion-feed-header, .motion-post, .motion-recommendation, .motion-detail-tabs { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
 .motion-nav, .motion-detail-footer { box-shadow: inset 0 var(--hair) var(--l12); }
 .motion-detail.is-morphing .motion-detail-header, .motion-detail.is-morphing .motion-detail-footer { background: transparent; box-shadow: none; }
