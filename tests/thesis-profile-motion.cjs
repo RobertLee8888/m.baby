@@ -177,12 +177,13 @@ fs.mkdirSync(output, { recursive: true });
     await frame.locator('[data-post="satya"] .motion-person-link').click();
     await frame.locator('#profile[data-transition="open"]').waitFor();
     await page.locator('#deviceTrigger').click(); await page.getByRole('option', { name: /Galaxy A16/ }).click();
-    // WebKit reports the iframe's new viewport before delivering its resize
-    // event. Measure only after the demo has fitted that viewport.
+    // Wait for the selected viewport and its resize handler, not a match
+    // between the app and the previous device's dimensions.
     await page.waitForFunction(() => {
       const win = document.querySelector('iframe').contentWindow;
       const app = win.document.querySelector('#motionApp').getBoundingClientRect();
-      return Math.abs(app.height - win.innerHeight) < .5 && Math.abs(app.width - win.innerWidth) < .5;
+      return win.innerWidth === 412 && win.innerHeight === 892
+        && Math.abs(app.height - win.innerHeight) < .5 && Math.abs(app.width - win.innerWidth) < .5;
     });
     const insets = await frame.locator('#profile').evaluate(node => {
       const rect = node.getBoundingClientRect(), header = node.querySelector('header').getBoundingClientRect();
