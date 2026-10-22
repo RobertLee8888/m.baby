@@ -34,7 +34,7 @@ fs.mkdirSync(output, { recursive: true });
     near(start.x, source.x); near(start.y, source.y); near(start.width, source.width);
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1);
     const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-    assert.equal(duration, 400);
+    assert.equal(duration, 340);
     let bend = 0;
     for (const fraction of [.1, .3, .5, .7, .999]) {
       await page.evaluate(t => document.getAnimations()[0].currentTime = t, duration * fraction);
@@ -68,8 +68,10 @@ fs.mkdirSync(output, { recursive: true });
     await page.evaluate(() => document.getAnimations()[0].play()); await openProfile();
     const hero = await page.locator('#profile .motion-profile-hero .motion-avatar').boundingBox();
     near(end.x, hero.x); near(end.y, hero.y); near(end.width, hero.width);
+    assert.equal(await page.locator('#profile [data-followers]').textContent(), '0', 'zero-count profiles still show the stats row');
     await page.locator('#profile').getByRole('button', { name: 'Follow Tom Lee', exact: true }).click();
     assert.equal(await page.locator('#profile [data-follow]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('#profile [data-followers]').textContent(), '1');
 
     // Even the empty tab can pin; switching back keeps the header stationary.
     await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop = 1000);
@@ -137,8 +139,37 @@ fs.mkdirSync(output, { recursive: true });
     await page.evaluate(() => history.go(-3));
     await noProfile(); await page.waitForFunction(() => document.querySelector('#detail').hidden);
 
+    // Every real author keeps full profile metadata and only their own theses.
+    for (const [id, name, count, channel] of [
+      ['tom-lee', 'Tom Lee', 1, 'fundstrat'], ['raoul-pal', 'Raoul Pal', 3, 'RaoulGMI'],
+      ['jim-rogers', 'Jim Rogers', 1, 'AllJimRogers'], ['chamath', 'Chamath Palihapitiya', 2, 'chamath'],
+      ['cathie-wood', 'Cathie Wood', 3, 'CathieDWood'], ['gavin', 'Gavin Baker', 1, 'GavinSBaker'],
+    ]) {
+      await fresh('#profile/' + id); await openProfile();
+      assert.ok((await page.locator('#profile .motion-profile-bio').textContent()).length > 100, name + ' has a real bio');
+      assert.equal(await page.locator('#profile .motion-profile-channels a').getAttribute('href'), 'https://x.com/' + channel);
+      assert.equal(await page.locator('#profile .motion-profile-note').isVisible(), true);
+      assert.equal(await page.locator('#profile .motion-profile-hero .motion-profile-badge').count(), 1);
+      assert.equal(await page.locator('#profile .motion-post').count(), count);
+      assert.ok((await page.locator('#profile .motion-post > .motion-identity .motion-name').allTextContents()).every(text => text === name));
+      const bio = page.locator('#profile .motion-profile-bio');
+      const more = page.getByRole('button', { name: 'Show more bio' });
+      const overflow = await bio.evaluate(node => node.scrollHeight > node.clientHeight + 1);
+      assert.equal(await more.isVisible(), overflow, 'show more only appears when the bio is truncated');
+      if (overflow) {
+        const collapsedHeight = await bio.evaluate(node => node.clientHeight);
+        await more.click();
+        assert.equal(await more.getAttribute('aria-expanded'), 'true');
+        assert.ok(await bio.evaluate(node => node.clientHeight) > collapsedHeight);
+        await more.click();
+        assert.equal(await bio.evaluate(node => node.clientHeight), collapsedHeight);
+      }
+      await page.screenshot({ path: output + '/profile-content-' + id + '.png' });
+    }
+
     for (const width of [320, 360, 393, 430]) {
       await page.setViewportSize({ width, height: 759 }); await fresh('#profile/chamath'); await openProfile();
+      assert.equal(await page.locator('#profile [data-followers]').textContent(), '12.8K', 'retains the original Figma follower fixture');
       const scale = Math.min(1, width / 360);
       const metrics = await page.evaluate(() => {
         const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height }; };
@@ -192,6 +223,6 @@ fs.mkdirSync(output, { recursive: true });
     near(insets.top, 0); near(insets.bottom, 0); near(insets.headerTop, insets.status); near(insets.contentBottom, insets.home); near(insets.header, 56);
     await page.screenshot({ path: output + '/profile-android.png' });
     assert.deepEqual(errors, []);
-    console.log('PASS: profile design coordinates, high-resolution identity, curved shared anchor, no overlapping page text, reversal, nested history/scroll, compact header return, stable empty tabs, responsive widths, deep links, reduced motion and Android insets.');
+    console.log('PASS: complete six-author profiles, correct thesis attribution, follower interaction, expandable bios, quicker curved motion, reversal, nested history/scroll, compact header return, stable empty tabs, responsive widths, deep links, reduced motion and Android insets.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
