@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=5';
+import { ProgressTransition } from './thesis-motion-progress.js?v=6';
 
 // History is a navigation level, so move one complete page on the same clock
 // as the existing depth effect. Its caller's scroll position never changes.

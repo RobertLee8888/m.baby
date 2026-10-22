@@ -42,7 +42,7 @@ fs.mkdirSync(output, { recursive: true });
     const startAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
     assert.ok(Math.abs(firstAvatar.x - startAvatar.x) < 1 && Math.abs(firstAvatar.y - startAvatar.y) < 1, 'entry starts at the source avatar');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'one animation drives the entire card');
-    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration - 80);
     assert.equal(duration, 340, 'near card is quicker while retaining its decelerating tail');
     let previousChartY = initial.chart.y;
     let pathBend = 0;
@@ -115,6 +115,35 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(Math.abs(reverse.velocity - beforeReverse.velocity) / beforeReverse.velocity < .05, 'retargeting inherits velocity instead of flipping its sign');
     assert.ok(Math.max(...reverse.samples) > beforeReverse.value, 'the card brakes before changing direction');
     assert.ok(reverse.samples.every(p => p >= 0 && p <= 1), 'braking never overshoots the list/detail bounds');
+    await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitClosed();
+
+    // Reversing during the corner-only finish starts at the arrived geometry.
+    await page.evaluate(() => {
+      document.querySelector('[data-post="tom-lee-spy"] .motion-body').click();
+      const animation = document.getAnimations()[0];
+      animation.pause(); animation.currentTime = animation.effect.getTiming().duration - 40;
+    });
+    const cornerPhase = await page.locator('#detail').evaluate(node => ({
+      progress: Number(getComputedStyle(node).getPropertyValue('--thesis-progress')),
+      radius: parseFloat(getComputedStyle(node).clipPath.split(' round ')[1]),
+    }));
+    assert.equal(cornerPhase.progress, 1);
+    assert.ok(cornerPhase.radius > 0 && cornerPhase.radius < 32);
+    await page.evaluate(() => {
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        Element.prototype.animate = original;
+        const next = original.apply(this, args); next.pause(); next.currentTime = 0; return next;
+      };
+      document.querySelector('[aria-label="Back to For You"]').click();
+    });
+    await page.waitForFunction(() => document.querySelector('#detail').dataset.transition === 'closing');
+    const roundedReturn = await page.locator('#detail').evaluate(node => ({
+      progress: Number(getComputedStyle(node).getPropertyValue('--thesis-progress')),
+      radius: parseFloat(getComputedStyle(node).clipPath.split(' round ')[1]),
+    }));
+    assert.equal(roundedReturn.progress, 1, 'corner-phase interruption never jumps geometry');
+    near(roundedReturn.radius, 32);
     await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitClosed();
 
     await page.locator('#feed [data-post="chamath-nvda"]').scrollIntoViewIfNeeded();

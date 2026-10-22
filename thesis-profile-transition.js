@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=5';
+import { ProgressTransition } from './thesis-motion-progress.js?v=6';
 
 // The identity and page share one expanding container and one progress value.
 export class ProfileTransition extends ProgressTransition {

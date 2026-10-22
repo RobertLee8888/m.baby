@@ -36,7 +36,7 @@ fs.mkdirSync(output, { recursive: true });
     near(startText.x, sourceText.x); near(startText.y, sourceText.y);
     assert.equal(await page.locator('#detail').isHidden(), true, 'chip must not also open the card');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1);
-    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration - 80);
     assert.ok([340, 380].includes(duration));
     let bow = 0;
     for (const fraction of [.1, .3, .5, .7, .999]) {
