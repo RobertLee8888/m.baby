@@ -39,7 +39,7 @@
       subtitle: 'For You, thesis detail, profile and ticker.',
       edited: '2026-10-22',
       slug: 'thesis-motion',
-      href: 'thesis-motion.html?v=11',
+      href: 'thesis-motion.html?v=12',
       meta: 'Mobile · 4 screens',
       figma: {
         label: 'Feed Mobile MVP · For You / V5',
@@ -418,7 +418,6 @@
       const vars = [
         [SAFE_TOP_VARS, device.safeTop],
         [SAFE_BOTTOM_VARS, device.safeBottom],
-        [['--device-screen-radius'], device.screenRadius],
       ];
       vars.forEach(([names, px]) => names.forEach(v => {
         if (wide.matches) root.style.setProperty(v, px + 'px');

@@ -34,7 +34,7 @@ fs.mkdirSync(output, { recursive: true });
     near(start.x, source.x); near(start.y, source.y); near(start.width, source.width);
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1);
     const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-    assert.equal(duration, 240);
+    assert.equal(duration, 400);
     let bend = 0;
     for (const fraction of [.1, .3, .5, .7, .999]) {
       await page.evaluate(t => document.getAnimations()[0].currentTime = t, duration * fraction);

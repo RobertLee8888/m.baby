@@ -37,7 +37,7 @@ fs.mkdirSync(output, { recursive: true });
     assert.equal(await page.locator('#detail').isHidden(), true, 'chip must not also open the card');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1);
     const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-    assert.ok([240, 280].includes(duration));
+    assert.ok([400, 440].includes(duration));
     let bow = 0;
     for (const fraction of [.1, .3, .5, .7, .999]) {
       await page.evaluate(t => document.getAnimations()[0].currentTime = t, duration * fraction);
@@ -53,7 +53,7 @@ fs.mkdirSync(output, { recursive: true });
           nameOpacity: Number(getComputedStyle(name).opacity), trendX: trend.x, marketRight: market.right,
           headerY: root.querySelector('header').getBoundingClientRect().y,
           targetHidden: getComputedStyle(root.querySelector('.motion-ticker-identity > .motion-person')).visibility,
-          background: getComputedStyle(root).backgroundColor, surface: Number(getComputedStyle(root.firstElementChild).opacity) };
+          background: getComputedStyle(root).backgroundColor, surface: Number(getComputedStyle(root.querySelector('.motion-ticker-surface')).opacity) };
       });
       bow = Math.max(bow, frame.x - (source.x + (48 - source.x) * frame.p));
       near(frame.y, source.y + (12 - source.y) * frame.p); near(frame.w, 16 + 16 * frame.p);
