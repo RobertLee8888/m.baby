@@ -38,6 +38,13 @@ fs.mkdirSync(output, { recursive: true });
       return animation;
     };
   });
+  const surfaceClip = (frame, selector) => frame.locator(selector).evaluate(root => {
+    const [inset, rounding] = getComputedStyle(root).clipPath.slice(6, -1).split(' round ');
+    const values = inset.split(' ').map(parseFloat), rect = root.getBoundingClientRect();
+    const top = rect.top + values[0], right = rect.right - (values[1] ?? values[0]);
+    const bottom = rect.bottom - (values[2] ?? values[0]), left = rect.left + (values[3] ?? values[1] ?? values[0]);
+    return { top, right, bottom, left, width: right - left, height: bottom - top, radius: parseFloat(rounding) || 0 };
+  });
   try {
     await page.goto(base + 'index.html#/thesis-motion');
     const frame = page.frames().find(item => item.url().includes('thesis-motion.html'));
@@ -66,6 +73,18 @@ fs.mkdirSync(output, { recursive: true });
         await frame.waitForFunction(root => document.querySelector(root)?.dataset.transition === 'opening', route.root);
         assert.equal(await frame.evaluate(() => document.getAnimations().length), 1);
         const duration = await frame.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+        const start = await surfaceClip(frame, route.root);
+        let previous = start;
+        for (const fraction of [.04, .1, .2, .35, .5, .7, .9]) {
+          await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * fraction);
+          const current = await surfaceClip(frame, route.root);
+          const widthProgress = (current.width - start.width) / (device.width - start.width);
+          const heightProgress = (current.height - start.height) / (device.height - start.height);
+          near(widthProgress, heightProgress, .001);
+          assert.ok(current.width > previous.width && current.height > previous.height, 'both dimensions grow continuously, including the first frames');
+          assert.ok(current.radius < previous.radius, 'corners shrink continuously without a hold or a late switch');
+          previous = current;
+        }
         await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * .3);
         const middle = await frame.locator('#feed').evaluate(root => {
           const bounds = node => node.getBoundingClientRect().toJSON();
@@ -80,15 +99,9 @@ fs.mkdirSync(output, { recursive: true });
         near(middle.blur, 1.5 * middle.opacity, .01);
         assert.equal(middle.scrim, 'rgba(0, 0, 0, 0.6)');
         assert.equal(middle.clip, 'none');
-        const clip = await frame.locator(route.root).evaluate(root => {
-          const [inset, rounding] = getComputedStyle(root).clipPath.slice(6, -1).split(' round ');
-          const values = inset.split(' ').map(parseFloat);
-          const rect = root.getBoundingClientRect();
-          return { top: rect.top + values[0], right: rect.right - (values[1] ?? values[0]),
-            bottom: rect.bottom - (values[2] ?? values[0]), left: rect.left + (values[3] ?? values[1] ?? values[0]), radius: parseFloat(rounding) };
-        });
-        near(clip.radius, 32, .01);
-        assert.ok(clip.left >= 11.9 && device.width - clip.right >= 11.9, 'both sides remain inset while the page is still expanding vertically');
+        const clip = await surfaceClip(frame, route.root);
+        assert.ok(clip.radius >= 20 && clip.radius < 32, 'corners stay visibly rounded during the main expansion');
+        assert.ok(clip.left > 0 && device.width - clip.right > 0, 'width remains short of full screen while height is still expanding');
         const shot = await page.locator('iframe').screenshot();
         fs.writeFileSync(`${output}/${device.width}-${device.height}-${route.name}-mid.png`, shot);
         const pixels = await sharp(shot).removeAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -110,7 +123,7 @@ fs.mkdirSync(output, { recursive: true });
         for (const fraction of [.5, .7, .9, 1]) {
           await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * fraction);
           const radius = await frame.locator(route.root).evaluate(root => parseFloat(getComputedStyle(root).clipPath.split(' round ')[1]) || 0);
-          assert.ok(radius < previousRadius, 'foreground corners shrink during the final approach to full screen');
+          assert.ok(radius < previousRadius, 'foreground corners continue shrinking through arrival');
           previousRadius = radius;
         }
         near(previousRadius, 0, .01);

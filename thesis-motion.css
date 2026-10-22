@@ -130,11 +130,10 @@
 .motion-detail-footer .motion-action .motion-icon { width: 20px; height: 20px; flex-basis: 20px; }
 .motion-detail-footer .motion-save { margin-left: auto; }
 .is-morphing, .is-container-transform {
-  /* Keep the lifted surface visible until all four edges approach the screen. */
-  --edge-progress: clamp(0, calc((var(--surface-progress) - .9) / .1), 1);
-  --edge-remaining: calc(1 - var(--edge-progress) * var(--edge-progress) * (3 - 2 * var(--edge-progress)));
-  --surface-gutter: calc(12px * var(--edge-remaining));
-  --surface-radius: calc(var(--motion-expansion-radius) * var(--edge-remaining));
+  --remaining: calc(1 - var(--surface-progress));
+  --surface-gutter: calc(12px * var(--remaining));
+  /* Corners stay legible without delaying either dimension of the surface. */
+  --surface-radius: calc(var(--motion-expansion-radius) * (1 - var(--surface-progress) * var(--surface-progress) * var(--surface-progress) * var(--surface-progress)));
 }
 .motion-detail.is-morphing {
   --surface-progress: var(--thesis-progress);
@@ -211,9 +210,8 @@
 .motion-profile-empty { text-align: center; color: var(--n5); font-size: 14px; line-height: 22px; padding: 64px 16px; }
 .is-container-transform {
   --surface-progress: var(--container-progress);
-  --remaining: calc(1 - var(--container-progress));
   transform: translateY(calc(var(--container-y) * var(--remaining)));
-  clip-path: inset(calc(var(--container-top) * var(--remaining)) max(var(--surface-gutter), calc(var(--container-right) * var(--remaining))) calc(var(--container-bottom) * var(--remaining)) max(var(--surface-gutter), calc(var(--container-left) * var(--remaining))) round var(--surface-radius));
+  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(max(12px, var(--container-right)) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(max(12px, var(--container-left)) * var(--remaining)) round var(--surface-radius));
   will-change: transform, clip-path;
 }
 /* Opaque endpoints flatten into the page clip without a second edge blend. */
