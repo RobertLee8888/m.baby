@@ -56,7 +56,7 @@ fs.mkdirSync(output, { recursive: true });
 
     await page.setViewportSize({ width: 393, height: 759 });
     await scrollTo(100);
-    for (const selector of ['[data-post="satya"] .motion-open', '[data-post="gavin"] .motion-person-link', '[data-post="gavin"] [data-ticker="GOOGL"]']) {
+    for (const selector of ['[data-post="tom-lee-spy"] .motion-open', '[data-post="raoul-pal-ai"] .motion-person-link', '[data-post="raoul-pal-ai"] [data-ticker="GOOGL"]']) {
       const before = await metrics();
       await page.locator(selector).evaluate(node => node.click()); await settled();
       await page.evaluate(() => history.back()); await settled();

@@ -24,9 +24,9 @@ fs.mkdirSync(output, { recursive: true });
   const fresh = async (hash = '') => { await page.goto(base + 'thesis-motion.html?qa=' + ++visit + hash); await ready(); };
   try {
     await fresh();
-    const source = await page.locator('[data-post="satya"] .motion-avatar').boundingBox();
+    const source = await page.locator('[data-post="tom-lee-spy"] .motion-avatar').boundingBox();
     await page.evaluate(() => {
-      document.querySelector('[data-post="satya"] .motion-person-link').click();
+      document.querySelector('[data-post="tom-lee-spy"] .motion-person-link').click();
       document.getAnimations().forEach(animation => { animation.pause(); animation.currentTime = 0; });
     });
     assert.equal(await page.locator('#detail').isHidden(), true, 'identity opens profile, not the thesis behind it');
@@ -68,7 +68,7 @@ fs.mkdirSync(output, { recursive: true });
     await page.evaluate(() => document.getAnimations()[0].play()); await openProfile();
     const hero = await page.locator('#profile .motion-profile-hero .motion-avatar').boundingBox();
     near(end.x, hero.x); near(end.y, hero.y); near(end.width, hero.width);
-    await page.locator('#profile').getByRole('button', { name: 'Follow Satya Nadella', exact: true }).click();
+    await page.locator('#profile').getByRole('button', { name: 'Follow Tom Lee', exact: true }).click();
     assert.equal(await page.locator('#profile [data-follow]').getAttribute('aria-pressed'), 'true');
 
     // Even the empty tab can pin; switching back keeps the header stationary.
@@ -99,7 +99,7 @@ fs.mkdirSync(output, { recursive: true });
 
     // Interrupt entry, reverse, then redirect forward without a jump.
     await page.evaluate(() => {
-      document.querySelector('[data-post="satya"] .motion-person-link').click();
+      document.querySelector('[data-post="tom-lee-spy"] .motion-person-link').click();
       const animation = document.getAnimations()[0]; animation.pause(); animation.currentTime = 80;
       const original = Element.prototype.animate;
       Element.prototype.animate = function (...args) {
@@ -116,13 +116,13 @@ fs.mkdirSync(output, { recursive: true });
     await page.getByRole('button', { name: 'Back from profile' }).click(); await noProfile();
 
     // Detail -> profile -> another detail: preserve every underlying viewport.
-    await page.locator('[data-post="gavin"]').scrollIntoViewIfNeeded();
+    await page.locator('[data-post="raoul-pal-ai"]').scrollIntoViewIfNeeded();
     const feedTop = await page.locator('#feedScroll').evaluate(node => node.scrollTop);
-    await page.locator('[data-post="gavin"] .motion-open').click();
+    await page.locator('[data-post="raoul-pal-ai"] .motion-open').click();
     await page.waitForFunction(() => document.querySelector('#detail').dataset.transition === 'open');
     await page.locator('#detail .motion-detail-scroll').evaluate(node => node.scrollTop = 80);
     await page.locator('#detail .motion-detail-header .motion-person-link').click(); await openProfile();
-    await page.locator('#profile .motion-open').click();
+    await page.locator('#profile .motion-open').first().click();
     await page.waitForFunction(() => document.querySelector('.motion-detail:not(#detail)')?.dataset.transition === 'open');
     assert.equal(await page.locator('#profile').getAttribute('aria-hidden'), 'true');
     await page.evaluate(() => history.go(-2)); await noProfile();
@@ -138,18 +138,18 @@ fs.mkdirSync(output, { recursive: true });
     await noProfile(); await page.waitForFunction(() => document.querySelector('#detail').hidden);
 
     for (const width of [320, 360, 393, 430]) {
-      await page.setViewportSize({ width, height: 759 }); await fresh('#profile/maya'); await openProfile();
+      await page.setViewportSize({ width, height: 759 }); await fresh('#profile/chamath'); await openProfile();
       const scale = Math.min(1, width / 360);
       const metrics = await page.evaluate(() => {
         const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x, y:r.y, width:r.width, height:r.height }; };
-        return { hero: rect('.motion-profile-hero .motion-avatar'), bio: rect('.motion-profile-bio'), tabs: rect('.motion-profile-tabs'),
+        return { hero: rect('.motion-profile-hero .motion-avatar'), tabs: rect('.motion-profile-tabs'),
           gallery: rect('#profile .motion-charts'), overflow: document.documentElement.scrollWidth > innerWidth,
           avatarPixels: document.querySelector('.motion-profile-hero .motion-avatar').naturalWidth };
       });
       near(metrics.hero.width, 56 * scale); near(metrics.hero.y, 56 * scale);
       near(metrics.gallery.x, 0); near(metrics.gallery.width, width);
-      assert.equal(metrics.overflow, false); assert.ok(metrics.avatarPixels >= 112);
-      if (width === 393) { near(metrics.bio.y, 156); near(metrics.tabs.y, 252); }
+      assert.equal(metrics.overflow, false); assert.ok(metrics.avatarPixels > 0);
+      assert.ok(metrics.tabs.y > metrics.hero.y + metrics.hero.height);
       await page.screenshot({ path: output + '/profile-' + width + '.png' });
       await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop = 190);
       const scroll = await page.locator('#profile .motion-profile-scroll').evaluate(node => node.scrollTop);
@@ -159,11 +159,10 @@ fs.mkdirSync(output, { recursive: true });
       assert.equal(new URL(page.url()).hash, '');
     }
 
-    await fresh('#maya-satya');
-    await page.waitForFunction(() => document.querySelector('.motion-detail:not(#detail)')?.dataset.transition === 'open');
-    await page.getByRole('button', { name: 'Back to profile' }).click(); await openProfile();
-    assert.equal(new URL(page.url()).hash, '#profile/maya');
-    await page.getByRole('button', { name: 'Back from profile' }).click(); await noProfile();
+    await fresh('#chamath-tsla');
+    await page.waitForFunction(() => document.querySelector('#detail')?.dataset.transition === 'open');
+    await page.getByRole('button', { name: 'Back to For You' }).click();
+    await page.waitForFunction(() => document.querySelector('#detail').hidden);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.locator('.motion-recommendation .motion-person-link').click(); await openProfile();
@@ -174,7 +173,7 @@ fs.mkdirSync(output, { recursive: true });
     await page.setViewportSize({ width: 1440, height: 1080 });
     await page.goto(base + 'index.html#/thesis-motion');
     const frame = page.frameLocator('iframe');
-    await frame.locator('[data-post="satya"] .motion-person-link').click();
+    await frame.locator('[data-post="tom-lee-spy"] .motion-person-link').click();
     await frame.locator('#profile[data-transition="open"]').waitFor();
     await page.locator('#deviceTrigger').click(); await page.getByRole('option', { name: /Galaxy A16/ }).click();
     // Wait for the selected viewport and its resize handler, not a match

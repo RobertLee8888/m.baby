@@ -35,7 +35,7 @@ export class CardTransition extends ProgressTransition {
     this.prepareDepth();
     const sourceRect = source.getBoundingClientRect();
     const detailRect = detail.getBoundingClientRect();
-    const viewport = source.closest('.motion-feed-scroll, .motion-profile-scroll, .motion-ticker-scroll').getBoundingClientRect();
+    const viewport = source.closest('.motion-feed-scroll, .motion-profile-scroll, .motion-ticker-scroll, .motion-detail-scroll').getBoundingClientRect();
     const scale = app.getBoundingClientRect().width / app.offsetWidth;
     const offset = (sourceRect.top - detailRect.top) / scale;
     const clipTop = Math.max(0, (viewport.top - sourceRect.top) / scale);

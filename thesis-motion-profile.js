@@ -1,28 +1,14 @@
-import { POSTS } from './thesis-motion-data.js?v=2';
-import { PROFILES } from './mvp-social-detail-data.js';
-import { SOCIAL_POSTS } from './mvp-social-data.js';
+import { POSTS } from './thesis-motion-data.js?v=3';
 
-// Profile copy comes from the supplied member frame and the adjacent visitor
-// example. Other authors show only identity fields present in the feed data.
-export const PEOPLE = new Map(POSTS.map(post => [post.id, {
-  id: post.id, name: post.name, role: post.role, avatar: post.avatar,
+// An author has one identity across all their theses and entry points.
+export const PEOPLE = new Map(POSTS.map(post => [post.authorId, {
+  id: post.authorId, name: post.name, role: post.role, avatar: post.avatar,
 }]));
-PEOPLE.set('maya', { ...PROFILES.maya, avatar: 'assets/thesis/P01-imgAvatar.png', joined: 'Mar 4, 2026', followers: '2.4K', following: '86' });
-PEOPLE.set('chamath', { ...PROFILES.chamath, avatar: PROFILES.chamath.img, followers: '12.8K', bot: true,
+PEOPLE.set('chamath', { ...PEOPLE.get('chamath'), bot: true,
   channels: [['x', '@chamath', 'https://x.com/chamath']] });
 
-const authored = (post, person, role = person.handle || person.role) => ({ ...post, id: person.id + '-' + post.id,
-  authorId: person.id, name: person.name, role, avatar: person.avatar });
-const maya = PEOPLE.get('maya'), chamath = PEOPLE.get('chamath');
-const chamathExample = SOCIAL_POSTS.find(post => post.key === 'S02');
-const profilePosts = new Map([
-  ['maya', [authored(POSTS[0], maya), authored({ ...POSTS[3], tickers: POSTS[0].tickers }, maya, '')]],
-  ['chamath', [authored({ ...POSTS[0], id: 'deepseek', text: chamathExample.statements.join('\n'),
-    charts: ['assets/thesis/S02-imgChart1.png'], saved: Number(chamathExample.counts[2]) }, chamath, ''),
-  authored({ ...POSTS[3], tickers: POSTS[0].tickers }, chamath, '')]],
-]);
-export function postsFor(person) { return profilePosts.get(person.id) || POSTS.filter(post => post.id === person.id); }
-export function postFor(id) { return POSTS.find(post => post.id === id) || [...profilePosts.values()].flat().find(post => post.id === id); }
+export function postsFor(person) { return POSTS.filter(post => post.authorId === person.id); }
+export function postFor(id) { return POSTS.find(post => post.id === id); }
 export function personFor(post) { return PEOPLE.get(post.authorId || post.id); }
 
 export function renderProfile(root, person, ui) {

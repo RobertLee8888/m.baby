@@ -15,6 +15,10 @@ into place. Back reverses the transition and restores the list position.
 Author identities open Profile along a short curved path. Profile cards can
 open another detail; each return preserves its source page, tabs and scroll.
 See [design sources, motion behavior and verification](docs/thesis-card-transition.md).
+The motion demo uses 11 verified thesis records from the supplied mobile
+reference, shared across its list, detail, author profiles and ticker pages.
+The Figma layout and transition timing are preserved. `tests/thesis-reference-content.cjs`
+checks attribution, sources, version counts and navigation between related records.
 
 ## Thesis (2026-09-18)
 

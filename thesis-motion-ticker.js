@@ -1,21 +1,17 @@
-import { POSTS } from './thesis-motion-data.js?v=2';
-import { SOCIAL_POSTS } from './mvp-social-data.js';
+import { POSTS } from './thesis-motion-data.js?v=3';
 
-const companies = { MSFT: 'Microsoft Corporation', GOOGL: 'Alphabet Inc.', AMZN: 'Amazon.com, Inc.', NVDA: 'NVIDIA Corp', TEM: 'Tempus AI' };
+const companies = {
+  SPY: ['SPDR S&P 500 ETF Trust', 'NYSE Arca'], NVDA: ['NVIDIA Corp', 'NASDAQ'],
+  MSFT: ['Microsoft Corporation', 'NASDAQ'], GOOGL: ['Alphabet Inc.', 'NASDAQ'],
+  META: ['Meta Platforms, Inc.', 'NASDAQ'], AMD: ['Advanced Micro Devices', 'NASDAQ'],
+  USO: ['United States Oil Fund', 'NYSE Arca'], TSLA: ['Tesla, Inc.', 'NASDAQ'],
+  XYZ: ['Block, Inc.', 'NYSE'], HOOD: ['Robinhood Markets, Inc.', 'NASDAQ'],
+  QQQ: ['Invesco QQQ Trust', 'NASDAQ'],
+};
 export const TICKERS = new Map(POSTS.flatMap(post => post.tickers).map(ticker => [ticker.symbol, {
-  ...ticker, name: companies[ticker.symbol], market: 'NASDAQ',
+  ...ticker, name: companies[ticker.symbol][0], market: companies[ticker.symbol][1],
 }]));
 
-// Copy and chart exports from the supplied NVDA / Theses frame, 6641:78529.
-export const TICKER_POSTS = ['S02', 'S07'].map((key, index) => {
-  const record = SOCIAL_POSTS.find(post => post.key === key);
-  return { id: 'nvda-' + key.toLowerCase(), tickerPage: 'NVDA', authorId: index ? undefined : 'reuters',
-    name: index ? 'NVIDIA' : 'Reuters', role: '', age: record.age, date: record.age,
-    avatar: index ? TICKERS.get('NVDA').logo : POSTS.find(post => post.id === 'reuters').avatar,
-    tickers: POSTS[0].tickers, text: [record.headline, ...record.statements].filter(Boolean).join('\n'),
-    charts: ['assets/thesis/S02-imgChart1.png'], saved: Number(record.counts[2]),
-  };
-});
 const watched = new Set();
 
 export function renderTicker(root, ticker, ui) {
@@ -58,7 +54,7 @@ export function renderTicker(root, ticker, ui) {
   });
   const scroll = el('div', 'motion-ticker-scroll');
   scroll.id = root.id + '-theses'; scroll.setAttribute('role', 'tabpanel'); scroll.setAttribute('aria-labelledby', root.id + '-thesis');
-  const posts = ticker.symbol === 'NVDA' ? TICKER_POSTS : POSTS.filter(post => post.tickers.some(item => item.symbol === ticker.symbol));
+  const posts = POSTS.filter(post => post.tickers.some(item => item.symbol === ticker.symbol));
   scroll.append(...posts.map(post => postCard(post, false)));
   scroll.addEventListener('scroll', settle, { passive: true });
   surface.append(header, tabs, scroll); root.append(surface);
