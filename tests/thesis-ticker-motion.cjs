@@ -53,7 +53,7 @@ fs.mkdirSync(output, { recursive: true });
           nameOpacity: Number(getComputedStyle(name).opacity), trendX: trend.x, marketRight: market.right,
           headerY: root.querySelector('header').getBoundingClientRect().y,
           targetHidden: getComputedStyle(root.querySelector('.motion-ticker-identity > .motion-person')).visibility,
-          cover: Number(getComputedStyle(root, '::before').opacity), surface: Number(getComputedStyle(root.firstElementChild).opacity) };
+          background: getComputedStyle(root).backgroundColor, surface: Number(getComputedStyle(root.firstElementChild).opacity) };
       });
       bow = Math.max(bow, frame.x - (source.x + (48 - source.x) * frame.p));
       near(frame.y, source.y + (12 - source.y) * frame.p); near(frame.w, 16 + 16 * frame.p);
@@ -61,7 +61,7 @@ fs.mkdirSync(output, { recursive: true });
       near(frame.nameOpacity, frame.p); near(frame.headerY + 12, frame.y);
       assert.equal(frame.targetHidden, 'hidden', 'company name must travel with the shared identity, not appear again at the destination');
       assert.ok(frame.trendX >= frame.marketRight, 'the outgoing trend never overlaps the incoming exchange');
-      if (frame.surface > .001) near(frame.cover, 1);
+      if (frame.surface > .001) assert.equal(frame.background, 'rgb(255, 255, 255)', 'the expanding container has an opaque surface');
       if (fraction === .3) await page.screenshot({ path: output + '/ticker-motion-midpoint.png' });
     }
     assert.ok(bow > 2 && bow <= 8.1, 'shared identity follows a restrained arc');

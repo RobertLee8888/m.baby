@@ -1,6 +1,6 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=1';
+import { ProgressTransition } from './thesis-motion-progress.js?v=2';
 
-// One identity group travels; all of the new page content enters together.
+// The identity and page share one expanding container and one progress value.
 export class ProfileTransition extends ProgressTransition {
   constructor({ app, feed, detail, onSettled }) {
     super(detail, '--profile-progress');
@@ -27,7 +27,8 @@ export class ProfileTransition extends ProgressTransition {
     const scale = app.getBoundingClientRect().width / app.offsetWidth;
     const pageRect = detail.getBoundingClientRect();
     const hero = detail.querySelector('.motion-profile-hero');
-    const target = !open && hero.getBoundingClientRect().bottom <= pageRect.top + 56
+    const scrollTop = detail.querySelector('.motion-profile-scroll').getBoundingClientRect().top;
+    const target = !open && hero.getBoundingClientRect().bottom <= scrollTop
       ? detail.querySelector('.motion-profile-collapsed') : hero;
     const fromAvatar = source?.querySelector('.motion-avatar');
     const toAvatar = target.querySelector('.motion-avatar');
@@ -40,6 +41,7 @@ export class ProfileTransition extends ProgressTransition {
         return { x: (r.x - pageRect.x) / scale, y: (r.y - pageRect.y) / scale, width: r.width / scale, height: r.height / scale };
       };
       const a = bounds(fromAvatar), b = bounds(toAvatar);
+      this.contain(source.querySelector('.motion-person-link') || source, fromAvatar, toAvatar, scale);
       const fromNameNode = fromPerson.querySelector('.motion-name'), toNameNode = toPerson.querySelector('.motion-name');
       const fromName = getComputedStyle(fromNameNode), toName = getComputedStyle(toNameNode);
       const advance = (node, style) => {
@@ -78,7 +80,7 @@ export class ProfileTransition extends ProgressTransition {
       const toGap = bounds(toPerson).x - b.x - b.width;
       const fromY = bounds(fromPerson).y - a.y, toY = bounds(toPerson).y - b.y;
       const vars = {
-        x: a.x, y: a.y, dx: b.x - a.x, dy: b.y - a.y,
+        x: a.x, y: b.y, dx: b.x - a.x,
         size: a.width, ds: b.width - a.width,
         gap: fromGap, dg: toGap - fromGap,
         textY: fromY, dt: toY - fromY,
@@ -88,6 +90,7 @@ export class ProfileTransition extends ProgressTransition {
         metaY: fromRole ? bounds(fromRole).y - bounds(fromPerson).y : parseFloat(fromName.lineHeight),
         metaToY: toRole ? bounds(toRole).y - bounds(toPerson).y : parseFloat(toName.lineHeight),
         metaHeight: fromRole ? bounds(fromRole).height : 0, metaToHeight: toRole ? bounds(toRole).height : 0,
+        clipTop: target === hero ? Math.max(0, (scrollTop - toAvatar.getBoundingClientRect().top) / scale) : 0,
         bend: Math.min(8, Math.abs(b.y - a.y) / 12),
       };
       Object.entries(vars).forEach(([key, value]) => copy.style.setProperty('--p-' + key, value + 'px'));
@@ -108,6 +111,7 @@ export class ProfileTransition extends ProgressTransition {
     this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; });
     this.hiddenNodes = [];
     this.running = false;
+    this.clearContainer();
     this.detail.classList.remove('is-profile-moving');
     this.detail.hidden = !this.opened; this.detail.inert = !this.opened;
     this.detail.dataset.transition = this.opened ? 'open' : 'closed';
