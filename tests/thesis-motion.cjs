@@ -42,22 +42,34 @@ fs.mkdirSync(output, { recursive: true });
     const startAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
     assert.ok(Math.abs(firstAvatar.x - startAvatar.x) < 1 && Math.abs(firstAvatar.y - startAvatar.y) < 1, 'entry starts at the source avatar');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'one animation drives the entire card');
+    const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+    assert.equal(duration, 240, 'near card uses the large-element motion budget');
     let previousChartY = initial.chart.y;
-    for (const time of [0, 28, 56, 84, 112, 140, 168, 196, 224, 252, 279]) {
+    let pathBend = 0;
+    const progressSamples = [];
+    for (const fraction of [0, .1, .2, .3, .4, .5, .6, .7, .8, .9, .999]) {
+      const time = duration * fraction;
       await page.evaluate(t => document.getAnimations().forEach(a => a.currentTime = t), time);
       const sample = await page.evaluate(() => {
         const copy = document.querySelector('.motion-card-copy');
         return { chartY:copy.querySelector('.motion-chart').getBoundingClientRect().y,
+          avatarX:copy.querySelector('.motion-avatar').getBoundingClientRect().x,
+          progress:Number(getComputedStyle(document.querySelector('#detail')).getPropertyValue('--thesis-progress')),
           textOpacity:[...copy.querySelectorAll('.motion-body-wrap')].reduce((sum, node) => sum + Number(getComputedStyle(node).opacity), 0),
           sourceWidth:copy.querySelector('.motion-body-wrap.from').getBoundingClientRect().width };
       });
       assert.ok(sample.chartY <= previousChartY + .5, 'chart never jumps downward as text changes line wrap');
       assert.ok(Math.abs(sample.textOpacity - 1) < .001, 'paragraph never fades through an empty state');
       near(sample.sourceWidth, 361);
+      pathBend = Math.max(pathBend, sample.avatarX - (firstAvatar.x + 32 * sample.progress));
+      progressSamples.push(sample.progress);
       previousChartY = sample.chartY;
     }
+    assert.ok(pathBend > 6 && pathBend <= 8.1, 'shared content follows a restrained arc rather than a straight diagonal');
+    const steps = progressSamples.slice(1).map((p, i) => p - progressSamples[i]);
+    assert.ok(steps[0] < Math.max(...steps) && steps.at(-1) < steps[0], 'motion accelerates briefly and settles with a slower arrival');
     const lastFrameChart = await page.locator('[data-motion-shared="chart-0"]').boundingBox();
-    await page.evaluate(() => document.getAnimations().forEach(a => a.currentTime = 140));
+    await page.evaluate(t => document.getAnimations().forEach(a => a.currentTime = t), duration / 2);
     const midAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
     assert.ok(midAvatar.y < startAvatar.y && midAvatar.y > 10, 'identity moves upward through the transition');
     await capture('expansion-midpoint');
@@ -69,6 +81,40 @@ fs.mkdirSync(output, { recursive: true });
     await page.locator('#detail').getByRole('button', { name: 'Bookmark', exact: true }).click();
     await back();
     assert.equal(await page.locator('[data-post="satya"] [data-save]').getAttribute('aria-pressed'), 'true');
+
+    // Re-target a moving card: preserve position and velocity, brake, then return.
+    const beforeReverse = await page.evaluate(() => {
+      document.querySelector('[data-post="satya"] .motion-body').click();
+      const animation = document.getAnimations()[0];
+      const time = animation.effect.getTiming().duration * .35;
+      const progress = () => Number(getComputedStyle(document.querySelector('#detail')).getPropertyValue('--thesis-progress'));
+      animation.pause(); animation.currentTime = time;
+      const value = progress(); animation.currentTime = time - 1;
+      const velocity = value - progress(); animation.currentTime = time;
+      const original = Element.prototype.animate;
+      Element.prototype.animate = function (...args) {
+        Element.prototype.animate = original;
+        const next = original.apply(this, args); next.pause(); next.currentTime = 0; return next;
+      };
+      document.querySelector('[aria-label="Back to For You"]').click();
+      return { value, velocity };
+    });
+    await page.waitForFunction(() => document.querySelector('#detail').dataset.transition === 'closing');
+    const reverse = await page.evaluate(() => {
+      const animation = document.getAnimations()[0];
+      const duration = animation.effect.getTiming().duration;
+      const progress = () => Number(getComputedStyle(document.querySelector('#detail')).getPropertyValue('--thesis-progress'));
+      const value = progress(); animation.currentTime = .25;
+      const velocity = (progress() - value) / .25;
+      const samples = [];
+      for (let time = 0; time < duration; time += 5) { animation.currentTime = time; samples.push(progress()); }
+      return { value, velocity, samples };
+    });
+    assert.ok(Math.abs(reverse.value - beforeReverse.value) < .00001, 'retargeting never jumps position');
+    assert.ok(Math.abs(reverse.velocity - beforeReverse.velocity) / beforeReverse.velocity < .05, 'retargeting inherits velocity instead of flipping its sign');
+    assert.ok(Math.max(...reverse.samples) > beforeReverse.value, 'the card brakes before changing direction');
+    assert.ok(reverse.samples.every(p => p >= 0 && p <= 1), 'braking never overshoots the list/detail bounds');
+    await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitClosed();
 
     await page.locator('[data-post="traderstewie"]').scrollIntoViewIfNeeded();
     const savedScroll = await page.locator('#feedScroll').evaluate(n => n.scrollTop);
@@ -185,6 +231,6 @@ fs.mkdirSync(output, { recursive: true });
     await page.waitForFunction(() => document.querySelector('iframe').contentDocument.documentElement.dataset.theme === document.documentElement.dataset.theme);
     assert.equal(await frame.locator('html').getAttribute('data-theme'), shellTheme);
     assert.deepEqual(errors, []);
-    console.log('PASS: Figma geometry, one continuous transition, visible text and monotonic charts, complete timelines, reverse/interrupt, history, gallery continuity, pinned tabs, 320/360/393/430, reduced motion, deep links and Android gallery.');
+    console.log('PASS: Figma geometry, shared arc, acceleration/settling, velocity-preserving reversal, visible text and monotonic charts, complete timelines, history, gallery continuity, pinned tabs, 320/360/393/430, reduced motion and Android gallery.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

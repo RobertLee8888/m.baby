@@ -115,7 +115,8 @@
 }
 .motion-detail.is-morphing [data-reveal] { opacity: var(--thesis-progress); }
 .motion-card-copy {
-  --card-inset: calc(16px + 32px * var(--thesis-progress));
+  --card-inline-progress: calc(var(--thesis-progress) + var(--card-bend) * var(--thesis-progress) * (1 - var(--thesis-progress)));
+  --card-inset: calc(16px + 32px * var(--card-inline-progress));
   position: absolute; z-index: 4; top: 0; left: 0; width: 100%;
   padding: calc(12px - 2px * var(--thesis-progress)) 16px 0 var(--card-inset);
   pointer-events: none; cursor: default; box-shadow: none !important;

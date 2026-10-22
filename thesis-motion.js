@@ -1,5 +1,5 @@
 import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=2';
+import { CardTransition } from './thesis-card-transition.js?v=3';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
