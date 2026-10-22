@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Thesis · Card transition</title>
+  <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="mvp.css">
+  <link rel="stylesheet" href="device-chrome.css">
+  <link rel="stylesheet" href="thesis-motion.css">
+</head>
+<body class="motion-demo">
+  <div id="motionApp" class="motion-app">
+    <main id="feed" class="motion-feed" aria-label="For You">
+      <header class="motion-feed-header">
+        <div class="motion-title"><h1>For You</h1></div>
+        <div class="motion-categories" aria-label="Topics"></div>
+      </header>
+      <div id="feedScroll" class="motion-feed-scroll"><div id="feedItems"></div></div>
+      <button class="motion-create" aria-label="Create thesis" aria-disabled="true"><span class="motion-icon" style="--icon:url(assets/ui-add-l2.svg)"></span></button>
+      <nav class="motion-nav" aria-label="Main"></nav>
+    </main>
+    <section id="detail" class="motion-detail" aria-label="Thesis detail" hidden></section>
+    <div class="system-bar" aria-hidden="true">
+      <div class="system-side system-left">9:41</div><div class="dynamic-island"></div>
+      <div class="system-side system-right">
+        <span class="ic sb-signal" style="--ic:url(assets/status-signal.svg)"></span>
+        <span class="ic sb-wifi" style="--ic:url(assets/status-wifi.svg)"></span>
+        <span class="battery"><span class="ic battery-outline" style="--ic:url(assets/battery-outline.svg)"></span><span class="ic battery-fill" style="--ic:url(assets/battery-fill.svg)"></span><span class="ic battery-end" style="--ic:url(assets/battery-end.svg)"></span></span>
+      </div>
+    </div>
+    <div class="home-indicator" aria-hidden="true"><span></span></div>
+    <div id="motionToast" class="motion-toast" role="status" hidden></div>
+  </div>
+  <p class="motion-desktop">此 demo 仅在移动端窗口尺寸生效。</p>
+  <script type="module" src="thesis-motion.js"></script>
+</body>
+</html>
