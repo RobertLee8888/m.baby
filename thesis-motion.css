@@ -119,6 +119,13 @@
 .motion-signal-source .motion-role { margin-top: 0; }
 .motion-signal-copy { font-size: 14px; line-height: 22px; margin-top: 12px; user-select: text; }
 .motion-signal-copy a { color: var(--n7); text-decoration: underline dotted; text-underline-offset: 3px; }
+.motion-source-links { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 12px; font-size: 12px; line-height: 20px; }
+.motion-source-links a { color: var(--n7); text-decoration: underline dotted; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.motion-proxy-note { flex-basis: 100%; color: var(--n5); margin: 4px 0 0; }
+.motion-signal-empty { color: var(--n5); font-size: 14px; line-height: 22px; }
+.motion-signal-empty strong { color: var(--n9); font-weight: 500; }
+.motion-signal-empty p { margin: 8px 0 0; }
+.motion-related-panel { padding: 0; }
 .motion-analysis { margin-top: 12px; font-size: 14px; line-height: 22px; user-select: text; }
 .motion-analysis-tag { display: inline-flex; align-items: center; height: 22px; vertical-align: baseline; margin-right: 8px; font-size: 12px; line-height: 20px; }
 .motion-analysis-brand { display: inline-flex; align-items: center; gap: 4px; background: var(--m1-10); padding: 1px 4px; border-radius: 4px 0 0 4px; }

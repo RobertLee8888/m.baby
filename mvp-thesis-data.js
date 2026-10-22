@@ -92,7 +92,18 @@ const HOME = [
   },
 ];
 
-const TICKER_ASSETS = {
+// Shared reference copy for the navigation prototype. The older social demo
+// deliberately retains P01's Figma-authored history in HOME above.
+export const REFERENCE_THESES = HOME.map(record => record.preserveDetail ? {
+  key: 'P01', name: 'Gavin Baker', role: '@GavinSBaker', age: 'Updated 4 Sept',
+  img: record.img,
+  thesis: 'Nvidia benefits from hardware-model co-design, the financeability of its flexible GPUs, revenue-sharing cloud economics, and the ability to fund American open-weight models, making its full-stack position difficult to displace.',
+  tickers: [['NVDA']],
+  links: ['https://x.com/GavinSBaker/status/2044861680015069571', 'https://x.com/GavinSBaker/status/2057178093463232826',
+    'https://x.com/GavinSBaker/status/2079607708693434850', 'https://x.com/GavinSBaker/status/2095867284434596090'],
+} : record);
+
+export const TICKER_ASSETS = {
   SPY: 'assets/onboarding-spy.svg', NVDA: 'assets/feed-logo-nvda-real.png', MSFT: 'assets/feed-logo-msft-real.svg',
   GOOGL: 'assets/feed-logo-goog.svg', META: 'assets/feed-logo-meta.svg', AMD: 'assets/feed-logo-amd.svg',
   TSLA: 'assets/market-logo-tsla.svg', HOOD: 'assets/filter-logo-hood.svg', QQQ: 'assets/onboarding-qqq.svg',
@@ -104,7 +115,7 @@ const TICKER_TRENDS = {
   USO: 'bull', TSLA: 'bull', XYZ: 'bull', HOOD: 'bull', QQQ: 'bull',
 };
 
-const CHART_ASSETS = {
+export const CHART_ASSETS = {
   SPY: 'assets/thesis/reference-chart-spy.png',
   NVDA: 'assets/thesis/S02-imgChart1.png',
   MSFT: 'assets/thesis/first-card-imgChart1.png',

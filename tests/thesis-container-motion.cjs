@@ -42,11 +42,11 @@ fs.mkdirSync(output, { recursive: true });
     }, spec);
   };
   const specs = [
-    { name: 'profile', source: '[data-post="gavin"] .motion-person-link', original: '.motion-avatar', y: 635,
+    { name: 'profile', source: '[data-post="raoul-pal-ai"] .motion-person-link', original: '.motion-avatar', y: 635,
       root: '#profile', moving: '.motion-profile-anchor > .motion-avatar', target: '.motion-profile-hero .motion-avatar', body: '.motion-profile-list .motion-post' },
-    { name: 'ticker', source: '[data-post="gavin"] [data-ticker="GOOGL"]', original: 'img', y: 665,
+    { name: 'ticker', source: '[data-post="raoul-pal-ai"] [data-ticker="GOOGL"]', original: 'img', y: 665,
       root: '.motion-ticker-page', moving: '.motion-ticker-anchor > .motion-ticker-logo', target: '.motion-ticker-identity > img', body: '.motion-ticker-scroll .motion-post' },
-    { name: 'card', source: '[data-post="gavin"]', original: '.motion-avatar', y: 545, trigger: '.motion-open',
+    { name: 'card', source: '[data-post="raoul-pal-ai"]', original: '.motion-avatar', y: 545, trigger: '.motion-open',
       root: '#detail', moving: '.motion-card-copy .motion-avatar', target: '.motion-detail-header .motion-avatar', body: '.motion-card-copy .motion-body' },
   ];
   try {
@@ -117,9 +117,9 @@ fs.mkdirSync(output, { recursive: true });
 
     // A deeper page moves its immediate parent, while older layers stay put.
     await page.setViewportSize({ width: 393, height: 759 }); await fresh();
-    await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
+    await page.locator('[data-post="raoul-pal-ai"] .motion-person-link').click(); await settled();
     const olderLayer = await page.locator('#feed > .motion-page-content').boundingBox();
-    await pauseNext(); await page.locator('#profile .motion-open').evaluate(node => node.click());
+    await pauseNext(); await page.locator('#profile .motion-open').first().evaluate(node => node.click());
     await page.evaluate(() => document.getAnimations()[0].currentTime = 100);
     near((await page.locator('#feed > .motion-page-content').boundingBox()).width, olderLayer.width);
     assert.ok((await page.locator('#profile > .motion-page-content').boundingBox()).width < 393, 'only the immediate profile content moves back');
@@ -132,7 +132,7 @@ fs.mkdirSync(output, { recursive: true });
     assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
+    await page.locator('[data-post="raoul-pal-ai"] .motion-person-link').click(); await settled();
     assert.equal(await page.locator('.is-recessed, .is-depth-underlay').count(), 0);
     assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
     await page.evaluate(() => history.back()); await settled();
@@ -140,7 +140,7 @@ fs.mkdirSync(output, { recursive: true });
 
     // Returning from a partly scrolled hero preserves the header's occlusion.
     await page.setViewportSize({ width: 393, height: 759 }); await fresh();
-    await page.locator('[data-post="gavin"] .motion-person-link').click(); await settled();
+    await page.locator('[data-post="raoul-pal-ai"] .motion-person-link').click(); await settled();
     await page.locator('.motion-profile-scroll').evaluate(node => node.scrollTop = 35);
     await page.waitForFunction(() => document.querySelector('.motion-profile-header').classList.contains('is-scrolled'));
     const headerBefore = await page.screenshot({ clip: { x: 0, y: 0, width: 393, height: 56 } });

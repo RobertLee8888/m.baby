@@ -1,57 +1,36 @@
-// Feed-Mobile-MVP: 5742:114415 (list), 7287:76564 (detail).
-// Original Figma image exports remain images; controls use Library SVGs.
-const A = 'assets/';
-const ticker = (symbol, stance = 'up') => ({ symbol, stance, logo: A + ({
-  MSFT: 'feed-logo-msft-real.svg', GOOGL: 'feed-logo-goog.svg', AMZN: 'feed-logo-amzn.svg',
-  NVDA: 'feed-logo-nvda-real.png', TEM: 'feed-logo-tem.png',
-}[symbol]) });
+import { REFERENCE_THESES, TICKER_ASSETS, CHART_ASSETS } from './mvp-thesis-data.js?v=2';
+import { SIGNALS } from './thesis-motion-signals.js?v=1';
 
-export const POSTS = [
-  {
-    id: 'satya', name: 'Satya Nadella', role: 'Chairman & CEO, Microsoft', age: '1h ago',
-    avatar: A + 'thesis/first-card-imgAvatar.png', tickers: [ticker('MSFT', 'down')],
-    text: 'Azure surpassed $75 billion in annual revenue, up 34%.\nMicrosoft added more than two gigawatts of datacenter capacity over the previous 12 months and now had over 400 datacenters across 70 regions.',
-    charts: [A + 'thesis/first-card-imgChart1.png'], saved: 32, date: '1h ago',
-  },
-  {
-    id: 'gavin', name: 'Gavin Baker', role: 'Managing Partner & CIO, Atreides', age: 'Jul 13',
-    avatar: A + 'thesis/P01-imgAvatar.png',
-    tickers: [ticker('GOOGL', 'down'), ticker('AMZN'), ticker('MSFT'), ticker('NVDA')],
-    text: 'Cheaper models would increase the return on AI spending and drive more token demand, redistributing margin dollars toward AI infrastructure providers.',
-    charts: [A + 'thesis/P01-imgChart1.png', A + 'thesis/P01-imgChart2.png', A + 'thesis/first-card-imgChart1.png'], saved: 68, date: 'Jul 13',
-  },
-  {
-    id: 'traderstewie', name: 'Traderstewie', role: 'Trader · Trade setup', age: '13 Sep',
-    avatar: A + 'thesis/P01-imgAvatar.png', tickers: [ticker('GOOGL')],
-    text: 'AMD is approaching its summer high as more buyers join the advance.\nThe stock has broken higher after its last pullback stopped above the previous low. Rising trading volume makes the recovery more convincing.',
-    charts: [A + 'thesis/P01-imgChart1.png'], saved: 68, date: '13 Sep, 08:12',
-  },
-  {
-    id: 'berkshire', name: 'Berkshire Hathaway', role: 'Conglomerate', age: '1h ago',
-    avatar: A + 'thesis/S05-imgAvatar.png', tickers: [],
-    text: "Berkshire's board unanimously appointed Greg Abel as President and CEO, effective January 1, 2026. Warren Buffett would remain Chairman of the Board.",
-    charts: [A + 'thesis/S05-imgChart1.png'], saved: 41, date: '1h ago',
-  },
-  {
-    id: 'sam', name: 'Sam Altman', role: 'Co-founder, OpenAI', age: '1h ago',
-    avatar: A + 'thesis/P04-imgAvatar.png', tickers: [],
-    text: 'Broad access to AI depends on abundant, affordable compute, supported by enough energy and chips.\nWithout that infrastructure, AI could become a scarce resource whose benefits concentrate among the wealthy.',
-    charts: [], saved: 63, date: '1h ago',
-  },
-  {
-    id: 'reuters', name: 'Reuters', role: 'News agency', age: '1h ago',
-    avatar: A + 'thesis/S01-imgAvatar.png', tickers: [ticker('TEM')],
-    text: 'Merck and Moderna said their personalized mRNA therapy met its primary endpoint and a key secondary endpoint in a late-stage melanoma trial, the first positive Phase 3 result for an mRNA cancer vaccine.',
-    charts: [A + 'thesis/S01-imgChart1.png'], saved: 56, date: '1h ago',
-  },
-];
-
-export const SIGNAL = {
-  name: 'SemiAnalysis', role: 'Semiconductor & AI research', time: '12 Aug, 07:00',
-  avatar: A + 'social-semianalysis.png',
-  text: 'SemiAnalysis reports TPUv8i is in internal software bring-up, with work beginning on the public software stack.',
-  url: 'https://x.com/SemiAnalysis_/status/2087298210066829389',
-  analysis: 'TPU commercialization could support the infrastructure thesis; adoption and returns remain unproven.',
+// Copy, identities, links and version counts verified in the supplied mobile
+// reference on 2026-10-22. Layout and chart components remain Figma-owned.
+const entries = {
+  P06: ['tom-lee-spy', 'tom-lee', '11 Sept 2026, 13:19', 4],
+  S05: ['raoul-pal-nvda', 'raoul-pal', '11 Sept 2026, 10:02', 1, ['Chips']],
+  P04: ['raoul-pal-ai', 'raoul-pal', '10 Sept 2026, 07:02', 2, ['Chips', 'Hyperscaler']],
+  S01: ['jim-rogers-uso', 'jim-rogers', '8 Sept 2026', 1],
+  P07: ['chamath-tsla', 'chamath', '6 Sept 2026, 23:19', 3],
+  P02: ['chamath-nvda', 'chamath', '6 Sept 2026, 23:19', 4, ['Chips', 'Neocloud']],
+  S02: ['cathie-wood-tsla', 'cathie-wood', '5 Sept 2026, 17:23', 3],
+  S06: ['cathie-wood-xyz', 'cathie-wood', '5 Sept 2026, 14:33', 2],
+  S04: ['cathie-wood-hood', 'cathie-wood', '5 Sept 2026, 13:30', 1],
+  S07: ['raoul-pal-qqq', 'raoul-pal', '4 Sept 2026, 23:05', 4],
+  P01: ['gavin-nvda', 'gavin', '4 Sept 2026, 21:31', 4, ['Chips', 'Memory']],
 };
+
+export const POSTS = REFERENCE_THESES.map(record => {
+  const [id, authorId, date, updateCount, topics = []] = entries[record.key];
+  return {
+    id, authorId, name: record.name, role: record.role, avatar: record.img,
+    age: record.age, date, text: record.thesis, sources: record.links,
+    proxyNote: record.proxyNote, updateCount, topics,
+    tickers: record.tickers.map(([symbol]) => ({ symbol, stance: 'up', logo: TICKER_ASSETS[symbol] })),
+    charts: record.tickers.map(([symbol]) => CHART_ASSETS[symbol]).filter(Boolean),
+    signals: SIGNALS[record.key] || [],
+    signalStatus: record.key === 'S06' ? 'Reviewing signal history' : 'Not run yet',
+    signalNote: record.key === 'S06'
+      ? 'Approved signals appear here as the backfill progresses. 63 of 720 time windows reviewed.'
+      : 'Signal monitoring hasn\u2019t been run for this thesis yet.',
+  };
+});
 
 export const TOPICS = ['All', 'Chips', 'Memory', 'Hyperscaler', 'Neocloud'];

@@ -1,10 +1,10 @@
-import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=8';
+import { POSTS, TOPICS } from './thesis-motion-data.js?v=3';
+import { CardTransition } from './thesis-card-transition.js?v=9';
 import { ProfileTransition } from './thesis-profile-transition.js?v=5';
 import { TickerTransition } from './thesis-ticker-transition.js?v=5';
-import { TICKERS, TICKER_POSTS, renderTicker } from './thesis-motion-ticker.js?v=1';
+import { TICKERS, renderTicker } from './thesis-motion-ticker.js?v=2';
 import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
-import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=1';
+import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=2';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
@@ -80,7 +80,8 @@ function identity(post, age = false, interactive = true) {
     row.dataset.person = author.id;
     link.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openProfile(author, row); });
   }
-  link.append(shared(image(post.avatar, 'motion-avatar'), 'avatar'), person); row.append(link);
+  if (post.avatar) link.append(shared(image(post.avatar, 'motion-avatar'), 'avatar'));
+  link.append(person); row.append(link);
   if (age) row.append(el('span', 'motion-age', post.age));
   return row;
 }
@@ -106,7 +107,7 @@ function body(post) {
     if (paragraphIndex) node.append(el('br'));
     node.append(document.createTextNode(paragraph));
   });
-  node.append(' ', el('span', 'motion-citation', '[1]'));
+  if (post.sources?.length) node.append(' ', el('span', 'motion-citation', post.sources.map((_, i) => '[' + (i + 1) + ']').join(' ')));
   return node;
 }
 
@@ -134,7 +135,8 @@ function actions(post, withShare = false) {
     const on = saved.has(post.id);
     target.setAttribute('aria-pressed', String(on));
     target.setAttribute('aria-label', on ? 'Remove bookmark' : 'Bookmark');
-    target.replaceChildren(icon(on ? 'ui-bookmark-f.svg' : 'thesis/first-card-imgBookmarkL.svg'), el('span', '', String(post.saved + Number(on))));
+    target.replaceChildren(icon(on ? 'ui-bookmark-f.svg' : 'thesis/first-card-imgBookmarkL.svg'));
+    if (post.saved != null) target.append(el('span', '', String(post.saved + Number(on))));
   }
   updateSave(save); row.append(ask, save);
   if (withShare) {
@@ -189,9 +191,7 @@ function recommendation() {
 
 function renderFeed() {
   feedItems.replaceChildren(); cards.clear();
-  const selected = POSTS.filter(post => topic === 'All' || ({
-    Chips: ['gavin', 'traderstewie'], Memory: ['gavin'], Hyperscaler: ['satya', 'gavin', 'sam'], Neocloud: ['sam', 'gavin'],
-  }[topic] || []).includes(post.id));
+  const selected = POSTS.filter(post => topic === 'All' || post.topics.includes(topic));
   selected.forEach((post, index) => {
     feedItems.append(postCard(post));
     if (index === 0 && topic === 'All') feedItems.append(recommendation());
@@ -212,32 +212,44 @@ function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
   if (post.tickers.length) timeline.append(tickers(post));
   timeline.append(body(post));
   if (post.charts.length) timeline.append(charts(post));
-  // Every card previews the supplied detail template, including its update rail.
-  // The update-history destination remains outside this transition prototype.
-  const history = reveal(button('motion-history', 'View all 12 updates'));
+  const sources = reveal(el('div', 'motion-source-links'));
+  (post.sources || []).forEach((url, index) => {
+    const link = el('a', '', '[' + (index + 1) + '] ' + new URL(url).hostname.replace(/^www\./, ''));
+    link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; sources.append(link);
+  });
+  if (post.proxyNote) sources.append(el('p', 'motion-proxy-note', post.proxyNote));
+  timeline.append(sources);
+  // History navigation remains outside this prototype; its count is real.
+  const historyLabel = `View all ${post.updateCount} update${post.updateCount === 1 ? '' : 's'}`;
+  const history = reveal(button('motion-history', historyLabel));
   history.setAttribute('aria-disabled', 'true');
-  history.append(document.createTextNode('View all 12 updates'), icon('ui-arrow-right-l2.svg'));
+  history.append(document.createTextNode(historyLabel), icon('ui-arrow-right-l2.svg'));
   timeline.append(history, reveal(el('div', 'motion-dot end')));
 
   const secondary = reveal(el('section', 'motion-detail-secondary'), 'content');
   const tabs = el('div', 'motion-detail-tabs'); tabs.setAttribute('role', 'tablist'); tabs.setAttribute('aria-label', 'Thesis context');
   const panels = el('div', 'motion-panels'); const track = el('div', 'motion-panel-track');
   const signals = el('div', 'motion-panel'); signals.id = detail.id + '-signals'; signals.setAttribute('role', 'tabpanel');
-  const source = el('div', 'motion-signal-source');
-  source.append(identity({ name: SIGNAL.name, role: SIGNAL.role, avatar: SIGNAL.avatar, age: SIGNAL.time }, true));
-  // Signal identity is secondary content, not a duplicate shared source.
-  source.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
-  const copy = el('p', 'motion-signal-copy', SIGNAL.text + ' ');
-  const link = el('a', '', 'x.com ↗'); link.href = SIGNAL.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; copy.append(link); source.append(copy);
-  const analysis = el('p', 'motion-analysis');
-  const tag = el('span', 'motion-analysis-tag');
-  const brand = el('span', 'motion-analysis-brand'); brand.append(image('assets/thesis/detail/alva.svg'), 'Alva');
-  tag.append(brand, el('span', 'motion-analysis-verdict', 'Mixed'));
-  analysis.append(tag, SIGNAL.analysis); signals.append(source, analysis);
-  const related = el('div', 'motion-panel'); related.id = detail.id + '-related'; related.setAttribute('role', 'tabpanel'); related.setAttribute('aria-hidden', 'true'); related.inert = true;
-  const relatedPost = POSTS.find(item => item.id === 'gavin');
-  related.append(identity(relatedPost), body(relatedPost));
-  related.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
+  for (const signal of post.signals || []) {
+    const source = el('div', 'motion-signal-source');
+    source.append(identity({ ...signal, age: signal.time }, true, false));
+    // Signal identity is secondary content, not a duplicate shared source.
+    source.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
+    const copy = el('p', 'motion-signal-copy', signal.text + ' ');
+    const link = el('a', '', new URL(signal.url).hostname.replace(/^www\./, '') + ' ↗'); link.href = signal.url; link.target = '_blank'; link.rel = 'noopener noreferrer'; copy.append(link); source.append(copy);
+    const analysis = el('p', 'motion-analysis');
+    const tag = el('span', 'motion-analysis-tag');
+    const brand = el('span', 'motion-analysis-brand'); brand.append(image('assets/thesis/detail/alva.svg'), 'Alva');
+    tag.append(brand, el('span', 'motion-analysis-verdict', signal.verdict));
+    analysis.append(tag, signal.analysis); signals.append(source, analysis);
+  }
+  if (!post.signals?.length) {
+    const empty = el('div', 'motion-signal-empty');
+    empty.append(el('strong', '', post.signalStatus), el('p', '', post.signalNote)); signals.append(empty);
+  }
+  const related = el('div', 'motion-panel motion-related-panel'); related.id = detail.id + '-related'; related.setAttribute('role', 'tabpanel'); related.setAttribute('aria-hidden', 'true'); related.inert = true;
+  const relatedPosts = POSTS.filter(item => item.id !== post.id && item.tickers.some(ticker => post.tickers.some(other => ticker.symbol === other.symbol)));
+  related.append(...relatedPosts.map(item => postCard(item, false)));
   track.append(signals, related); panels.append(track);
   ['Signals', 'Related thesis'].forEach((label, index) => {
     const tab = button('', label, () => selectTab(index));
@@ -276,7 +288,7 @@ function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
 const postRoute = post => ({ key: 'detail/' + post.id, type: 'detail', id: post.id, hash: '#' + post.id });
 const profileRoute = person => ({ key: 'profile/' + person.id, type: 'profile', id: person.id, hash: '#profile/' + person.id });
 const tickerRoute = ticker => ({ key: 'ticker/' + ticker.symbol, type: 'ticker', id: ticker.symbol, hash: '#ticker/' + ticker.symbol });
-const findPost = id => postFor(id) || TICKER_POSTS.find(post => post.id === id);
+const findPost = id => postFor(id);
 const navigation = new MotionNavigation({
   parse(hash) {
     if (hash.startsWith('#ticker/')) {
@@ -287,8 +299,7 @@ const navigation = new MotionNavigation({
     }
     const post = findPost(hash.slice(1));
     if (!post) return [];
-    if (post.tickerPage) return [tickerRoute(TICKERS.get(post.tickerPage)), postRoute(post)];
-    return post.authorId ? [profileRoute(personFor(post)), postRoute(post)] : [postRoute(post)];
+    return [postRoute(post)];
   },
   create(route, source, parentFrame, onSettled) {
     const underlay = parentFrame?.root || feed;

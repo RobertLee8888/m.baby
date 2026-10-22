@@ -24,7 +24,7 @@ fs.mkdirSync(output, { recursive: true });
   };
   try {
     await fresh();
-    const chip = page.locator('[data-post="satya"] [data-ticker="MSFT"]');
+    const chip = page.locator('[data-post="tom-lee-spy"] [data-ticker="SPY"]');
     const source = await chip.locator('img').first().boundingBox();
     const sourceText = await chip.locator('.motion-ticker-symbol').evaluate(node => {
       const range = document.createRange(); range.selectNodeContents(node); return range.getBoundingClientRect().toJSON();
@@ -85,7 +85,7 @@ fs.mkdirSync(output, { recursive: true });
     near((await ticker().locator('header').boundingBox()).height, 56);
     near((await ticker().locator('[role="tablist"]').boundingBox()).height, 28);
     near((await ticker().locator('.motion-post').first().boundingBox()).y, 84);
-    await ticker().getByRole('button', { name: 'Follow MSFT', exact: true }).click();
+    await ticker().getByRole('button', { name: 'Follow SPY', exact: true }).click();
     assert.equal(await ticker().locator('[data-watch]').getAttribute('aria-pressed'), 'true');
     await ticker().getByRole('button', { name: 'Back from ticker' }).click(); await settled();
     assert.equal(await page.locator('.motion-ticker-page').count(), 0);
@@ -108,24 +108,24 @@ fs.mkdirSync(output, { recursive: true });
 
     // A horizontally scrolled chip retains its source row and feed viewport.
     await page.setViewportSize({ width: 360, height: 759 });
-    await page.locator('#feed [data-post="gavin"]').scrollIntoViewIfNeeded();
-    await page.locator('#feed [data-post="gavin"] .motion-tickers').evaluate(row => row.scrollLeft = 100);
-    const position = await page.evaluate(() => ({ top: document.querySelector('#feedScroll').scrollTop, left: document.querySelector('[data-post="gavin"] .motion-tickers').scrollLeft }));
-    await page.locator('#feed [data-post="gavin"] [data-ticker="NVDA"]').click(); await settled();
+    await page.locator('#feed [data-post="raoul-pal-ai"]').scrollIntoViewIfNeeded();
+    await page.locator('#feed [data-post="raoul-pal-ai"] .motion-tickers').evaluate(row => row.scrollLeft = 100);
+    const position = await page.evaluate(() => ({ top: document.querySelector('#feedScroll').scrollTop, left: document.querySelector('[data-post="raoul-pal-ai"] .motion-tickers').scrollLeft }));
+    await page.locator('#feed [data-post="raoul-pal-ai"] [data-ticker="NVDA"]').click(); await settled();
     assert.equal(await ticker().locator('.motion-name').first().innerText(), 'NVIDIA Corp');
-    assert.equal(await ticker().locator('.motion-post').count(), 2);
+    assert.equal(await ticker().locator('.motion-post').count(), 4);
     await ticker().locator('.motion-open').first().click(); await settled();
     assert.equal(await page.locator('.motion-detail[data-transition="open"]').count(), 1);
     await page.locator('.motion-detail[data-transition="open"] [data-back]').click(); await settled();
     await ticker().getByRole('button', { name: 'Back from ticker' }).click(); await settled();
-    assert.deepEqual(await page.evaluate(() => ({ top: document.querySelector('#feedScroll').scrollTop, left: document.querySelector('[data-post="gavin"] .motion-tickers').scrollLeft })), position);
+    assert.deepEqual(await page.evaluate(() => ({ top: document.querySelector('#feedScroll').scrollTop, left: document.querySelector('[data-post="raoul-pal-ai"] .motion-tickers').scrollLeft })), position);
 
     // Profile -> thesis -> ticker -> another thesis, then restore all three pages.
-    await fresh('#profile/maya');
+    await fresh('#profile/chamath');
     await page.locator('#profile .motion-open').first().click(); await settled();
     const detailRoot = page.locator('.motion-detail[data-transition="open"]').last();
-    await detailRoot.locator('[data-ticker="MSFT"]').click(); await settled();
-    await ticker().locator('[data-post="satya"] .motion-open').click(); await settled();
+    await detailRoot.locator('.motion-timeline [data-ticker="TSLA"]').click(); await settled();
+    await ticker().locator('[data-post="cathie-wood-tsla"] .motion-open').click(); await settled();
     await page.evaluate(() => history.go(-3)); await settled();
     await page.waitForFunction(() => document.querySelectorAll('.motion-detail:not([hidden]), .motion-ticker-page').length === 0);
     assert.equal(await page.locator('#profile').getAttribute('aria-hidden'), 'false');
@@ -142,19 +142,19 @@ fs.mkdirSync(output, { recursive: true });
       assert.equal(geometry.overflow, false); assert.notEqual(geometry.border, 'none');
       await page.screenshot({ path: output + `/ticker-${width}.png` });
     }
-    await fresh('#nvda-s07');
-    assert.equal(await page.locator('.motion-detail[data-transition="open"]').count(), 1);
-    await page.locator('.motion-detail[data-transition="open"] [data-back]').click(); await settled();
-    assert.equal(await ticker().getAttribute('data-ticker-page'), 'NVDA');
+    await fresh('#gavin-nvda');
+    assert.equal(await page.locator('#detail[data-transition="open"]').count(), 1);
+    await page.locator('#detail [data-back]').click(); await settled();
+    assert.equal(await page.locator('#detail').isHidden(), true);
     await page.emulateMedia({ reducedMotion: 'reduce' }); await fresh();
-    await page.locator('[data-post="satya"] [data-ticker="MSFT"]').click(); await settled();
+    await page.locator('[data-post="tom-lee-spy"] [data-ticker="SPY"]').click(); await settled();
     assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
     await ticker().getByRole('button', { name: 'Back from ticker' }).click(); await settled();
     assert.equal(await page.locator('.motion-ticker-page').count(), 0);
     await page.setViewportSize({ width: 1440, height: 1080 });
     await page.goto(base + 'index.html#/thesis-motion');
     const frame = page.frameLocator('iframe');
-    await frame.locator('[data-post="satya"] [data-ticker="MSFT"]').click();
+    await frame.locator('[data-post="tom-lee-spy"] [data-ticker="SPY"]').click();
     await frame.locator('.motion-ticker-page[data-transition="open"]').waitFor();
     await page.locator('#deviceTrigger').click(); await page.getByRole('option', { name: /Galaxy A16/ }).click();
     await page.waitForFunction(() => {

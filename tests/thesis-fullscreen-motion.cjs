@@ -24,9 +24,9 @@ fs.mkdirSync(output, { recursive: true });
     { name: /Redmi 14C/i, width: 360, height: 820, top: 32, bottom: 24, radius: 38 },
   ];
   const routes = [
-    { name: 'detail', trigger: '[data-post="satya"] .motion-open', root: '#detail', moving: '.motion-card-copy .motion-avatar', target: '.motion-detail-header .motion-avatar' },
-    { name: 'profile', trigger: '[data-post="satya"] .motion-person-link', root: '#profile', moving: '.motion-profile-anchor > img', target: '.motion-profile-hero .motion-avatar' },
-    { name: 'ticker', trigger: '[data-post="satya"] [data-ticker="MSFT"]', root: '.motion-ticker-page', moving: '.motion-ticker-anchor > img', target: '.motion-ticker-identity > img' },
+    { name: 'detail', trigger: '[data-post="tom-lee-spy"] .motion-open', root: '#detail', moving: '.motion-card-copy .motion-avatar', target: '.motion-detail-header .motion-avatar' },
+    { name: 'profile', trigger: '[data-post="tom-lee-spy"] .motion-person-link', root: '#profile', moving: '.motion-profile-anchor > img', target: '.motion-profile-hero .motion-avatar' },
+    { name: 'ticker', trigger: '[data-post="tom-lee-spy"] [data-ticker="SPY"]', root: '.motion-ticker-page', moving: '.motion-ticker-anchor > img', target: '.motion-ticker-identity > img' },
   ];
   const pauseNext = frame => frame.evaluate(() => {
     const original = Element.prototype.animate;
@@ -48,7 +48,7 @@ fs.mkdirSync(output, { recursive: true });
   try {
     await page.goto(base + 'index.html#/thesis-motion');
     const frame = page.frames().find(item => item.url().includes('thesis-motion.html'));
-    await frame.locator('[data-post="satya"]').waitFor();
+    await frame.locator('[data-post="tom-lee-spy"]').waitFor();
     await frame.evaluate(() => document.fonts.ready);
     // Pixel checks must exclude the gallery's independent iframe mount fade.
     await page.waitForFunction(() => getComputedStyle(document.querySelector('iframe')).opacity === '1');
@@ -160,7 +160,7 @@ fs.mkdirSync(output, { recursive: true });
     // A rectangular viewport must never expose black gaps at its corners.
     await page.setViewportSize({ width: 420, height: 853 });
     await page.goto(base + 'thesis-motion.html');
-    await page.locator('[data-post="satya"]').waitFor();
+    await page.locator('[data-post="tom-lee-spy"]').waitFor();
     await page.evaluate(() => document.fonts.ready);
     for (const route of routes) {
       await pauseNext(page);

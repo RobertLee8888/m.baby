@@ -21,22 +21,22 @@ fs.mkdirSync(output, { recursive: true });
   const capture = name => page.screenshot({ path: output + '/' + name + '.png' });
   try {
     await page.goto(base + 'thesis-motion.html'); await ready();
-    // Coordinates from the supplied 393x852 Figma, excluding system insets.
+    // Figma component dimensions, with the current reference copy in flow.
     const initial = await page.evaluate(() => {
       const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x:r.x,y:r.y,w:r.width,h:r.height }; };
-      return { avatar:rect('[data-post="satya"] .motion-avatar'), chart:rect('[data-post="satya"] .motion-chart'), recommendation:rect('.motion-recommendation') };
+      return { avatar:rect('[data-post="tom-lee-spy"] .motion-avatar'), chart:rect('[data-post="tom-lee-spy"] .motion-chart'), recommendation:rect('.motion-recommendation') };
     });
     const near = (actual, expected) => assert.ok(Math.abs(actual - expected) < .5, `${actual} should be within half a pixel of ${expected}`);
     near(initial.avatar.y, 111);
-    near(initial.chart.y, 292);
+    near(initial.chart.y, 314);
     assert.equal(initial.chart.w, 240);
     assert.equal(initial.chart.h, 135);
-    near(initial.recommendation.y, 477);
+    near(initial.recommendation.y, 499);
     await capture('list-final');
 
-    const firstAvatar = await page.locator('[data-post="satya"] .motion-avatar').boundingBox();
+    const firstAvatar = await page.locator('#feed [data-post="tom-lee-spy"] .motion-avatar').boundingBox();
     await page.evaluate(() => {
-      document.querySelector('[data-post="satya"] .motion-body').click();
+      document.querySelector('[data-post="tom-lee-spy"] .motion-body').click();
       document.getAnimations().forEach(a => { a.pause(); a.currentTime = 0; });
     });
     const startAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
@@ -77,15 +77,15 @@ fs.mkdirSync(output, { recursive: true });
     await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitOpen();
     const settledChart = await page.locator('#detail .motion-chart').first().boundingBox();
     near(lastFrameChart.x, settledChart.x); near(lastFrameChart.y, settledChart.y);
-    assert.equal(await page.locator('#detail .motion-name').first().textContent(), 'Satya Nadella');
-    assert.equal(await page.locator('#detail .motion-body').first().textContent(), await page.locator('[data-post="satya"] .motion-body').textContent());
+    assert.equal(await page.locator('#detail .motion-name').first().textContent(), 'Tom Lee');
+    assert.equal(await page.locator('#detail .motion-body').first().textContent(), await page.locator('#feed [data-post="tom-lee-spy"] .motion-body').textContent());
     await page.locator('#detail').getByRole('button', { name: 'Bookmark', exact: true }).click();
     await back();
-    assert.equal(await page.locator('[data-post="satya"] [data-save]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await page.locator('#feed [data-post="tom-lee-spy"] [data-save]').getAttribute('aria-pressed'), 'true');
 
     // Re-target a moving card: preserve position and velocity, brake, then return.
     const beforeReverse = await page.evaluate(() => {
-      document.querySelector('[data-post="satya"] .motion-body').click();
+      document.querySelector('[data-post="tom-lee-spy"] .motion-body').click();
       const animation = document.getAnimations()[0];
       const time = animation.effect.getTiming().duration * .35;
       const progress = () => Number(getComputedStyle(document.querySelector('#detail')).getPropertyValue('--thesis-progress'));
@@ -117,15 +117,15 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(reverse.samples.every(p => p >= 0 && p <= 1), 'braking never overshoots the list/detail bounds');
     await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitClosed();
 
-    await page.locator('[data-post="traderstewie"]').scrollIntoViewIfNeeded();
+    await page.locator('#feed [data-post="chamath-nvda"]').scrollIntoViewIfNeeded();
     const savedScroll = await page.locator('#feedScroll').evaluate(n => n.scrollTop);
-    await page.locator('[data-post="traderstewie"] .motion-body').click(); await waitOpen(); await ready();
+    await page.locator('#feed [data-post="chamath-nvda"] .motion-body').click(); await waitOpen(); await ready();
     await capture('detail-final');
     const detailGeometry = await page.evaluate(() => {
       const top = q => document.querySelector(q).getBoundingClientRect().top;
       return { chart:top('#detail .motion-chart'), tabs:top('.motion-detail-tabs'), signal:top('.motion-signal-source') };
     });
-    for (const [key, value] of Object.entries({ chart:250, tabs:441, signal:489 })) near(detailGeometry[key], value);
+    for (const [key, value] of Object.entries({ chart:294, tabs:565, signal:613 })) near(detailGeometry[key], value);
     const detailScroll = page.locator('.motion-detail-scroll');
     await detailScroll.evaluate(n => { n.scrollTop = 10000; });
     const pinned = await page.locator('.motion-detail-tabs').boundingBox();
@@ -141,7 +141,7 @@ fs.mkdirSync(output, { recursive: true });
 
     // Interrupt entry, then interrupt the return with browser forward.
     for (let i = 0; i < 4; i++) {
-      await page.evaluate(() => document.querySelector('[data-post="traderstewie"] .motion-body').click());
+      await page.evaluate(() => document.querySelector('[data-post="chamath-nvda"] .motion-body').click());
       await page.waitForTimeout(45); await page.goBack();
       if (i % 2) { await page.waitForTimeout(15); await page.goForward(); await waitOpen(); await back(); }
       else await waitClosed();
@@ -153,22 +153,22 @@ fs.mkdirSync(output, { recursive: true });
       await page.setViewportSize({ width, height: 759 });
       await page.goto(base + 'thesis-motion.html'); await ready();
       await capture('list-' + width);
-      await page.locator('[data-post="gavin"]').scrollIntoViewIfNeeded();
-      const gallery = page.locator('[data-post="gavin"] .motion-charts');
+      await page.locator('#feed [data-post="raoul-pal-ai"]').scrollIntoViewIfNeeded();
+      const gallery = page.locator('#feed [data-post="raoul-pal-ai"] .motion-charts');
       const edges = await gallery.boundingBox();
       assert.ok(Math.abs(edges.x) < 1 && Math.abs(edges.width - width) < 1, 'horizontal media clips at viewport edges');
       await gallery.evaluate(n => n.scrollLeft = 180);
       const chartBefore = await gallery.locator('.motion-chart').first().boundingBox();
       await page.evaluate(() => {
-        document.querySelector('[data-post="gavin"] .motion-body').click();
+        document.querySelector('[data-post="raoul-pal-ai"] .motion-body').click();
         document.getAnimations().forEach(a => { a.pause(); a.currentTime = 0; });
       });
       const chartDuring = await page.locator('[data-motion-shared="chart-0"]').boundingBox();
       near(chartDuring.x, chartBefore.x); near(chartDuring.y, chartBefore.y);
       await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitOpen();
-      assert.equal(await page.locator('#detail .motion-charts').evaluate(n => n.scrollLeft), 180);
+      assert.equal(await page.locator('#detail .motion-timeline > .motion-charts').evaluate(n => n.scrollLeft), 180);
       await capture('detail-' + width);
-      await page.locator('#detail .motion-charts').evaluate(n => n.scrollLeft = 300);
+      await page.locator('#detail .motion-timeline > .motion-charts').evaluate(n => n.scrollLeft = 300);
       const returnFrom = await page.locator('#detail .motion-chart').first().boundingBox();
       await page.evaluate(() => {
         const animate = Element.prototype.animate;
@@ -186,19 +186,21 @@ fs.mkdirSync(output, { recursive: true });
       assert.equal(overflow, false);
     }
 
-    // Timeline structure is shared by every detail, including entries without media.
+    // Every detail retains the timeline with its actual reference version count.
     await page.goto(base + 'thesis-motion.html'); await ready();
-    for (const id of ['satya', 'gavin', 'traderstewie', 'berkshire', 'sam', 'reuters']) {
-      await page.locator(`[data-post="${id}"]`).scrollIntoViewIfNeeded();
-      await page.locator(`[data-post="${id}"] .motion-body`).click(); await waitOpen();
+    const allIds = await page.locator('#feedItems > .motion-post').evaluateAll(nodes => nodes.map(node => node.dataset.post));
+    for (const id of allIds) {
+      await page.locator(`#feed [data-post="${id}"]`).scrollIntoViewIfNeeded();
+      await page.locator(`#feed [data-post="${id}"] .motion-body`).click(); await waitOpen();
       assert.equal(await page.locator('.motion-timeline > .motion-rail').count(), 1);
       assert.equal(await page.locator('.motion-timeline > .motion-dot').count(), 2);
-      assert.equal(await page.getByRole('button', { name: 'View all 12 updates' }).count(), 1);
+      assert.equal(await page.locator('#detail .motion-history').count(), 1);
+      assert.match(await page.locator('#detail .motion-history').textContent(), /View all [1-4] updates?$/);
       await back();
     }
 
     await page.evaluate(() => {
-      document.querySelector('[data-post="reuters"] .motion-body').click();
+      document.querySelector('[data-post="gavin-nvda"] .motion-body').click();
       document.getAnimations().forEach(a => { a.pause(); a.currentTime = 70; });
       document.querySelector('.motion-detail-scroll').scrollTop = 120;
     });
@@ -207,10 +209,10 @@ fs.mkdirSync(output, { recursive: true });
     await back();
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.locator('[data-post="gavin"] .motion-body').click(); await waitOpen();
+    await page.locator('#feed [data-post="raoul-pal-ai"] .motion-body').click(); await waitOpen();
     assert.deepEqual(await page.evaluate(() => document.getAnimations().map(a => ({ type: a.constructor.name, target: a.effect.target.className, state: a.playState }))), []);
     await back();
-    await page.goto(base + 'thesis-motion.html#traderstewie'); await waitOpen();
+    await page.goto(base + 'thesis-motion.html#chamath-nvda'); await waitOpen();
     await back(); assert.equal(new URL(page.url()).hash, '');
 
     // The gallery owns simulated iOS/Android safe areas; a real phone gets none.
