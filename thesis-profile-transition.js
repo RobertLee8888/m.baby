@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=2';
+import { ProgressTransition } from './thesis-motion-progress.js?v=3';
 
 // The identity and page share one expanding container and one progress value.
 export class ProfileTransition extends ProgressTransition {
@@ -23,6 +23,7 @@ export class ProfileTransition extends ProgressTransition {
     feed.inert = true; feed.setAttribute('aria-hidden', 'true');
     detail.dataset.transition = open ? 'opening' : 'closing';
     if (this.reduceMotion.matches || !CSS.registerProperty) { this.finish(); return; }
+    this.prepareDepth();
 
     const scale = app.getBoundingClientRect().width / app.offsetWidth;
     const pageRect = detail.getBoundingClientRect();
@@ -107,6 +108,7 @@ export class ProfileTransition extends ProgressTransition {
 
   finish() {
     this.animation?.cancel(); this.animation = null;
+    this.finishDepth();
     this.copy?.remove(); this.copy = null;
     this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; });
     this.hiddenNodes = [];

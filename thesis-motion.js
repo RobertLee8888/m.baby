@@ -1,7 +1,7 @@
 import { POSTS, SIGNAL, TOPICS } from './thesis-motion-data.js?v=2';
-import { CardTransition } from './thesis-card-transition.js?v=6';
-import { ProfileTransition } from './thesis-profile-transition.js?v=3';
-import { TickerTransition } from './thesis-ticker-transition.js?v=3';
+import { CardTransition } from './thesis-card-transition.js?v=7';
+import { ProfileTransition } from './thesis-profile-transition.js?v=4';
+import { TickerTransition } from './thesis-ticker-transition.js?v=4';
 import { TICKERS, TICKER_POSTS, renderTicker } from './thesis-motion-ticker.js?v=1';
 import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
 import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=1';

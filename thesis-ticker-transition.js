@@ -1,4 +1,4 @@
-import { ProgressTransition } from './thesis-motion-progress.js?v=2';
+import { ProgressTransition } from './thesis-motion-progress.js?v=3';
 
 // The entire company identity travels with the chip, including incoming labels.
 export class TickerTransition extends ProgressTransition {
@@ -24,6 +24,7 @@ export class TickerTransition extends ProgressTransition {
     detail.dataset.transition = open ? 'opening' : 'closing';
     this.setDistance(0);
     if (this.reduceMotion.matches || !CSS.registerProperty) { this.finish(); return; }
+    this.prepareDepth();
     const fromLogo = source?.querySelector('.motion-ticker-logo');
     if (fromLogo) {
       const scale = app.getBoundingClientRect().width / app.offsetWidth;
@@ -70,6 +71,7 @@ export class TickerTransition extends ProgressTransition {
 
   finish() {
     this.animation?.cancel(); this.animation = null;
+    this.finishDepth();
     this.copy?.remove(); this.copy = null;
     this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; }); this.hiddenNodes = [];
     this.running = false; this.detail.classList.remove('is-ticker-moving');
