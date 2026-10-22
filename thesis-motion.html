@@ -8,7 +8,7 @@
   <link rel="preload" href="assets/fonts/Delight-Regular.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="mvp.css">
   <link rel="stylesheet" href="device-chrome.css">
-  <link rel="stylesheet" href="thesis-motion.css?v=9">
+  <link rel="stylesheet" href="thesis-motion.css?v=10">
 </head>
 <body class="motion-demo">
   <div id="motionApp" class="motion-app">
@@ -22,8 +22,12 @@
       <nav class="motion-nav" aria-label="Main"></nav>
     </main>
     <section id="detail" class="motion-detail" aria-label="Thesis detail" hidden></section>
+    <div class="dynamic-island motion-device-cutout" aria-hidden="true"></div>
+    <div id="motionToast" class="motion-toast" role="status" hidden></div>
+  </div>
+  <template id="motionPageChrome">
     <div class="system-bar" aria-hidden="true">
-      <div class="system-side system-left">9:41</div><div class="dynamic-island"></div>
+      <div class="system-side system-left">9:41</div>
       <div class="system-side system-right">
         <span class="ic sb-signal" style="--ic:url(assets/status-signal.svg)"></span>
         <span class="ic sb-wifi" style="--ic:url(assets/status-wifi.svg)"></span>
@@ -31,9 +35,8 @@
       </div>
     </div>
     <div class="home-indicator" aria-hidden="true"><span></span></div>
-    <div id="motionToast" class="motion-toast" role="status" hidden></div>
-  </div>
+  </template>
   <p class="motion-desktop">此 demo 仅在移动端窗口尺寸生效。</p>
-  <script type="module" src="thesis-motion.js?v=9"></script>
+  <script type="module" src="thesis-motion.js?v=10"></script>
 </body>
 </html>

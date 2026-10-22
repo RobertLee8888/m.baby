@@ -1,24 +1,31 @@
 /* The existing MVP stylesheet owns the Library tokens and Delight fonts. */
 :root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
 .motion-demo { background: var(--bg-container); letter-spacing: 0; }
-.motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg-container); isolation: isolate; }
+.motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: rgb(from var(--scrim) r g b / 1); isolation: isolate; }
+/* Page surfaces include safe areas; only their controls are inset. */
+.motion-feed, .motion-detail, .motion-profile, .motion-ticker-page {
+  position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg-container); outline: none;
+}
 .is-recessed, .is-depth-underlay {
   --depth-progress: 1;
   background: var(--bg-container);
   transform-origin: center;
   transform: perspective(1000px) translateZ(calc(-40px * var(--depth-progress)));
-  filter: brightness(calc(1 - .06 * var(--depth-progress)));
   border-radius: calc(16px * var(--depth-progress));
 }
-.is-depth-underlay { --depth-progress: var(--navigation-progress); will-change: transform, filter; }
+.is-recessed::after, .is-depth-underlay::after {
+  content: ''; position: absolute; inset: 0; z-index: 90; pointer-events: none;
+  background: var(--scrim); opacity: var(--depth-progress); border-radius: inherit;
+}
+.is-depth-underlay { --depth-progress: var(--navigation-progress); will-change: transform; }
 .motion-app button, .motion-app a { touch-action: manipulation; }
 .motion-app button:focus-visible, .motion-app a:focus-visible { outline: 2px solid var(--m1); outline-offset: 2px; }
 .motion-app button:active:not([aria-disabled]) { opacity: .65; }
 .motion-app [aria-disabled="true"] { cursor: default; }
 .motion-icon { display: inline-block; flex: 0 0 20px; width: 20px; height: 20px; background: currentColor; mask: var(--icon) center/contain no-repeat; -webkit-mask: var(--icon) center/contain no-repeat; }
 .motion-icon-button { display: flex; align-items: center; justify-content: center; flex: 0 0 32px; width: 32px; height: 32px; }
-.motion-feed { --feed-title-h: 50px; --feed-filters-h: 44px; --feed-header-p: 0; position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; }
-.motion-feed-header { position: absolute; z-index: 2; inset: 0 0 auto; background: var(--bg-container); }
+.motion-feed { --feed-title-h: 50px; --feed-filters-h: 44px; --feed-header-p: 0; }
+.motion-feed-header { position: absolute; z-index: 2; inset: var(--status-h) 0 auto; background: var(--bg-container); }
 .motion-title { height: calc(var(--feed-title-h) * (1 - var(--feed-header-p))); overflow: hidden; padding: 0 16px; }
 .motion-title h1 { display: flex; align-items: center; height: var(--feed-title-h); font-size: 24px; line-height: 34px; font-weight: 500; opacity: max(0, calc(1 - var(--feed-header-p) * 2.5)); }
 .motion-categories { display: flex; align-items: center; height: var(--feed-filters-h); gap: 8px; padding: 4px 12px 12px; overflow-x: auto; scrollbar-width: none; }
@@ -27,7 +34,7 @@
 .motion-categories .motion-category-more { padding: 4px 0; margin-left: auto; background: var(--bg-container); color: var(--n3); }
 .motion-category-more .motion-icon { width: 16px; height: 16px; display: block; }
 /* Keep the scrollport stable: the title's initial space scrolls away once. */
-.motion-feed-scroll { position: absolute; inset: var(--feed-filters-h) 0 48px; padding-top: var(--feed-title-h); overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; overflow-anchor: none; scrollbar-width: none; }
+.motion-feed-scroll { position: absolute; inset: calc(var(--status-h) + var(--feed-filters-h)) 0 calc(var(--home-h) + 48px); padding-top: var(--feed-title-h); overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; overflow-anchor: none; scrollbar-width: none; }
 #feedItems { min-height: calc(100% + var(--feed-title-h)); }
 .motion-post { padding: 12px 16px 2px; cursor: pointer; }
 .motion-identity { display: flex; align-items: center; min-width: 0; height: 36px; gap: 8px; }
@@ -72,17 +79,17 @@
 .motion-follow[aria-pressed="true"] { color: var(--m1); background: var(--m1-10); }
 .motion-reason { display: flex; align-items: center; gap: 4px; color: var(--n5); font-size: 14px; line-height: 22px; margin-top: 12px; }
 .motion-reason .motion-icon { width: 16px; height: 16px; flex-basis: 16px; }
-.motion-nav { display: flex; align-items: center; position: absolute; bottom: 0; width: 100%; height: 48px; background: var(--bg-container); }
+.motion-nav { display: flex; align-items: center; position: absolute; bottom: var(--home-h); width: 100%; height: 48px; background: var(--bg-container); }
 .motion-nav button { flex: 1; display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 2px; height: 48px; font-size: 10px; line-height: 16px; color: var(--n7); }
 .motion-nav button[aria-current="page"] { color: var(--n9); }
 .motion-nav .motion-icon { width: 20px; height: 20px; }
-.motion-create { position: absolute; z-index: 3; right: 16px; bottom: 64px; display: grid; place-items: center; width: 48px; height: 48px; background: var(--m1); color: var(--nr10); border-radius: 50%; }
+.motion-create { position: absolute; z-index: 3; right: 16px; bottom: calc(var(--home-h) + 64px); display: grid; place-items: center; width: 48px; height: 48px; background: var(--m1); color: var(--nr10); border-radius: 50%; }
 .motion-create .motion-icon { width: 28px; height: 28px; }
-.motion-detail { position: absolute; z-index: 10; inset: var(--status-h) 0 var(--home-h); background: var(--bg-container); overflow: hidden; }
-.motion-detail-header { position: absolute; z-index: 3; inset: 0 0 auto; height: 56px; background: var(--bg-container); display: flex; align-items: center; gap: 8px; padding: 0 16px 0 8px; }
+.motion-detail { z-index: 10; }
+.motion-detail-header { position: absolute; z-index: 3; inset: var(--status-h) 0 auto; height: 56px; background: var(--bg-container); display: flex; align-items: center; gap: 8px; padding: 0 16px 0 8px; }
 .motion-detail-header.is-scrolled { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
 .motion-detail-header .motion-identity { flex: 1; }
-.motion-detail-scroll { position: absolute; inset: 56px 0 43px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-detail-scroll { position: absolute; inset: calc(var(--status-h) + 56px) 0 calc(var(--home-h) + 43px); overflow-y: auto; overflow-x: hidden; scrollbar-width: none; overscroll-behavior: contain; }
 .motion-timeline { position: relative; padding: 12px 16px 12px 48px; }
 .motion-rail { position: absolute; top: 22px; bottom: 26px; left: 23.5px; width: 1px; background: var(--l12); }
 .motion-dot { position: absolute; top: 16px; left: 17px; width: 14px; height: 14px; border-radius: 50%; background: color-mix(in srgb, var(--m1) 20%, transparent); display: grid; place-items: center; }
@@ -116,7 +123,7 @@
 .motion-analysis-brand { display: inline-flex; align-items: center; gap: 4px; background: var(--m1-10); padding: 1px 4px; border-radius: 4px 0 0 4px; }
 .motion-analysis-brand img { width: 14px; height: 14px; }
 .motion-analysis-verdict { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); padding: 1px 6px; border-radius: 0 4px 4px 0; }
-.motion-detail-footer { position: absolute; z-index: 3; bottom: 0; left: 0; right: 0; height: 43px; padding: 0 16px; background: var(--bg-container); }
+.motion-detail-footer { position: absolute; z-index: 3; bottom: var(--home-h); left: 0; right: 0; height: 43px; padding: 0 16px; background: var(--bg-container); }
 .motion-detail-footer .motion-actions { margin: 0; height: 42.5px; }
 .motion-detail-footer .motion-action { font-size: 14px; }
 .motion-detail-footer .motion-action .motion-icon { width: 20px; height: 20px; flex-basis: 20px; }
@@ -131,7 +138,7 @@
   --card-inline-progress: calc(var(--thesis-progress) + var(--card-bend) * var(--thesis-progress) * (1 - var(--thesis-progress)));
   --card-inset: calc(16px + 32px * var(--card-inline-progress));
   position: absolute; z-index: 4; top: 0; left: 0; width: 100%;
-  padding: calc(12px - 2px * var(--thesis-progress)) 16px 0 var(--card-inset);
+  padding: calc(12px + (var(--status-h) - 2px) * var(--thesis-progress)) 16px 0 var(--card-inset);
   pointer-events: none; cursor: default; box-shadow: none !important;
 }
 .motion-card-copy > .motion-identity {
@@ -161,17 +168,16 @@
 .motion-nav, .motion-detail-footer { box-shadow: inset 0 var(--hair) var(--l12); }
 .motion-detail.is-morphing .motion-detail-header, .motion-detail.is-morphing .motion-detail-footer { background: transparent; box-shadow: none; }
 
-/* Visitor profile: Figma 5545:96427. System chrome remains outside the page. */
-.motion-profile { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; background: var(--bg-container); }
+/* Visitor profile: Figma 5545:96427. */
 .motion-profile-surface { position: absolute; inset: 0; background: var(--bg-container); }
-.motion-profile-header { position: absolute; inset: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; z-index: 3; background: var(--bg-container); }
+.motion-profile-header { position: absolute; inset: var(--status-h) 0 auto; height: 56px; display: flex; align-items: center; gap: 16px; padding: 0 16px; z-index: 3; background: var(--bg-container); }
 .motion-profile-header > .motion-icon-button { position: relative; flex-basis: 20px; width: 20px; height: 20px; }
 .motion-profile-header > .motion-icon-button::after { content: ''; position: absolute; inset: -12px; }
 .motion-profile-header > .motion-follow { min-width: 60px; }
 .motion-profile-header.is-scrolled { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
 .motion-profile-collapsed { flex: 1; opacity: var(--profile-header-p, 0); transform: translateY(calc(8px * (1 - var(--profile-header-p, 0)))); pointer-events: none; }
 .motion-profile-collapsed .motion-role { display: none; }
-.motion-profile-scroll { position: absolute; inset: 56px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-profile-scroll { position: absolute; inset: calc(var(--status-h) + 56px) 0 var(--home-h); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
 .motion-profile-about { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 24px; }
 .motion-profile-hero { height: 56px; }
 .motion-profile-hero .motion-person-link { gap: 12px; }
@@ -221,17 +227,16 @@
 .motion-profile-anchor-name > .to, .motion-profile-anchor-meta > .to { opacity: var(--p); }
 
 /* Ticker / Theses: 6641:78529. The tabs own the single pinned divider. */
-.motion-ticker-page { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; background: var(--bg-container); }
 .motion-ticker-surface { position: absolute; inset: 0; background: var(--bg-container); }
-.motion-ticker-header { position: absolute; inset: 0 0 auto; height: 56px; padding: 0 4px; display: flex; align-items: center; background: var(--bg-container); }
+.motion-ticker-header { position: absolute; inset: var(--status-h) 0 auto; height: 56px; padding: 0 4px; display: flex; align-items: center; background: var(--bg-container); }
 .motion-ticker-header > .motion-icon-button { flex-basis: 44px; width: 44px; height: 44px; }
 .motion-ticker-header [data-watch][aria-pressed="true"] { color: var(--m1); }
 .motion-ticker-identity { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
 .motion-ticker-identity > .motion-ticker-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: contain; flex: none; }
 .motion-ticker-meta { font-size: 12px; line-height: 20px; margin-top: -2px; color: var(--n5); white-space: nowrap; }
-.motion-ticker-tabs { position: absolute; top: 56px; inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
+.motion-ticker-tabs { position: absolute; top: calc(var(--status-h) + 56px); inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
 .motion-ticker-tabs button { flex: none; height: 28px; padding-bottom: 6px; }
-.motion-ticker-scroll { position: absolute; inset: 84px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-ticker-scroll { position: absolute; inset: calc(var(--status-h) + 84px) 0 var(--home-h); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
 .is-ticker-moving > .motion-ticker-surface { opacity: var(--ticker-progress); will-change: opacity; }
 .motion-ticker-anchor {
   --t: var(--ticker-progress);
@@ -249,9 +254,13 @@
 .motion-ticker-shell { position: absolute; left: calc(var(--t-sx) * (1 - var(--t))); top: calc(var(--t-sy) * (1 - var(--t)) - 4px * var(--t)); width: calc(var(--t-sw) + var(--t-dw) * var(--t)); height: calc(var(--t-sh) + var(--t-dh) * var(--t)); border-radius: calc(6px * (1 - var(--t))); background: var(--br05); opacity: calc(1 - var(--t)); }
 .motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .motion-desktop { display: none; }
-.motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: var(--bg-container); }
+.motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: transparent; }
+.motion-device-cutout { display: none; z-index: 95; pointer-events: none; }
+html[data-device-platform] .motion-device-cutout { display: block; }
 html[data-device-platform] .motion-demo .system-bar { display: grid; }
 html[data-device-platform] .motion-demo .home-indicator { display: block; }
+.is-morphing > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--thesis-progress) - .85) / .15), 1); }
+.is-container-transform > :is(.system-bar, .home-indicator) { opacity: clamp(0, calc((var(--container-progress) - .85) / .15), 1); }
 @media (min-width: 768px) {
   .motion-app { display: none; }
   .motion-desktop { display: grid; height: 100%; place-items: center; text-align: center; padding: 24px; color: var(--n5); }

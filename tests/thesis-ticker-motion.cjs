@@ -155,9 +155,9 @@ fs.mkdirSync(output, { recursive: true });
     });
     const insets = await frame.locator('.motion-ticker-page').evaluate(root => {
       const rect = root.getBoundingClientRect(), css = getComputedStyle(document.documentElement);
-      return { top: rect.top, bottom: innerHeight - rect.bottom, status: parseFloat(css.getPropertyValue('--status-h')), home: parseFloat(css.getPropertyValue('--home-h')) };
+      return { top: rect.top, bottom: innerHeight - rect.bottom, status: parseFloat(css.getPropertyValue('--status-h')), home: parseFloat(css.getPropertyValue('--home-h')), headerTop:root.querySelector('header').getBoundingClientRect().top, contentBottom:innerHeight-root.querySelector('.motion-ticker-scroll').getBoundingClientRect().bottom };
     });
-    near(insets.top, insets.status); near(insets.bottom, insets.home);
+    near(insets.top, 0); near(insets.bottom, 0); near(insets.headerTop, insets.status); near(insets.contentBottom, insets.home);
     await page.screenshot({ path: output + '/ticker-android.png' });
     assert.deepEqual(errors, []);
     console.log('PASS: ticker Figma geometry, shared logo/symbol arc, one driver, interruption, nested navigation, scroll restoration, star state, direct links, 320/360/393/430, reduced motion and Android insets.');
