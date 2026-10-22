@@ -64,7 +64,7 @@ fs.mkdirSync(output, { recursive: true });
         await page.locator(spec.source).evaluate((node, trigger) => (trigger ? node.querySelector(trigger) : node).click(), spec.trigger);
         await page.waitForFunction(selector => document.querySelector(selector)?.dataset.transition === 'opening', spec.root);
         const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-        assert.equal(duration, 440, 'long journeys use a slightly longer settling tail');
+        assert.equal(duration, 380, 'long journeys are quicker while retaining a slightly longer tail');
         const start = await sample(spec, 0);
         near(start.identity.x, source.x); near(start.identity.y, source.y); near(start.identity.width, source.width);
         near(start.underlay.width, restingFeed.width); near(start.underlay.y, restingFeed.y);

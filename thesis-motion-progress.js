@@ -1,5 +1,5 @@
 // Shared timing and velocity continuity for card, profile and ticker navigation.
-const timing = { near: 400, far: 440, retarget: 260, short: 160, easing: 'cubic-bezier(.22,.75,.3,1)' };
+const timing = { near: 340, far: 380, retarget: 220, short: 140, easing: 'cubic-bezier(.22,.75,.3,1)' };
 const registered = new Set();
 
 export class ProgressTransition {

@@ -43,7 +43,7 @@ fs.mkdirSync(output, { recursive: true });
     assert.ok(Math.abs(firstAvatar.x - startAvatar.x) < 1 && Math.abs(firstAvatar.y - startAvatar.y) < 1, 'entry starts at the source avatar');
     assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'one animation drives the entire card');
     const duration = await page.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
-    assert.equal(duration, 400, 'near card leaves room for a gentle settling tail');
+    assert.equal(duration, 340, 'near card is quicker while retaining its decelerating tail');
     let previousChartY = initial.chart.y;
     let pathBend = 0;
     const progressSamples = [];

@@ -1,10 +1,10 @@
 import { POSTS, TOPICS } from './thesis-motion-data.js?v=3';
-import { CardTransition } from './thesis-card-transition.js?v=9';
-import { ProfileTransition } from './thesis-profile-transition.js?v=5';
-import { TickerTransition } from './thesis-ticker-transition.js?v=5';
+import { CardTransition } from './thesis-card-transition.js?v=10';
+import { ProfileTransition } from './thesis-profile-transition.js?v=6';
+import { TickerTransition } from './thesis-ticker-transition.js?v=6';
 import { TICKERS, renderTicker } from './thesis-motion-ticker.js?v=2';
 import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
-import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=2';
+import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=3';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
@@ -49,11 +49,18 @@ function button(className, label, action) {
 function shared(node, key) { node.dataset.shared = key; return node; }
 function reveal(node, kind = 'chrome') { node.dataset.reveal = kind; return node; }
 
+const countFormat = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+const followerTotal = person => countFormat.format(person.followers + Number(followed.has(person.id)));
+function followerCount(person) {
+  const node = el('span', '', followerTotal(person)); node.dataset.followers = person.id; return node;
+}
+
 function followButton(post, withPlus = false) {
   post = personFor(post) || post;
   const node = button('motion-follow', 'Follow ' + post.name, () => {
     followed.has(post.id) ? followed.delete(post.id) : followed.add(post.id);
     document.querySelectorAll(`[data-follow="${post.id}"]`).forEach(render);
+    document.querySelectorAll(`[data-followers="${post.id}"]`).forEach(target => target.textContent = followerTotal(post));
   });
   node.dataset.follow = post.id;
   node.dataset.plus = String(withPlus);
@@ -317,7 +324,7 @@ const navigation = new MotionNavigation({
     } else if (route.type === 'profile') {
       const person = PEOPLE.get(route.id);
       source ||= underlay.querySelector(`[data-person="${person.id}"]`);
-      dispose = renderProfile(root, person, { el, image, icon, button, identity, followButton, postCard,
+      dispose = renderProfile(root, person, { el, image, icon, button, identity, followButton, followerCount, postCard,
         back: goBack, settle: () => transition.settle(), share: shareProfile });
       transition = new ProfileTransition({ app, feed: underlay, detail: root, onSettled });
     } else {
