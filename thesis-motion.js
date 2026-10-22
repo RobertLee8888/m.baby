@@ -41,7 +41,10 @@ function icon(path) {
   return node;
 }
 function image(src, className, alt = '') {
-  const node = el('img', className); node.src = src; node.alt = alt; return node;
+  const node = el('img', className);
+  // Safari must paint images with the shared transition layer, not a frame later.
+  node.decoding = 'sync';
+  node.src = src; node.alt = alt; return node;
 }
 function button(className, label, action) {
   const node = el('button', className); node.type = 'button'; node.setAttribute('aria-label', label);
