@@ -129,9 +129,17 @@
 .motion-detail-footer .motion-action { font-size: 14px; }
 .motion-detail-footer .motion-action .motion-icon { width: 20px; height: 20px; flex-basis: 20px; }
 .motion-detail-footer .motion-save { margin-left: auto; }
+.is-morphing, .is-container-transform {
+  /* Keep the lifted surface visible until all four edges approach the screen. */
+  --edge-progress: clamp(0, calc((var(--surface-progress) - .9) / .1), 1);
+  --edge-remaining: calc(1 - var(--edge-progress) * var(--edge-progress) * (3 - 2 * var(--edge-progress)));
+  --surface-gutter: calc(12px * var(--edge-remaining));
+  --surface-radius: calc(var(--motion-expansion-radius) * var(--edge-remaining));
+}
 .motion-detail.is-morphing {
+  --surface-progress: var(--thesis-progress);
   transform: translateY(calc(var(--card-offset) * (1 - var(--thesis-progress))));
-  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0 round calc(var(--motion-expansion-radius) * (1 - var(--thesis-progress))));
+  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) var(--surface-gutter) calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) var(--surface-gutter) round var(--surface-radius));
   will-change: transform, clip-path;
 }
 .motion-detail.is-morphing [data-reveal] { opacity: var(--thesis-progress); }
@@ -202,9 +210,10 @@
 .motion-profile-list .motion-post { padding-top: 12px; }
 .motion-profile-empty { text-align: center; color: var(--n5); font-size: 14px; line-height: 22px; padding: 64px 16px; }
 .is-container-transform {
+  --surface-progress: var(--container-progress);
   --remaining: calc(1 - var(--container-progress));
   transform: translateY(calc(var(--container-y) * var(--remaining)));
-  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--motion-expansion-radius) * var(--remaining)));
+  clip-path: inset(calc(var(--container-top) * var(--remaining)) max(var(--surface-gutter), calc(var(--container-right) * var(--remaining))) calc(var(--container-bottom) * var(--remaining)) max(var(--surface-gutter), calc(var(--container-left) * var(--remaining))) round var(--surface-radius));
   will-change: transform, clip-path;
 }
 /* Opaque endpoints flatten into the page clip without a second edge blend. */
@@ -251,8 +260,8 @@
 .motion-ticker-anchor-person > .motion-name { position: absolute; top: var(--t-nameY); left: 0; width: 100%; opacity: var(--t); }
 .motion-ticker-anchor-meta { white-space: nowrap; font-size: 12px; line-height: 20px; color: var(--n5); }
 .motion-ticker-anchor-meta > .motion-ticker-symbol { color: color-mix(in srgb, var(--n9), var(--n5) calc(var(--t) * 100%)); }
-.motion-ticker-market { display: inline-block; vertical-align: top; width: calc(var(--t-marketWidth) * var(--t)); overflow: hidden; white-space: pre; opacity: var(--t); }
-.motion-ticker-anchor-person > .motion-trend { position: absolute; top: 4px; left: calc(var(--t-symbolWidth) + 4px + var(--t-marketWidth) * var(--t)); opacity: calc(1 - var(--t)); }
+.motion-ticker-market { display: inline-block; vertical-align: top; width: var(--t-marketWidth); white-space: pre; opacity: clamp(0, calc((var(--t) - .3) / .3), 1); }
+.motion-ticker-anchor-person > .motion-trend { position: absolute; top: 4px; left: calc(var(--t-symbolWidth) + 4px); opacity: max(0, calc(1 - var(--t) / .3)); }
 .motion-ticker-shell { position: absolute; left: calc(var(--t-sx) * (1 - var(--t))); top: calc(var(--t-sy) * (1 - var(--t)) - 4px * var(--t)); width: calc(var(--t-sw) + var(--t-dw) * var(--t)); height: calc(var(--t-sh) + var(--t-dh) * var(--t)); border-radius: calc(6px * (1 - var(--t))); background: var(--br05); opacity: calc(1 - var(--t)); }
 .motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .motion-desktop { display: none; }
