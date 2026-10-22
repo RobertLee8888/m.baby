@@ -150,7 +150,8 @@ fs.mkdirSync(output, { recursive: true });
     await page.waitForFunction(() => {
       const win = document.querySelector('iframe').contentWindow;
       const app = win.document.querySelector('#motionApp').getBoundingClientRect();
-      return Math.abs(app.height - win.innerHeight) < .5 && Math.abs(app.width - win.innerWidth) < .5;
+      return win.innerWidth === 412 && win.innerHeight === 892
+        && Math.abs(app.height - win.innerHeight) < .5 && Math.abs(app.width - win.innerWidth) < .5;
     });
     const insets = await frame.locator('.motion-ticker-page').evaluate(root => {
       const rect = root.getBoundingClientRect(), css = getComputedStyle(document.documentElement);

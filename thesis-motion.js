@@ -10,6 +10,7 @@ const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
 const feedScroll = document.querySelector('#feedScroll');
 const feedItems = document.querySelector('#feedItems');
+const feedTitle = feed.querySelector('.motion-title h1');
 const detail = document.querySelector('#detail');
 const cards = new Map();
 const saved = new Set();
@@ -189,6 +190,7 @@ function renderFeed() {
     if (index === 0 && topic === 'All') feedItems.append(recommendation());
   });
   feedScroll.scrollTop = 0;
+  paintFeedHeader();
 }
 
 function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
@@ -363,9 +365,12 @@ const navIcons = ['thesis/tabbar-imgForYouF.svg', 'ui-chat-ai-l.svg', 'thesis/ta
   if (index === 0) node.setAttribute('aria-current', 'page'); else node.setAttribute('aria-disabled', 'true');
   document.querySelector('.motion-nav').append(node);
 });
-feedScroll.addEventListener('scroll', () => {
-  document.querySelector('.motion-title h1').style.opacity = String(1 - Math.min(1, feedScroll.scrollTop / 40));
-}, { passive: true });
+function paintFeedHeader() {
+  const progress = Math.max(0, Math.min(1, feedScroll.scrollTop / (feedTitle.offsetHeight || 1)));
+  feed.style.setProperty('--feed-header-p', progress);
+  feedTitle.setAttribute('aria-hidden', String(progress === 1));
+}
+feedScroll.addEventListener('scroll', paintFeedHeader, { passive: true });
 function toast(message) {
   const node = document.querySelector('#motionToast'); clearTimeout(toastTimer); node.textContent = message; node.hidden = false;
   toastTimer = setTimeout(() => { node.hidden = true; }, 1800);
@@ -375,6 +380,7 @@ function resize() {
   const scale = Math.min(1, innerWidth / 360);
   app.style.width = innerWidth / scale + 'px'; app.style.height = innerHeight / scale + 'px';
   app.style.transformOrigin = 'top left'; app.style.transform = `scale(${scale})`;
+  paintFeedHeader();
   document.querySelectorAll('.motion-detail-scroll').forEach(scroll => {
     scroll.querySelector('.motion-panels').style.setProperty('--panel-min-height', scroll.clientHeight - scroll.querySelector('.motion-detail-tabs').offsetHeight + 'px');
   });
