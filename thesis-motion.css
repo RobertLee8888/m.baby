@@ -1,17 +1,17 @@
 /* The existing MVP stylesheet owns the Library tokens and Delight fonts. */
-:root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
+:root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); --motion-page-radius: var(--device-screen-radius, 32px); }
 .motion-demo { background: var(--bg-container); letter-spacing: 0; }
 .motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: rgb(from var(--scrim) r g b / 1); isolation: isolate; }
-/* Page surfaces include safe areas; only their controls are inset. */
+/* One rounded clip owns resting and moving surfaces, including safe areas. */
 .motion-feed, .motion-detail, .motion-profile, .motion-ticker-page {
-  position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg-container); outline: none;
+  position: absolute; inset: 0; overflow: hidden; isolation: isolate; background: var(--bg-container); clip-path: inset(0 round var(--motion-page-radius)); outline: none;
 }
 .is-recessed, .is-depth-underlay {
   --depth-progress: 1;
   background: var(--bg-container);
   transform-origin: center;
-  transform: perspective(1000px) translateZ(calc(-40px * var(--depth-progress)));
-  border-radius: calc(16px * var(--depth-progress));
+  /* Project the same Z travel to 2D so the rounded clip includes the surface. */
+  transform: scale(calc(1000 / (1000 + 40 * var(--depth-progress))));
 }
 .is-recessed::after, .is-depth-underlay::after {
   content: ''; position: absolute; inset: 0; z-index: 90; pointer-events: none;
@@ -130,7 +130,7 @@
 .motion-detail-footer .motion-save { margin-left: auto; }
 .motion-detail.is-morphing {
   transform: translateY(calc(var(--card-offset) * (1 - var(--thesis-progress))));
-  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0);
+  clip-path: inset(calc(var(--card-clip-top) * (1 - var(--thesis-progress))) 0 calc(var(--card-clip-bottom) * (1 - var(--thesis-progress))) 0 round calc(var(--motion-page-radius) * var(--thesis-progress)));
   will-change: transform, clip-path;
 }
 .motion-detail.is-morphing [data-reveal] { opacity: var(--thesis-progress); }
@@ -203,10 +203,11 @@
 .is-container-transform {
   --remaining: calc(1 - var(--container-progress));
   transform: translateY(calc(var(--container-y) * var(--remaining)));
-  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--container-radius) * var(--remaining)));
+  clip-path: inset(calc(var(--container-top) * var(--remaining)) calc(var(--container-right) * var(--remaining)) calc(var(--container-bottom) * var(--remaining)) calc(var(--container-left) * var(--remaining)) round calc(var(--container-radius) * var(--remaining) + var(--motion-page-radius) * var(--container-progress)));
   will-change: transform, clip-path;
 }
-.is-profile-moving > .motion-profile-surface { opacity: var(--profile-progress); will-change: opacity; }
+/* Opaque endpoints flatten into the page clip without a second edge blend. */
+.is-profile-moving > .motion-profile-surface { opacity: var(--profile-progress); }
 .motion-profile-anchor {
   --p: var(--profile-progress);
   position: absolute; z-index: 5; top: 0; left: 0; display: flex; align-items: start;
@@ -237,7 +238,7 @@
 .motion-ticker-tabs { position: absolute; top: calc(var(--status-h) + 56px); inset-inline: 0; height: 28px; overflow-x: auto; scrollbar-width: none; gap: 16px; }
 .motion-ticker-tabs button { flex: none; height: 28px; padding-bottom: 6px; }
 .motion-ticker-scroll { position: absolute; inset: calc(var(--status-h) + 84px) 0 var(--home-h); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
-.is-ticker-moving > .motion-ticker-surface { opacity: var(--ticker-progress); will-change: opacity; }
+.is-ticker-moving > .motion-ticker-surface { opacity: var(--ticker-progress); }
 .motion-ticker-anchor {
   --t: var(--ticker-progress);
   position: absolute; z-index: 5; top: 0; left: 0; pointer-events: none;
