@@ -2,9 +2,11 @@ import { POSTS, TOPICS } from './thesis-motion-data.js?v=3';
 import { CardTransition } from './thesis-card-transition.js?v=10';
 import { ProfileTransition } from './thesis-profile-transition.js?v=6';
 import { TickerTransition } from './thesis-ticker-transition.js?v=6';
+import { PageTransition } from './thesis-page-transition.js?v=1';
 import { TICKERS, renderTicker } from './thesis-motion-ticker.js?v=2';
-import { MotionNavigation } from './thesis-motion-navigation.js?v=1';
+import { MotionNavigation } from './thesis-motion-navigation.js?v=2';
 import { PEOPLE, personFor, postFor, renderProfile } from './thesis-motion-profile.js?v=3';
+import { versionsFor, versionFor, renderUpdates } from './thesis-motion-versions.js?v=1';
 
 const app = document.querySelector('#motionApp');
 const feed = document.querySelector('#feed');
@@ -148,7 +150,7 @@ function actions(post, withShare = false) {
   updateSave(save); row.append(ask, save);
   if (withShare) {
     const share = reveal(button('motion-action', 'Share thesis', async () => {
-      const url = new URL(location.href); url.hash = post.id;
+      const url = new URL(location.href); url.hash = postRoute(post).hash;
       try {
         if (navigator.share) await navigator.share({ title: post.name, url: url.href });
         else { await navigator.clipboard.writeText(url.href); toast('Link copied'); }
@@ -207,29 +209,40 @@ function renderFeed() {
   paintFeedHeader();
 }
 
+function sourceLinks(post, withProxy = true) {
+  const sources = el('div', 'motion-source-links');
+  (post.sources || []).forEach((url, index) => {
+    const link = el('a', '', '[' + (index + 1) + '] ' + new URL(url).hostname.replace(/^www\./, ''));
+    link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; sources.append(link);
+  });
+  if (withProxy && post.proxyNote) sources.append(el('p', 'motion-proxy-note', post.proxyNote));
+  return sources;
+}
+
 function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
+  const historical = post.version !== 'latest';
+  detail.dataset.thesis = post.id; detail.dataset.version = post.version;
   const header = el('header', 'motion-detail-header');
   const back = reveal(button('motion-icon-button', backLabel, goBack)); back.dataset.back = '';
   back.append(icon('onboarding-arrow-left-l1.svg'));
   header.append(back, identity(post), reveal(followButton(post)));
   const scroll = el('div', 'motion-detail-scroll');
   const timeline = el('section', 'motion-timeline');
-  const date = reveal(el('div', 'motion-date')); date.append(el('span', '', post.date), el('span', 'motion-latest', 'Latest'));
+  const date = reveal(el('div', 'motion-date'));
+  date.append(el('time', '', post.date), el('span', historical ? 'motion-version-label' : 'motion-latest', historical ? 'History' : 'Latest'));
+  if (historical) {
+    date.classList.add('motion-historical-date');
+    const latest = button('motion-view-latest', 'View latest', () => showLatest(post));
+    latest.append('View latest', icon('ui-arrow-up-l2.svg')); date.append(latest);
+  }
   timeline.append(reveal(el('div', 'motion-rail')), reveal(el('div', 'motion-dot')), date);
   if (post.tickers.length) timeline.append(tickers(post));
   timeline.append(body(post));
   if (post.charts.length) timeline.append(charts(post));
-  const sources = reveal(el('div', 'motion-source-links'));
-  (post.sources || []).forEach((url, index) => {
-    const link = el('a', '', '[' + (index + 1) + '] ' + new URL(url).hostname.replace(/^www\./, ''));
-    link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; sources.append(link);
-  });
-  if (post.proxyNote) sources.append(el('p', 'motion-proxy-note', post.proxyNote));
-  timeline.append(sources);
-  // History navigation remains outside this prototype; its count is real.
-  const historyLabel = `View all ${post.updateCount} update${post.updateCount === 1 ? '' : 's'}`;
-  const history = reveal(button('motion-history', historyLabel));
-  history.setAttribute('aria-disabled', 'true');
+  timeline.append(reveal(sourceLinks(post)));
+  const count = versionsFor(findPost(post.id)).length;
+  const historyLabel = `View all ${count} update${count === 1 ? '' : 's'}`;
+  const history = reveal(button('motion-history', historyLabel, () => navigation.open(updatesRoute(post), history)));
   history.append(document.createTextNode(historyLabel), icon('ui-arrow-right-l2.svg'));
   timeline.append(history, reveal(el('div', 'motion-dot end')));
 
@@ -252,11 +265,15 @@ function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
   }
   if (!post.signals?.length) {
     const empty = el('div', 'motion-signal-empty');
-    empty.append(el('strong', '', post.signalStatus), el('p', '', post.signalNote)); signals.append(empty);
+    empty.append(el('strong', '', post.signalStatus));
+    if (post.signalNote) empty.append(el('p', '', post.signalNote));
+    signals.append(empty);
   }
   const related = el('div', 'motion-panel motion-related-panel'); related.id = detail.id + '-related'; related.setAttribute('role', 'tabpanel'); related.setAttribute('aria-hidden', 'true'); related.inert = true;
-  const relatedPosts = POSTS.filter(item => item.id !== post.id && item.tickers.some(ticker => post.tickers.some(other => ticker.symbol === other.symbol)));
+  const relatedPosts = post.relatedIds ? POSTS.filter(item => post.relatedIds.includes(item.id))
+    : POSTS.filter(item => item.id !== post.id && item.tickers.some(ticker => post.tickers.some(other => ticker.symbol === other.symbol)));
   related.append(...relatedPosts.map(item => postCard(item, false)));
+  if (!relatedPosts.length) related.append(el('p', 'motion-profile-empty', 'No related theses'));
   track.append(signals, related); panels.append(track);
   ['Signals', 'Related thesis'].forEach((label, index) => {
     const tab = button('', label, () => selectTab(index));
@@ -292,7 +309,13 @@ function renderDetail(post, detail, settle, backLabel = 'Back to For You') {
   return () => clearTimeout(tabTimer);
 }
 
-const postRoute = post => ({ key: 'detail/' + post.id, type: 'detail', id: post.id, hash: '#' + post.id });
+const postRoute = post => {
+  const version = post.version || 'latest';
+  const suffix = version === 'latest' ? '' : '/version/' + version;
+  return { key: 'detail/' + post.id + suffix, type: 'detail', id: post.id, version, hash: '#' + post.id + suffix };
+};
+const updatesRoute = post => ({ key: 'updates/' + post.id + '/' + (post.version || 'latest'), type: 'updates', id: post.id,
+  selected: post.version || 'latest', hash: '#' + post.id + '/updates' });
 const profileRoute = person => ({ key: 'profile/' + person.id, type: 'profile', id: person.id, hash: '#profile/' + person.id });
 const tickerRoute = ticker => ({ key: 'ticker/' + ticker.symbol, type: 'ticker', id: ticker.symbol, hash: '#ticker/' + ticker.symbol });
 const findPost = id => postFor(id);
@@ -304,8 +327,14 @@ const navigation = new MotionNavigation({
     if (hash.startsWith('#profile/')) {
       const person = PEOPLE.get(hash.slice(9)); return person ? [profileRoute(person)] : [];
     }
-    const post = findPost(hash.slice(1));
+    const [id, type, version] = hash.slice(1).split('/');
+    const post = findPost(id);
     if (!post) return [];
+    if (type === 'updates') return [postRoute(post), updatesRoute(post)];
+    if (type === 'version') {
+      const selected = versionFor(post, version);
+      if (selected && version !== 'latest') return [postRoute(post), updatesRoute(post), postRoute(selected)];
+    }
     return [postRoute(post)];
   },
   create(route, source, parentFrame, onSettled) {
@@ -315,7 +344,13 @@ const navigation = new MotionNavigation({
     if (!root.isConnected) app.append(root);
     root.hidden = false; root.inert = false; root.setAttribute('aria-hidden', 'false');
     let transition, dispose;
-    if (route.type === 'ticker') {
+    if (route.type === 'updates') {
+      const post = findPost(route.id);
+      source ||= underlay.querySelector('.motion-history');
+      renderUpdates(root, post, route.selected, { el, icon, button, body, sources: post => sourceLinks(post, false),
+        back: goBack, openVersion, settle: () => transition.settle() });
+      transition = new PageTransition({ feed: underlay, detail: root, onSettled });
+    } else if (route.type === 'ticker') {
       const ticker = TICKERS.get(route.id);
       source ||= underlay.querySelector(`[data-ticker="${ticker.symbol}"]`);
       renderTicker(root, ticker, { el, image, icon, button, postCard, back: goBack,
@@ -328,7 +363,9 @@ const navigation = new MotionNavigation({
         back: goBack, settle: () => transition.settle(), share: shareProfile });
       transition = new ProfileTransition({ app, feed: underlay, detail: root, onSettled });
     } else {
-      const post = findPost(route.id);
+      const post = versionFor(findPost(route.id), route.version);
+      const fromHistory = route.version && route.version !== 'latest' || parentFrame?.route.type === 'updates';
+      if (fromHistory) source ||= underlay.querySelector(`[data-version="${post.version}"] .motion-update-open`)?.closest('.motion-update-row') || underlay.querySelector('.motion-history');
       if (!source) {
         source = underlay.querySelector(`[data-post="${post.id}"]`);
         if (!source && !parentFrame) { topic = 'All'; renderFeed(); updateTopics(); source = cards.get(post.id); }
@@ -336,8 +373,10 @@ const navigation = new MotionNavigation({
       }
       if (!source) { root.hidden = true; return null; }
       root.setAttribute('aria-label', 'Thesis detail');
-      dispose = renderDetail(post, root, () => transition.settle(), parentFrame ? 'Back to ' + parentFrame.route.type : 'Back to For You');
-      transition = new CardTransition({ app, feed: underlay, detail: root, onSettled });
+      const backLabel = parentFrame?.route.type === 'updates' ? 'Back to all updates' : parentFrame ? 'Back to ' + parentFrame.route.type : 'Back to For You';
+      dispose = renderDetail(post, root, () => transition.settle(), backLabel);
+      transition = fromHistory ? new PageTransition({ feed: underlay, detail: root, onSettled })
+        : new CardTransition({ app, feed: underlay, detail: root, onSettled });
     }
     mountPageContent(root);
     if (route.type === 'detail') {
@@ -350,6 +389,16 @@ const navigation = new MotionNavigation({
   },
 });
 function navigate(post, card) { navigation.open(postRoute(post), card); }
+function openVersion(post, row) {
+  const route = postRoute(post);
+  if (!navigation.backTo(route.key)) navigation.open(route, row);
+}
+function showLatest(post) {
+  const latest = findPost(post.id), route = postRoute(latest);
+  const frame = navigation.frames.find(item => item.route.key === route.key);
+  if (frame) frame.root.querySelector('.motion-detail-scroll').scrollTop = 0;
+  if (!navigation.backTo(route.key)) navigation.open(route, navigation.current.root.querySelector('.motion-history'));
+}
 function openTicker(ticker, chip) {
   const parent = navigation.frames.at(-2);
   if (parent?.route.key === 'ticker/' + ticker.symbol) { goBack(); return; }
@@ -409,7 +458,7 @@ function resize() {
   app.style.width = innerWidth / scale + 'px'; app.style.height = innerHeight / scale + 'px';
   app.style.transformOrigin = 'top left'; app.style.transform = `scale(${scale})`;
   paintFeedHeader();
-  document.querySelectorAll('.motion-detail-scroll').forEach(scroll => {
+  document.querySelectorAll('.motion-detail .motion-detail-scroll').forEach(scroll => {
     scroll.querySelector('.motion-panels').style.setProperty('--panel-min-height', scroll.clientHeight - scroll.querySelector('.motion-detail-tabs').offsetHeight + 'px');
   });
 }
