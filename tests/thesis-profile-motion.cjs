@@ -9,6 +9,7 @@ fs.mkdirSync(output, { recursive: true });
   const engine = process.env.QA_ENGINE === 'webkit' ? webkit : chromium;
   const browser = await engine.launch({ headless: true, ...(engine === chromium && process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const page = await browser.newPage({ viewport: { width: 393, height: 759 }, deviceScaleFactor: 2 });
+  page.setDefaultTimeout(10000);
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('response', response => { if (response.status() >= 400) errors.push(response.status() + ' ' + response.url()); });
@@ -19,7 +20,8 @@ fs.mkdirSync(output, { recursive: true });
     await document.fonts.ready;
     await Promise.all([...document.images].map(image => image.decode().catch(() => {})));
   });
-  const fresh = async (hash = '') => { await page.goto(base + 'thesis-motion.html' + hash); await ready(); };
+  let visit = 0;
+  const fresh = async (hash = '') => { await page.goto(base + 'thesis-motion.html?qa=' + ++visit + hash); await ready(); };
   try {
     await fresh();
     const source = await page.locator('[data-post="satya"] .motion-avatar').boundingBox();
@@ -39,7 +41,14 @@ fs.mkdirSync(output, { recursive: true });
       const frame = await page.evaluate(() => {
         const root = document.querySelector('#profile');
         const copy = root.querySelector('.motion-profile-anchor .motion-avatar').getBoundingClientRect();
+        const names = [...root.querySelectorAll('.motion-profile-anchor-name > .motion-name')].map(node => {
+          const style = getComputedStyle(node), range = document.createRange(); range.selectNodeContents(node.firstChild);
+          const rect = range.getBoundingClientRect();
+          return { weight: style.fontWeight, size: parseFloat(style.fontSize), opacity: Number(style.opacity), x: rect.x, width: rect.width };
+        });
         return { x: copy.x, y: copy.y, width: copy.width,
+          names,
+          metaHeight: root.querySelector('.motion-profile-anchor-meta').getBoundingClientRect().height,
           p: Number(getComputedStyle(root).getPropertyValue('--profile-progress')),
           surface: Number(getComputedStyle(root.querySelector('.motion-profile-surface')).opacity),
           cover: Number(getComputedStyle(root, '::before').opacity) };
@@ -47,6 +56,11 @@ fs.mkdirSync(output, { recursive: true });
       bend = Math.max(bend, frame.x - source.x);
       near(frame.y, source.y + (56 - source.y) * frame.p);
       near(frame.width, 32 + 24 * frame.p);
+      assert.deepEqual(frame.names.map(name => name.weight), ['500', '400'], 'static font faces never switch abruptly mid-animation');
+      near(frame.names[0].size, 14 + 4 * frame.p); near(frame.names[1].size, frame.names[0].size);
+      near(frame.names[0].opacity, 1 - frame.p); near(frame.names[1].opacity, frame.p);
+      near(frame.names[0].width, frame.names[1].width); near(frame.names[0].x, frame.names[1].x);
+      near(frame.metaHeight, 20); // WebKit needs bounds for the isolated text blend to paint.
       if (frame.surface > .001) near(frame.cover, 1); // No two pages of overlapping text.
     }
     assert.ok(bend > 2 && bend <= 8.1, 'identity follows a restrained curved path');

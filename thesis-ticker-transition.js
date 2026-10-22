@@ -1,6 +1,6 @@
 import { ProgressTransition } from './thesis-motion-progress.js?v=1';
 
-// Logo and symbol keep their identity as the chip becomes the company header.
+// The entire company identity travels with the chip, including incoming labels.
 export class TickerTransition extends ProgressTransition {
   constructor({ app, feed, detail, onSettled }) {
     super(detail, '--ticker-progress');
@@ -34,22 +34,35 @@ export class TickerTransition extends ProgressTransition {
       };
       const toLogo = detail.querySelector('.motion-ticker-logo');
       const fromSymbol = source.querySelector('.motion-ticker-symbol'), toSymbol = detail.querySelector('.motion-ticker-symbol');
-      const a = bounds(fromLogo), b = bounds(toLogo), c = bounds(fromSymbol), d = bounds(toSymbol), chip = bounds(source);
+      const toPerson = toSymbol.closest('.motion-person');
+      const a = bounds(fromLogo), b = bounds(toLogo), c = bounds(fromSymbol), d = bounds(toSymbol.parentElement), chip = bounds(source);
+      const personBounds = bounds(toPerson), nameBounds = bounds(toPerson.querySelector('.motion-name'));
+      const marketRange = document.createRange();
+      marketRange.setStartAfter(toSymbol); marketRange.setEnd(toSymbol.parentElement, toSymbol.parentElement.childNodes.length);
+      const marketWidth = marketRange.getBoundingClientRect().width / scale;
+      detail.style.setProperty('--ticker-travel-y', a.y - b.y + 'px');
       this.setDistance(Math.hypot(b.x - a.x, b.y - a.y));
       const copy = document.createElement('div'); copy.className = 'motion-ticker-anchor';
       copy.inert = true; copy.setAttribute('aria-hidden', 'true');
-      const shell = source.cloneNode(true); shell.className = 'motion-ticker motion-ticker-shell';
-      shell.removeAttribute('data-shared'); shell.removeAttribute('data-ticker'); shell.tabIndex = -1;
-      shell.querySelectorAll('.motion-ticker-logo, .motion-ticker-symbol').forEach(node => { node.style.visibility = 'hidden'; });
-      const label = fromSymbol.cloneNode(true), logo = fromLogo.cloneNode(true);
-      copy.append(shell, logo, label);
+      const shell = document.createElement('div'); shell.className = 'motion-ticker-shell';
+      const person = document.createElement('div'); person.className = 'motion-ticker-anchor-person';
+      const name = toPerson.querySelector('.motion-name').cloneNode(true);
+      const meta = toSymbol.parentElement.cloneNode(true); meta.className = 'motion-ticker-anchor-meta';
+      const market = document.createElement('span'); market.className = 'motion-ticker-market';
+      market.append(...[...meta.childNodes].slice(1)); meta.append(market);
+      const trend = source.querySelector('.motion-trend');
+      if (trend) person.append(trend.cloneNode(true));
+      person.append(name, meta);
+      copy.append(shell, fromLogo.cloneNode(true), person);
       const vars = { x: a.x, y: a.y, dx: b.x - a.x, dy: b.y - a.y, size: a.w, ds: b.w - a.w,
         tx: c.x - a.x, ty: c.y - a.y, dtx: d.x - b.x - c.x + a.x, dty: d.y - b.y - c.y + a.y,
+        nameY: nameBounds.y - d.y, textWidth: personBounds.w, symbolWidth: c.w, marketWidth,
         sx: chip.x - a.x, sy: chip.y - a.y, sw: chip.w, sh: chip.h,
+        dw: personBounds.x + personBounds.w - b.x - chip.w, dh: personBounds.h - chip.h,
         bend: Math.min(8, Math.abs(b.y - a.y) / 12),
       };
       Object.entries(vars).forEach(([key, value]) => copy.style.setProperty('--t-' + key, value + 'px'));
-      [source, toLogo, toSymbol].forEach(node => { this.hiddenNodes.push([node, node.style.visibility]); node.style.visibility = 'hidden'; });
+      [source, toLogo, toPerson].forEach(node => { this.hiddenNodes.push([node, node.style.visibility]); node.style.visibility = 'hidden'; });
       detail.append(copy); this.copy = copy;
     }
     detail.classList.add('is-ticker-moving'); this.animateTo(open);
