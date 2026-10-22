@@ -39,7 +39,7 @@
       subtitle: 'For You, thesis detail and history, profile and ticker.',
       edited: '2026-10-22',
       slug: 'thesis-motion',
-      href: 'thesis-motion.html?v=18',
+      href: 'thesis-motion.html?v=19',
       meta: 'Mobile · 5 screens',
       figma: {
         label: 'Feed Mobile MVP · For You / V5',

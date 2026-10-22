@@ -40,7 +40,7 @@
 .motion-post { padding: 12px 16px 2px; cursor: pointer; }
 .motion-identity { display: flex; align-items: center; min-width: 0; height: 36px; gap: 8px; }
 .motion-person-link { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; height: 100%; color: inherit; text-decoration: none; }
-.motion-avatar { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; border-radius: 50%; }
+.motion-avatar { width: 32px; height: 32px; flex: 0 0 32px; object-fit: cover; border-radius: 50%; }
 .motion-person { flex: 1; min-width: 0; }
 .motion-name { display: block; font-size: 14px; font-weight: 500; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .motion-role { display: block; font-size: 12px; line-height: 20px; margin-top: -2px; color: var(--n5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -214,7 +214,7 @@
 .motion-profile-about { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 24px; }
 .motion-profile-hero { height: 56px; }
 .motion-profile-hero .motion-person-link { gap: 12px; }
-.motion-profile-hero .motion-avatar { width: 56px; height: 56px; flex-basis: 56px; object-fit: cover; }
+.motion-profile-hero .motion-avatar { width: 56px; height: 56px; flex-basis: 56px; }
 .motion-profile-hero .motion-name { font-size: 18px; line-height: 28px; font-weight: 400; }
 .motion-profile-hero .motion-role { margin-top: 0; color: var(--n7); }
 .motion-profile-badge { display: inline-block; width: 14px; height: 14px; margin-left: 4px; vertical-align: -1px; color: var(--m2); }
