@@ -34,6 +34,21 @@ export class MotionNavigation {
     }
   }
 
+  backTo(key) {
+    const index = this.frames.findLastIndex(frame => frame.route.key === key);
+    if (index < 0) return false;
+    const distance = this.frames.length - 1 - index;
+    if (!distance || this.pendingBack) return true;
+    if (history.state?.depth >= distance) {
+      this.pendingBack = true; history.go(-distance);
+    } else {
+      this.routes = this.frames.slice(0, index + 1).map(frame => frame.route);
+      history.replaceState({ routes: this.routes, depth: 0 }, '', this.routes.at(-1).hash);
+      this.reconcile();
+    }
+    return true;
+  }
+
   reconcile() {
     const top = this.current;
     let common = 0;
@@ -59,7 +74,7 @@ export class MotionNavigation {
     if (!open) {
       this.frames.pop(); frame.dispose?.();
       if (frame.root.id !== 'detail') frame.root.remove();
-      const focus = frame.source?.querySelector('.motion-person-link, .motion-open') || frame.source;
+      const focus = frame.source?.querySelector('.motion-person-link, .motion-open, .motion-update-open') || frame.source;
       focus?.focus({ preventScroll: true });
     } else {
       frame.root.tabIndex = -1;
