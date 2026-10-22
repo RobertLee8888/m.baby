@@ -1,6 +1,6 @@
 // One progress value expands the card surface and its normal-flow layout.
 // Text uses two fixed line wraps within that layout; no per-element flights.
-import { ProgressTransition } from './thesis-motion-progress.js?v=5';
+import { ProgressTransition } from './thesis-motion-progress.js?v=6';
 
 export class CardTransition extends ProgressTransition {
   constructor({ app, feed, detail, onSettled }) {

@@ -72,7 +72,7 @@ fs.mkdirSync(output, { recursive: true });
         await frame.locator(route.trigger).evaluate(node => node.click());
         await frame.waitForFunction(root => document.querySelector(root)?.dataset.transition === 'opening', route.root);
         assert.equal(await frame.evaluate(() => document.getAnimations().length), 1);
-        const duration = await frame.evaluate(() => document.getAnimations()[0].effect.getTiming().duration);
+        const duration = await frame.evaluate(() => document.getAnimations()[0].effect.getTiming().duration - 80);
         const start = await surfaceClip(frame, route.root);
         let previous = start;
         for (const fraction of [.04, .1, .2, .35, .5, .7, .9]) {
@@ -82,7 +82,7 @@ fs.mkdirSync(output, { recursive: true });
           const heightProgress = (current.height - start.height) / (device.height - start.height);
           near(widthProgress, heightProgress, .001);
           assert.ok(current.width > previous.width && current.height > previous.height, 'both dimensions grow continuously, including the first frames');
-          assert.ok(current.radius < previous.radius, 'corners shrink continuously without a hold or a late switch');
+          near(current.radius, 32, .01);
           previous = current;
         }
         await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * .3);
@@ -100,7 +100,7 @@ fs.mkdirSync(output, { recursive: true });
         assert.equal(middle.scrim, 'rgba(0, 0, 0, 0.6)');
         assert.equal(middle.clip, 'none');
         const clip = await surfaceClip(frame, route.root);
-        assert.ok(clip.radius >= 20 && clip.radius < 32, 'corners stay visibly rounded during the main expansion');
+        near(clip.radius, 32, .01);
         assert.ok(clip.left > 0 && device.width - clip.right > 0, 'width remains short of full screen while height is still expanding');
         const shot = await page.locator('iframe').screenshot();
         fs.writeFileSync(`${output}/${device.width}-${device.height}-${route.name}-mid.png`, shot);
@@ -119,12 +119,18 @@ fs.mkdirSync(output, { recursive: true });
             assert.ok(sample(x, y).every(value => value < 245), 'all four foreground corners reveal the dark underlay');
           }
         }
-        let previousRadius = clip.radius;
-        for (const fraction of [.5, .7, .9, 1]) {
-          await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * fraction);
-          const radius = await frame.locator(route.root).evaluate(root => parseFloat(getComputedStyle(root).clipPath.split(' round ')[1]) || 0);
-          assert.ok(radius < previousRadius, 'foreground corners continue shrinking through arrival');
-          previousRadius = radius;
+        await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration);
+        const arrived = await surfaceClip(frame, route.root);
+        near(arrived.width, device.width); near(arrived.height, device.height); near(arrived.radius, 32, .01);
+        await page.locator('iframe').screenshot({ path: `${output}/${device.width}-${device.height}-${route.name}-arrived-rounded.png` });
+        let previousRadius = arrived.radius;
+        for (const time of [20, 40, 60, 79.99]) {
+          await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration + time);
+          const surface = await surfaceClip(frame, route.root);
+          near(surface.width, device.width); near(surface.height, device.height);
+          near(surface.top, 0); near(surface.left, 0);
+          assert.ok(surface.radius < previousRadius, 'only the corners shrink after the page has fully expanded');
+          previousRadius = surface.radius;
         }
         near(previousRadius, 0, .01);
         await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * .999);
@@ -146,7 +152,11 @@ fs.mkdirSync(output, { recursive: true });
         await page.locator('iframe').screenshot({ path: `${output}/${device.width}-${device.height}-${route.name}-open.png` });
         await pauseNext(frame); await frame.evaluate(() => history.back());
         await frame.waitForFunction(root => document.querySelector(root)?.dataset.transition === 'closing', route.root);
+        const returnStart = await surfaceClip(frame, route.root);
+        near(returnStart.radius, 32, .01);
+        near(returnStart.width, device.width); near(returnStart.height, device.height);
         await frame.evaluate(time => document.getAnimations()[0].currentTime = time, duration * .7);
+        near((await surfaceClip(frame, route.root)).radius, 32, .01);
         const reverse = await frame.locator('#feed > .motion-page-content').boundingBox();
         assert.ok(reverse.height < initial.page.height, 'return keeps the content together');
         near((await frame.locator('#feed').boundingBox()).height, initial.page.height);
@@ -188,6 +198,6 @@ fs.mkdirSync(output, { recursive: true });
       await page.waitForFunction(root => !document.querySelector(root) || document.querySelector(root).hidden, route.root);
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: six devices and rectangular phone viewport; stationary full-screen backgrounds, receding/blurred content, decreasing foreground corners, safe controls, endpoint geometry, scrim pixels and complete restoration.');
+    console.log('PASS: six devices and rectangular phone viewport; constant corners throughout expansion, 80ms corner-only finish at full size, immediate rounded return, stationary backgrounds, depth, safe controls, endpoint geometry and complete restoration.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

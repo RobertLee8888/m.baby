@@ -1,5 +1,5 @@
 // Shared timing and velocity continuity for card, profile and ticker navigation.
-const timing = { near: 340, far: 380, retarget: 220, short: 140, easing: 'cubic-bezier(.22,.75,.3,1)' };
+const timing = { near: 340, far: 380, retarget: 220, short: 140, corners: 80, easing: 'cubic-bezier(.22,.75,.3,1)' };
 const registered = new Set();
 
 export class ProgressTransition {
@@ -12,7 +12,7 @@ export class ProgressTransition {
     this.running = false;
     this.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
     if (CSS.registerProperty) {
-      [property, this.property, '--navigation-progress'].forEach(name => {
+      [property, this.property, '--navigation-progress', '--navigation-roundness'].forEach(name => {
         if (registered.has(name)) return;
         CSS.registerProperty({ name, syntax: '<number>', inherits: true, initialValue: '1' });
         registered.add(name);
@@ -61,7 +61,8 @@ export class ProgressTransition {
     const time = Number(animation.currentTime) || 0;
     animation.pause();
     animation.currentTime = time;
-    const value = () => this.from + (this.to - this.from) * (animation.effect.getComputedTiming().progress || 0);
+    // Read the geometry track, which rests at 1 during the final corner phase.
+    const value = () => Number(getComputedStyle(this.driver).getPropertyValue(this.property));
     const current = value();
     const step = Math.min(1, time);
     animation.currentTime = time - step;
@@ -85,12 +86,17 @@ export class ProgressTransition {
       easing = `cubic-bezier(${x},${y},.2,1)`;
     }
     const previous = this.animation;
-    const animation = this.driver.animate([
-      { [this.property]: from }, { [this.property]: to },
-    ], { duration, easing, fill: 'both' });
+    const total = duration + (open ? timing.corners : 0);
+    const frames = [
+      { [this.property]: from, '--navigation-roundness': 1, offset: 0, easing },
+      { [this.property]: to, '--navigation-roundness': 1, offset: duration / total, easing: timing.easing },
+    ];
+    // Geometry arrives first. Only the corners change in the last 80 ms;
+    // closing restores the full radius immediately, before any displacement.
+    if (open) frames.push({ [this.property]: to, '--navigation-roundness': 0, offset: 1 });
+    const animation = this.driver.animate(frames, { duration: total, fill: 'both' });
     this.animation = animation;
     this.feed.classList.add('is-depth-underlay');
-    this.from = from; this.to = to;
     previous?.cancel();
     animation.finished.then(() => {
       if (this.animation === animation) this.finish();
