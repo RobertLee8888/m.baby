@@ -1,4 +1,4 @@
-# Thesis card transition demo
+# Thesis navigation motion demo
 
 Entry: `#/thesis-motion` in the prototype gallery, or `thesis-motion.html` on a phone.
 The previous `#/mvp-social` demo remains available.
@@ -7,8 +7,11 @@ The previous `#/mvp-social` demo remains available.
 
 - [For You / V5 / Review updates, 5742:114415](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5742-114415)
 - [A1 visitor detail, 7287:76564](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=7287-76564)
+- [Visitor profile, 5545:96427](https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5545-96427)
 
-The first card is Satya Nadella, followed by the people recommendation and Gavin Baker. Traderstewie's card opens the exact supplied detail example. Other cards keep their own identity, ticker, text and chart when opened. Every detail includes the template's latest marker, continuous rail, endpoint and "View all 12 updates" control; the count is the supplied Figma fixture. The prototype covers these two pages. Existing navigation destinations, create, Ask Alva and the update-history destination remain outside this demo. Bookmark, follow, category filtering, the detail tabs and share are interactive.
+The first card is Satya Nadella, followed by the people recommendation and Gavin Baker. Traderstewie's card opens the exact supplied detail example. Other cards keep their own identity, ticker, text and chart when opened. Every detail includes the template's latest marker, continuous rail, endpoint and "View all 12 updates" control; the count is the supplied Figma fixture. The prototype covers list, detail and visitor profile. Other main navigation destinations, create, Ask Alva and the update-history destination remain outside this demo. Bookmark, follow, category filtering, tabs and share are interactive.
+
+Author avatars and names in the list, recommendation and detail open that author's profile. Profile cards open detail using the same card expansion. The supplied Maya profile is also directly inspectable at `thesis-motion.html#profile/maya`; its copy, counts and channels match the Figma example. Chamath reuses the adjacent visitor fixture. Other authors retain the known identity and thesis data without inventing follower counts or biographies. Active and Archived switch horizontally; the empty Archived panel reserves enough height to keep the tabs pinned.
 
 Typography and theme values come from the existing `mvp.css` Library tokens. Avatars and charts reuse the original Figma image exports. Controls use existing Library SVGs. `assets/thesis/motion-lightbulb.svg` was extracted from the supplied list's SVG export; its original path is unchanged. No screen bitmap is used as UI.
 
@@ -25,7 +28,7 @@ The previous implementation independently moved each avatar, label, ticker and c
 
 ### Implementation
 
-`thesis-card-transition.js` owns one Web Animation of a registered CSS progress property. Space and time are defined separately:
+`thesis-motion-progress.js` owns timing and interruptible Web Animations for both transition types. `thesis-card-transition.js` maps that single progress value to card geometry. Space and time are defined separately:
 
 - **Spatial path:** The surface expands vertically from the clicked card. Shared content follows a shallow quadratic arc while moving from the list's 16 px inset to the detail's 48 px inset. For progress `p`, the horizontal fraction is `p + bend * p * (1 - p)`; vertical movement uses `p`. The control point moves toward the destination column, so the final approach is vertical. Maximum lateral deviation from the straight diagonal is 8 px, reduced for short vertical distances. Identity, tickers, text and charts use the same path. The full-screen surface does not sway sideways.
 - **Timing:** Nearby cards use Alva's 240 ms large-element budget; identity travel over 160 px uses its 280 ms major-transform budget. Both directions use the project's `cubic-bezier(.4,0,.2,1)`: a short acceleration, a faster middle and a longer settling phase. There is no hold, anticipatory shrink, stagger or bounce. These are prototype choices, not claimed Apple constants.
@@ -35,8 +38,16 @@ Paragraphs use two fixed line wraps inside one interpolated-height block. Their 
 
 Back reverses toward the original card and preserves the feed and galleries' scroll positions. Returning from a scrolled detail keeps the current viewport rather than jumping to its top. A scroll during entry settles the transition immediately so reading is not blocked. Browser back/forward, interruption, keyboard entry/exit and reduced motion remain supported. Browsers without registered custom properties use an immediate transition.
 
+### Profile continuity
+
+`thesis-profile-transition.js` moves the avatar/name as one identity group to the profile's 56 px portrait. A shallow inward arc, capped at 8 px, connects source and destination. The same 240/280 ms timing and velocity-preserving retargeting apply in both directions. There are no staggered bio, tab or card entrances. The old page is covered during the first quarter of spatial progress, then the new content fades in together with an 8 px settling movement; the two pages' body text never overlaps. This all uses one progress animation, without an added delay.
+
+Scrolling during entry settles the page immediately. Once the profile identity scrolls fully behind its header, the compact identity appears upward in the same header alignment used by detail. Returning from that state starts from the visible compact avatar, not the offscreen hero. `thesis-motion-navigation.js` retains each underlying screen, including profile tab state and horizontal chart offsets, and reconciles browser history with the same reversible transitions.
+
 ## Layout and verification
 
 The app uses fluid mobile layout, with a 360 px logical viewport scaled proportionally below 360 px. System status and home bars only appear in the desktop device preview. Real mobile browsers use their own safe-area insets. Horizontal charts and tickers clip at the screen edge.
 
 `tests/thesis-motion.cjs` checks Figma coordinates, curved trajectories, acceleration/settling, velocity continuity on reversal, endpoint bounds, browser back/forward, preserved scroll/bookmark state, pinned tab panels, widths 320/360/393/430, reduced motion, direct detail links and Android preview insets. It saves screenshots for visual review. Configure `PLAYWRIGHT_MODULE`, `CHROME_PATH`, `QA_ENGINE`, `QA_OUTPUT` and `DEMO_URL` as needed.
+
+`tests/thesis-profile-motion.cjs` adds profile coordinates, image resolution, shared identity endpoints and curve, non-overlapping body content, entry reversal, nested detail/profile history, compact-header return, stable empty panels, profile/detail deep links, the same four widths, reduced motion and Android insets. Both suites run in Chromium and WebKit. The exported 2x Figma profile is compared to a 393x759 viewport after excluding its 59 px system status bar and 34 px home bar.

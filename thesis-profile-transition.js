@@ -1,0 +1,98 @@
+import { ProgressTransition } from './thesis-motion-progress.js?v=1';
+
+// One identity group travels; all of the new page content enters together.
+export class ProfileTransition extends ProgressTransition {
+  constructor({ app, feed, detail, onSettled }) {
+    super(detail, '--profile-progress');
+    Object.assign(this, { app, feed, detail, onSettled });
+    this.hiddenNodes = [];
+  }
+
+  setOpen(open, source) {
+    if (this.running) {
+      if (open !== this.opened) {
+        this.opened = open;
+        this.detail.dataset.transition = open ? 'opening' : 'closing';
+        this.animateTo(open, this.sampleMotion());
+      }
+      return;
+    }
+    this.opened = open; this.running = true; this.source = source;
+    const { app, feed, detail } = this;
+    detail.hidden = false; detail.inert = false;
+    feed.inert = true; feed.setAttribute('aria-hidden', 'true');
+    detail.dataset.transition = open ? 'opening' : 'closing';
+    if (this.reduceMotion.matches || !CSS.registerProperty) { this.finish(); return; }
+
+    const scale = app.getBoundingClientRect().width / app.offsetWidth;
+    const pageRect = detail.getBoundingClientRect();
+    const hero = detail.querySelector('.motion-profile-hero');
+    const target = !open && hero.getBoundingClientRect().bottom <= pageRect.top + 56
+      ? detail.querySelector('.motion-profile-collapsed') : hero;
+    const fromAvatar = source?.querySelector('.motion-avatar');
+    const toAvatar = target.querySelector('.motion-avatar');
+    this.setDistance(fromAvatar ? Math.abs(fromAvatar.getBoundingClientRect().y - toAvatar.getBoundingClientRect().y) / scale : 0);
+    if (fromAvatar) {
+      const fromPerson = source.querySelector('.motion-person');
+      const toPerson = target.querySelector('.motion-person');
+      const bounds = node => {
+        const r = node.getBoundingClientRect();
+        return { x: (r.x - pageRect.x) / scale, y: (r.y - pageRect.y) / scale, width: r.width / scale, height: r.height / scale };
+      };
+      const a = bounds(fromAvatar), b = bounds(toAvatar);
+      const fromName = getComputedStyle(fromPerson.querySelector('.motion-name'));
+      const toName = getComputedStyle(toPerson.querySelector('.motion-name'));
+      const visibleMeta = node => {
+        const meta = node.querySelector('.motion-role, .motion-profile-meta');
+        return meta && getComputedStyle(meta).display !== 'none' ? meta : null;
+      };
+      const fromRole = visibleMeta(fromPerson), toRole = visibleMeta(toPerson);
+      const copy = document.createElement('div');
+      copy.className = 'motion-profile-anchor'; copy.inert = true; copy.setAttribute('aria-hidden', 'true');
+      const avatar = fromAvatar.cloneNode(true);
+      const person = document.createElement('div'); person.className = 'motion-person';
+      const name = toPerson.querySelector('.motion-name').cloneNode(true);
+      person.append(name);
+      const meta = document.createElement('div'); meta.className = 'motion-profile-anchor-meta';
+      if (fromRole) { const from = fromRole.cloneNode(true); from.classList.add('from'); meta.append(from); }
+      if (toRole) { const to = toRole.cloneNode(true); to.classList.add('to'); meta.append(to); }
+      person.append(meta); copy.append(avatar, person);
+      copy.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
+      const fromGap = bounds(fromPerson).x - a.x - a.width;
+      const toGap = bounds(toPerson).x - b.x - b.width;
+      const fromY = bounds(fromPerson).y - a.y, toY = bounds(toPerson).y - b.y;
+      const vars = {
+        x: a.x, y: a.y, dx: b.x - a.x, dy: b.y - a.y,
+        size: a.width, ds: b.width - a.width,
+        gap: fromGap, dg: toGap - fromGap,
+        textY: fromY, dt: toY - fromY,
+        width: bounds(fromPerson).width, dw: bounds(toPerson).width - bounds(fromPerson).width,
+        font: parseFloat(fromName.fontSize), df: parseFloat(toName.fontSize) - parseFloat(fromName.fontSize),
+        line: parseFloat(fromName.lineHeight), dl: parseFloat(toName.lineHeight) - parseFloat(fromName.lineHeight),
+        bend: Math.min(8, Math.abs(b.y - a.y) / 12),
+      };
+      Object.entries(vars).forEach(([key, value]) => copy.style.setProperty('--p-' + key, value + 'px'));
+      copy.style.setProperty('--p-weight', fromName.fontWeight);
+      copy.style.setProperty('--p-dwgt', Number(toName.fontWeight) - Number(fromName.fontWeight));
+      [fromAvatar, fromPerson, toAvatar, toPerson].forEach(node => {
+        this.hiddenNodes.push([node, node.style.visibility]); node.style.visibility = 'hidden';
+      });
+      detail.append(copy); this.copy = copy;
+    }
+    detail.classList.add('is-profile-moving');
+    this.animateTo(open);
+  }
+
+  finish() {
+    this.animation?.cancel(); this.animation = null;
+    this.copy?.remove(); this.copy = null;
+    this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; });
+    this.hiddenNodes = [];
+    this.running = false;
+    this.detail.classList.remove('is-profile-moving');
+    this.detail.hidden = !this.opened; this.detail.inert = !this.opened;
+    this.detail.dataset.transition = this.opened ? 'open' : 'closed';
+    this.feed.inert = this.opened; this.feed.setAttribute('aria-hidden', String(this.opened));
+    this.onSettled(this.opened, this.source);
+  }
+}
