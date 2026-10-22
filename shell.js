@@ -35,6 +35,18 @@
 
   const PROTOTYPES = [
     {
+      title: 'Thesis · Card transition',
+      subtitle: 'For You and thesis detail.',
+      edited: '2026-10-22',
+      slug: 'thesis-motion',
+      href: 'thesis-motion.html',
+      meta: 'Mobile · 2 screens',
+      figma: {
+        label: 'Feed Mobile MVP · For You / V5',
+        url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5742-114415',
+      },
+    },
+    {
       title: 'Thesis',
       subtitle: 'Theses, sources, people and the markets they follow.',
       edited: '2026-09-16',

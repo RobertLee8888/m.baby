@@ -1,0 +1,127 @@
+/* The existing MVP stylesheet owns the Library tokens and Delight fonts. */
+:root { --status-h: env(safe-area-inset-top, 0px); --home-h: env(safe-area-inset-bottom, 0px); }
+.motion-demo { background: var(--bg-container); letter-spacing: 0; }
+.motion-app { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg-container); isolation: isolate; }
+.motion-app button, .motion-app a { touch-action: manipulation; }
+.motion-app button:focus-visible, .motion-app a:focus-visible { outline: 2px solid var(--m1); outline-offset: 2px; }
+.motion-app button:active:not([aria-disabled]) { opacity: .65; }
+.motion-app [aria-disabled="true"] { cursor: default; }
+.motion-icon { display: inline-block; flex: 0 0 20px; width: 20px; height: 20px; background: currentColor; mask: var(--icon) center/contain no-repeat; -webkit-mask: var(--icon) center/contain no-repeat; }
+.motion-icon-button { display: flex; align-items: center; justify-content: center; flex: 0 0 32px; width: 32px; height: 32px; }
+.motion-feed { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; }
+.motion-feed-header { position: absolute; z-index: 2; inset: 0 0 auto; background: var(--bg-container); }
+.motion-title { height: 50px; display: flex; align-items: center; padding: 0 16px; }
+.motion-title h1 { font-size: 24px; line-height: 34px; font-weight: 500; }
+.motion-categories { display: flex; align-items: center; height: 44px; gap: 8px; padding: 4px 12px 12px; overflow-x: auto; scrollbar-width: none; }
+.motion-categories button { flex: none; font-size: 12px; line-height: 20px; padding: 4px 10px; border-radius: 96px; background: var(--br03); }
+.motion-categories button[aria-pressed="true"] { background: var(--n7); color: var(--nr10); }
+.motion-categories .motion-category-more { padding: 4px 0; margin-left: auto; background: var(--bg-container); color: var(--n3); }
+.motion-category-more .motion-icon { width: 16px; height: 16px; display: block; }
+.motion-feed-scroll { position: absolute; inset: 94px 0 48px; overflow-x: hidden; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-width: none; }
+.motion-post { padding: 12px 16px 2px; cursor: pointer; }
+.motion-identity { display: flex; align-items: center; min-width: 0; height: 36px; gap: 8px; }
+.motion-avatar { width: 32px; height: 32px; flex: 0 0 32px; object-fit: contain; border-radius: 50%; }
+.motion-person { flex: 1; min-width: 0; }
+.motion-name { display: block; font-size: 14px; font-weight: 500; line-height: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.motion-role { display: block; font-size: 12px; line-height: 20px; margin-top: -2px; color: var(--n5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.motion-post > .motion-identity { height: 42px; }
+.motion-post > .motion-identity .motion-role { margin-top: 0; }
+.motion-age { font-size: 12px; line-height: 20px; color: var(--n5); align-self: flex-start; flex: none; }
+.motion-tickers { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 8px -16px 0; padding: 0 16px; }
+.motion-ticker { flex: none; height: 28px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: var(--br05); border-radius: 6px; font-size: 12px; line-height: 20px; white-space: nowrap; }
+.motion-ticker > img { width: 16px; height: 16px; object-fit: contain; border-radius: 50%; }
+.motion-trend { display: grid; place-items: center; width: 12px; height: 12px; border-radius: 50%; background: var(--m3); }
+.motion-trend img { width: 8px; height: 8px; }
+.motion-trend.down { background: var(--m4); transform: rotate(180deg); }
+.motion-body { margin-top: 8px; font-size: 14px; font-weight: 400; line-height: 22px; user-select: text; }
+.motion-open { display: flow-root; color: inherit; text-decoration: none; }
+.motion-citation { color: var(--m1); font-weight: 500; text-decoration: none; }
+.motion-charts { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 12px -16px 0; padding: 0 16px; }
+.motion-chart { position: relative; flex: 0 0 240px; width: 240px; height: 135px; border-radius: 8px; overflow: hidden; }
+.motion-chart::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 var(--hair) var(--l3); pointer-events: none; }
+.motion-chart img { width: 100%; height: 100%; object-fit: cover; filter: var(--media-filter); }
+.motion-actions { display: flex; align-items: center; gap: 16px; height: 36px; margin-top: 12px; color: var(--n7); }
+.motion-action { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; line-height: 20px; height: 28px; }
+.motion-action .motion-icon { width: 16px; height: 16px; flex-basis: 16px; }
+.motion-save { margin-left: auto; }
+.motion-save[aria-pressed="true"] { color: var(--m1); }
+.motion-recommendation { padding: 16px; }
+.motion-recommendation-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.motion-recommendation h2 { font-size: 16px; font-weight: 500; line-height: 26px; }
+.motion-recommendation-top .motion-icon-button { width: 20px; height: 20px; flex-basis: 20px; }
+.motion-recommendation-top .motion-icon { width: 16px; height: 16px; }
+.motion-recommendation .motion-name { display: flex; align-items: center; gap: 4px; }
+.motion-recommendation .motion-identity { height: 38px; }
+.motion-recommendation .motion-role { margin-top: -4px; }
+.motion-bot { display: inline-block; width: 12px; height: 12px; }
+.motion-follow { flex: none; background: var(--m1); color: var(--nr10); border-radius: 4px; padding: 4px 12px; font-size: 12px; line-height: 20px; height: 28px; display: inline-flex; align-items: center; justify-content: center; }
+.motion-follow .motion-icon { width: 16px; height: 16px; flex-basis: 16px; }
+.motion-follow[aria-pressed="true"] { color: var(--m1); background: var(--m1-10); }
+.motion-reason { display: flex; align-items: center; gap: 4px; color: var(--n5); font-size: 14px; line-height: 22px; margin-top: 12px; }
+.motion-reason .motion-icon { width: 16px; height: 16px; flex-basis: 16px; }
+.motion-nav { display: flex; align-items: center; position: absolute; bottom: 0; width: 100%; height: 48px; background: var(--bg-container); }
+.motion-nav button { flex: 1; display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 2px; height: 48px; font-size: 10px; line-height: 16px; color: var(--n7); }
+.motion-nav button[aria-current="page"] { color: var(--n9); }
+.motion-nav .motion-icon { width: 20px; height: 20px; }
+.motion-create { position: absolute; z-index: 3; right: 16px; bottom: 64px; display: grid; place-items: center; width: 48px; height: 48px; background: var(--m1); color: var(--nr10); border-radius: 50%; }
+.motion-create .motion-icon { width: 28px; height: 28px; }
+.motion-detail { position: absolute; z-index: 10; inset: var(--status-h) 0 var(--home-h); background: var(--bg-container); overflow: hidden; }
+.motion-detail-header { position: absolute; z-index: 3; inset: 0 0 auto; height: 56px; background: var(--bg-container); display: flex; align-items: center; gap: 8px; padding: 0 16px 0 8px; }
+.motion-detail-header.is-scrolled { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
+.motion-detail-header .motion-identity { flex: 1; }
+.motion-detail-scroll { position: absolute; inset: 56px 0 43px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; overscroll-behavior: contain; }
+.motion-timeline { position: relative; padding: 12px 16px 12px 48px; }
+.motion-rail { position: absolute; top: 22px; bottom: 26px; left: 23.5px; width: 1px; background: var(--l12); }
+.motion-dot { position: absolute; top: 16px; left: 17px; width: 14px; height: 14px; border-radius: 50%; background: color-mix(in srgb, var(--m1) 20%, transparent); display: grid; place-items: center; }
+.motion-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--m1); }
+.motion-dot.end { top: auto; bottom: 19px; background: var(--br05); }
+.motion-dot.end::after { background: var(--n2); }
+.motion-date { display: flex; align-items: center; gap: 8px; color: var(--n5); font-size: 12px; line-height: 20px; height: 20px; }
+.motion-latest { color: var(--nr10); background: var(--m2); padding: 0 4px; font-size: 10px; line-height: 16px; border-radius: 96px; }
+.motion-timeline .motion-tickers { margin: 8px -16px 0 -48px; padding: 0 16px 0 48px; position: relative; }
+.motion-timeline .motion-body { margin-top: 8px; }
+.motion-timeline .motion-charts { position: relative; margin: 8px -16px 0 -48px; padding: 0 16px 0 48px; }
+.motion-history { display: flex; align-items: center; gap: 4px; color: var(--m1); font-size: 12px; line-height: 20px; height: 28px; margin-top: 16px; }
+.motion-history .motion-icon { width: 12px; height: 12px; flex-basis: 12px; }
+.motion-detail-tabs { position: sticky; top: 0; z-index: 2; display: flex; gap: 16px; align-items: end; height: 32px; padding: 0 16px; background: var(--bg-container); }
+.motion-detail-tabs button { position: relative; height: 32px; font-size: 14px; line-height: 22px; color: var(--n7); }
+.motion-detail-tabs button[aria-selected="true"] { color: var(--n9); font-weight: 500; }
+.motion-detail-tabs button[aria-selected="true"]::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--m1); }
+.motion-panels { overflow: hidden; }
+.motion-panel-track { display: flex; align-items: start; transition: transform 240ms cubic-bezier(.4,0,.2,1); }
+.motion-panel { flex: 0 0 100%; min-width: 0; padding: 16px; min-height: var(--panel-min-height, 400px); }
+.motion-panel[aria-hidden="true"] { visibility: hidden; }
+.motion-panels.is-switching .motion-panel { visibility: visible; }
+.motion-signal-source { padding: 12px; border-radius: 8px; background: var(--br03); }
+.motion-signal-source .motion-avatar { width: 24px; height: 24px; flex-basis: 24px; }
+.motion-signal-source .motion-name { font-size: 12px; line-height: 20px; }
+.motion-signal-source .motion-role { margin-top: 0; }
+.motion-signal-copy { font-size: 14px; line-height: 22px; margin-top: 12px; user-select: text; }
+.motion-signal-copy a { color: var(--n7); text-decoration: underline dotted; text-underline-offset: 3px; }
+.motion-analysis { margin-top: 12px; font-size: 14px; line-height: 22px; user-select: text; }
+.motion-analysis-tag { display: inline-flex; align-items: center; height: 22px; vertical-align: baseline; margin-right: 8px; font-size: 12px; line-height: 20px; }
+.motion-analysis-brand { display: inline-flex; align-items: center; gap: 4px; background: var(--m1-10); padding: 1px 4px; border-radius: 4px 0 0 4px; }
+.motion-analysis-brand img { width: 14px; height: 14px; }
+.motion-analysis-verdict { background: color-mix(in srgb, var(--amber) 10%, transparent); color: var(--amber); padding: 1px 6px; border-radius: 0 4px 4px 0; }
+.motion-detail-footer { position: absolute; z-index: 3; bottom: 0; left: 0; right: 0; height: 43px; padding: 0 16px; background: var(--bg-container); }
+.motion-detail-footer .motion-actions { margin: 0; height: 42.5px; }
+.motion-detail-footer .motion-action { font-size: 14px; }
+.motion-detail-footer .motion-action .motion-icon { width: 20px; height: 20px; flex-basis: 20px; }
+.motion-detail-footer .motion-save { margin-left: auto; }
+.motion-detail.is-morphing { will-change: clip-path; }
+.motion-shared-layer { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
+.motion-feed-header, .motion-post, .motion-recommendation, .motion-detail-tabs { box-shadow: inset 0 calc(-1 * var(--hair)) var(--l12); }
+.motion-nav, .motion-detail-footer { box-shadow: inset 0 var(--hair) var(--l12); }
+.motion-detail.is-morphing .motion-detail-header, .motion-detail.is-morphing .motion-detail-footer { background: transparent; box-shadow: none; }
+.motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
+.motion-desktop { display: none; }
+.motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: var(--bg-container); }
+html[data-device-platform] .motion-demo .system-bar { display: grid; }
+html[data-device-platform] .motion-demo .home-indicator { display: block; }
+@media (min-width: 768px) {
+  .motion-app { display: none; }
+  .motion-desktop { display: grid; height: 100%; place-items: center; text-align: center; padding: 24px; color: var(--n5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motion-app *, .motion-app *::before, .motion-app *::after { transition-duration: 0s !important; animation-duration: 0s !important; }
+}
