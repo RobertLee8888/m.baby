@@ -43,6 +43,8 @@ fs.mkdirSync(output, { recursive: true });
     const frame = page.frames().find(item => item.url().includes('thesis-motion.html'));
     await frame.locator('[data-post="satya"]').waitFor();
     await frame.evaluate(() => document.fonts.ready);
+    // Pixel checks must exclude the gallery's independent iframe mount fade.
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('iframe')).opacity === '1');
     for (const device of devices) {
       await page.locator('#deviceTrigger').click();
       await page.getByRole('option', { name: device.name }).click();
