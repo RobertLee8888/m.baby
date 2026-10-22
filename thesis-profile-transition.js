@@ -40,8 +40,12 @@ export class ProfileTransition extends ProgressTransition {
         return { x: (r.x - pageRect.x) / scale, y: (r.y - pageRect.y) / scale, width: r.width / scale, height: r.height / scale };
       };
       const a = bounds(fromAvatar), b = bounds(toAvatar);
-      const fromName = getComputedStyle(fromPerson.querySelector('.motion-name'));
-      const toName = getComputedStyle(toPerson.querySelector('.motion-name'));
+      const fromNameNode = fromPerson.querySelector('.motion-name'), toNameNode = toPerson.querySelector('.motion-name');
+      const fromName = getComputedStyle(fromNameNode), toName = getComputedStyle(toNameNode);
+      const advance = (node, style) => {
+        const range = document.createRange(); range.selectNodeContents(node.firstChild);
+        return range.getBoundingClientRect().width / scale / parseFloat(style.fontSize);
+      };
       const visibleMeta = node => {
         const meta = node.querySelector('.motion-role, .motion-profile-meta');
         return meta && getComputedStyle(meta).display !== 'none' ? meta : null;
@@ -51,11 +55,23 @@ export class ProfileTransition extends ProgressTransition {
       copy.className = 'motion-profile-anchor'; copy.inert = true; copy.setAttribute('aria-hidden', 'true');
       const avatar = fromAvatar.cloneNode(true);
       const person = document.createElement('div'); person.className = 'motion-person';
-      const name = toPerson.querySelector('.motion-name').cloneNode(true);
+      // Delight uses static font faces. Blend endpoint faces at the same size
+      // and progress instead of asking font-weight to switch faces mid-flight.
+      const name = document.createElement('div'); name.className = 'motion-profile-anchor-name';
+      [[fromNameNode, fromName, 'from'], [toNameNode, toName, 'to']].forEach(([node, style, state]) => {
+        const layer = node.cloneNode(true); layer.classList.add(state);
+        layer.style.fontWeight = style.fontWeight; layer.style.color = style.color;
+        name.append(layer);
+      });
       person.append(name);
       const meta = document.createElement('div'); meta.className = 'motion-profile-anchor-meta';
-      if (fromRole) { const from = fromRole.cloneNode(true); from.classList.add('from'); meta.append(from); }
-      if (toRole) { const to = toRole.cloneNode(true); to.classList.add('to'); meta.append(to); }
+      [[fromRole, 'from'], [toRole, 'to']].forEach(([node, state]) => {
+        if (!node) return;
+        const layer = node.cloneNode(true), style = getComputedStyle(node);
+        layer.classList.add(state);
+        ['color', 'fontFamily', 'fontSize', 'fontWeight', 'lineHeight'].forEach(key => { layer.style[key] = style[key]; });
+        meta.append(layer);
+      });
       person.append(meta); copy.append(avatar, person);
       copy.querySelectorAll('[data-shared]').forEach(node => delete node.dataset.shared);
       const fromGap = bounds(fromPerson).x - a.x - a.width;
@@ -69,11 +85,14 @@ export class ProfileTransition extends ProgressTransition {
         width: bounds(fromPerson).width, dw: bounds(toPerson).width - bounds(fromPerson).width,
         font: parseFloat(fromName.fontSize), df: parseFloat(toName.fontSize) - parseFloat(fromName.fontSize),
         line: parseFloat(fromName.lineHeight), dl: parseFloat(toName.lineHeight) - parseFloat(fromName.lineHeight),
+        metaY: fromRole ? bounds(fromRole).y - bounds(fromPerson).y : parseFloat(fromName.lineHeight),
+        metaToY: toRole ? bounds(toRole).y - bounds(toPerson).y : parseFloat(toName.lineHeight),
+        metaHeight: fromRole ? bounds(fromRole).height : 0, metaToHeight: toRole ? bounds(toRole).height : 0,
         bend: Math.min(8, Math.abs(b.y - a.y) / 12),
       };
       Object.entries(vars).forEach(([key, value]) => copy.style.setProperty('--p-' + key, value + 'px'));
-      copy.style.setProperty('--p-weight', fromName.fontWeight);
-      copy.style.setProperty('--p-dwgt', Number(toName.fontWeight) - Number(fromName.fontWeight));
+      copy.style.setProperty('--p-from-advance', advance(fromNameNode, fromName));
+      copy.style.setProperty('--p-to-advance', advance(toNameNode, toName));
       [fromAvatar, fromPerson, toAvatar, toPerson].forEach(node => {
         this.hiddenNodes.push([node, node.style.visibility]); node.style.visibility = 'hidden';
       });

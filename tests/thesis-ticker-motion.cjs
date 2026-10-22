@@ -26,10 +26,12 @@ fs.mkdirSync(output, { recursive: true });
     await fresh();
     const chip = page.locator('[data-post="satya"] [data-ticker="MSFT"]');
     const source = await chip.locator('img').first().boundingBox();
-    const sourceText = await chip.locator('.motion-ticker-symbol').boundingBox();
+    const sourceText = await chip.locator('.motion-ticker-symbol').evaluate(node => {
+      const range = document.createRange(); range.selectNodeContents(node); return range.getBoundingClientRect().toJSON();
+    });
     await chip.evaluate(node => { node.click(); document.getAnimations().forEach(animation => { animation.pause(); animation.currentTime = 0; }); });
     const start = await page.locator('.motion-ticker-anchor > .motion-ticker-logo').boundingBox();
-    const startText = await page.locator('.motion-ticker-anchor > .motion-ticker-symbol').boundingBox();
+    const startText = await page.locator('.motion-ticker-anchor-meta > .motion-ticker-symbol').boundingBox();
     near(start.x, source.x); near(start.y, source.y); near(start.width, source.width);
     near(startText.x, sourceText.x); near(startText.y, sourceText.y);
     assert.equal(await page.locator('#detail').isHidden(), true, 'chip must not also open the card');
@@ -41,19 +43,35 @@ fs.mkdirSync(output, { recursive: true });
       await page.evaluate(t => document.getAnimations()[0].currentTime = t, duration * fraction);
       const frame = await ticker().evaluate(root => {
         const logo = root.querySelector('.motion-ticker-anchor > .motion-ticker-logo').getBoundingClientRect();
+        const name = root.querySelector('.motion-ticker-anchor-person > .motion-name');
+        const symbol = root.querySelector('.motion-ticker-anchor-meta > .motion-ticker-symbol').getBoundingClientRect();
+        const market = root.querySelector('.motion-ticker-market').getBoundingClientRect();
+        const trend = root.querySelector('.motion-ticker-anchor-person > .motion-trend').getBoundingClientRect();
         return { x: logo.x, y: logo.y, w: logo.width, p: Number(getComputedStyle(root).getPropertyValue('--ticker-progress')),
+          nameX: name.getBoundingClientRect().x, nameY: name.getBoundingClientRect().y, symbolX: symbol.x,
+          metaY: root.querySelector('.motion-ticker-anchor-meta').getBoundingClientRect().y,
+          nameOpacity: Number(getComputedStyle(name).opacity), trendX: trend.x, marketRight: market.right,
+          headerY: root.querySelector('header').getBoundingClientRect().y,
+          targetHidden: getComputedStyle(root.querySelector('.motion-ticker-identity > .motion-person')).visibility,
           cover: Number(getComputedStyle(root, '::before').opacity), surface: Number(getComputedStyle(root.firstElementChild).opacity) };
       });
       bow = Math.max(bow, frame.x - (source.x + (48 - source.x) * frame.p));
       near(frame.y, source.y + (12 - source.y) * frame.p); near(frame.w, 16 + 16 * frame.p);
+      near(frame.nameX, frame.symbolX); near(frame.nameY + 20, frame.metaY);
+      near(frame.nameOpacity, frame.p); near(frame.headerY + 12, frame.y);
+      assert.equal(frame.targetHidden, 'hidden', 'company name must travel with the shared identity, not appear again at the destination');
+      assert.ok(frame.trendX >= frame.marketRight, 'the outgoing trend never overlaps the incoming exchange');
       if (frame.surface > .001) near(frame.cover, 1);
       if (fraction === .3) await page.screenshot({ path: output + '/ticker-motion-midpoint.png' });
     }
     assert.ok(bow > 2 && bow <= 8.1, 'shared identity follows a restrained arc');
-    const endText = await page.locator('.motion-ticker-anchor > .motion-ticker-symbol').boundingBox();
+    const endText = await page.locator('.motion-ticker-anchor-meta > .motion-ticker-symbol').boundingBox();
+    const endName = await page.locator('.motion-ticker-anchor-person > .motion-name').boundingBox();
     await page.evaluate(() => document.getAnimations()[0].play()); await settled();
     const targetText = await ticker().locator('.motion-ticker-meta .motion-ticker-symbol').boundingBox();
     near(endText.x, targetText.x); near(endText.y, targetText.y);
+    const targetName = await ticker().locator('.motion-ticker-identity .motion-name').boundingBox();
+    near(endName.x, targetName.x); near(endName.y, targetName.y);
     near((await ticker().locator('header').boundingBox()).height, 56);
     near((await ticker().locator('[role="tablist"]').boundingBox()).height, 28);
     near((await ticker().locator('.motion-post').first().boundingBox()).y, 84);

@@ -194,13 +194,15 @@
   will-change: transform;
 }
 .motion-profile-anchor > .motion-avatar { flex: none; width: calc(var(--p-size) + var(--p-ds) * var(--p)); height: calc(var(--p-size) + var(--p-ds) * var(--p)); }
-.motion-profile-anchor > .motion-person { flex: none; width: calc(var(--p-width) + var(--p-dw) * var(--p)); transform: translateY(calc(var(--p-textY) + var(--p-dt) * var(--p))); }
-.motion-profile-anchor .motion-name { font-size: calc(var(--p-font) + var(--p-df) * var(--p)); line-height: calc(var(--p-line) + var(--p-dl) * var(--p)); font-weight: calc(var(--p-weight) + var(--p-dwgt) * var(--p)); }
-.motion-profile-anchor .motion-profile-pro { opacity: var(--p); }
-.motion-profile-anchor-meta { position: relative; }
-.motion-profile-anchor-meta > * { position: absolute; top: 0; left: 0; width: 100%; margin: 0; }
-.motion-profile-anchor-meta > .from { opacity: max(0, calc(1 - 2 * var(--p))); }
-.motion-profile-anchor-meta > .to { opacity: max(0, calc(2 * var(--p) - 1)); }
+.motion-profile-anchor > .motion-person { position: relative; flex: none; width: calc(var(--p-width) + var(--p-dw) * var(--p)); transform: translateY(calc(var(--p-textY) + var(--p-dt) * var(--p))); }
+.motion-profile-anchor-name { --name-advance: calc(var(--p-from-advance) * (1 - var(--p)) + var(--p-to-advance) * var(--p)); position: relative; isolation: isolate; height: calc(var(--p-line) + var(--p-dl) * var(--p)); }
+.motion-profile-anchor-name > .motion-name { position: absolute; inset: 0 auto 0 0; width: calc(100% / var(--name-scale)); font-size: calc(var(--p-font) + var(--p-df) * var(--p)); line-height: calc(var(--p-line) + var(--p-dl) * var(--p)); transform: scaleX(var(--name-scale)); transform-origin: left center; mix-blend-mode: plus-lighter; }
+.motion-profile-anchor-name > .from { --name-scale: calc(var(--name-advance) / var(--p-from-advance)); }
+.motion-profile-anchor-name > .to { --name-scale: calc(var(--name-advance) / var(--p-to-advance)); }
+.motion-profile-anchor-meta { position: absolute; isolation: isolate; top: calc(var(--p-metaY) * (1 - var(--p)) + var(--p-metaToY) * var(--p)); width: 100%; height: calc(var(--p-metaHeight) * (1 - var(--p)) + var(--p-metaToHeight) * var(--p)); }
+.motion-profile-anchor-meta > * { position: absolute; top: 0; left: 0; width: 100%; margin: 0; mix-blend-mode: plus-lighter; }
+.motion-profile-anchor-name > .from, .motion-profile-anchor-meta > .from { opacity: calc(1 - var(--p)); }
+.motion-profile-anchor-name > .to, .motion-profile-anchor-meta > .to { opacity: var(--p); }
 
 /* Ticker / Theses: 6641:78529. The tabs own the single pinned divider. */
 .motion-ticker-page { position: absolute; inset: var(--status-h) 0 var(--home-h); overflow: hidden; background: var(--bg-container); }
@@ -216,7 +218,7 @@
 .motion-ticker-scroll { position: absolute; inset: 84px 0 0; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; overscroll-behavior: contain; }
 .motion-ticker-page.is-ticker-moving { background: transparent; }
 .motion-ticker-page.is-ticker-moving::before { content: ''; position: absolute; inset: 0; background: var(--bg-container); opacity: min(1, calc(4 * var(--ticker-progress))); }
-.is-ticker-moving > .motion-ticker-surface { background: transparent; opacity: clamp(0, calc((var(--ticker-progress) - .25) / .75), 1); transform: translateY(calc(8px * (1 - var(--ticker-progress)))); will-change: transform, opacity; }
+.is-ticker-moving > .motion-ticker-surface { background: transparent; opacity: clamp(0, calc((var(--ticker-progress) - .25) / .75), 1); transform: translateY(calc(var(--ticker-travel-y, 8px) * (1 - var(--ticker-progress)))); will-change: transform, opacity; }
 .motion-ticker-anchor {
   --t: var(--ticker-progress);
   position: absolute; z-index: 5; top: 0; left: 0; pointer-events: none;
@@ -224,8 +226,13 @@
   will-change: transform;
 }
 .motion-ticker-anchor > .motion-ticker-logo { position: absolute; top: 0; left: 0; width: calc(var(--t-size) + var(--t-ds) * var(--t)); height: calc(var(--t-size) + var(--t-ds) * var(--t)); object-fit: contain; border-radius: 50%; }
-.motion-ticker-anchor > .motion-ticker-symbol { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; line-height: 20px; color: color-mix(in srgb, var(--n9), var(--n5) calc(var(--t) * 100%)); transform: translate(calc(var(--t-tx) + var(--t-dtx) * var(--t)), calc(var(--t-ty) + var(--t-dty) * var(--t))); }
-.motion-ticker-shell { position: absolute; left: var(--t-sx); top: var(--t-sy); width: var(--t-sw); height: var(--t-sh); opacity: max(0, calc(1 - 2 * var(--t))); }
+.motion-ticker-anchor-person { position: absolute; left: 0; top: 0; width: var(--t-textWidth); transform: translate(calc(var(--t-tx) + var(--t-dtx) * var(--t)), calc(var(--t-ty) + var(--t-dty) * var(--t))); }
+.motion-ticker-anchor-person > .motion-name { position: absolute; top: var(--t-nameY); left: 0; width: 100%; opacity: var(--t); }
+.motion-ticker-anchor-meta { white-space: nowrap; font-size: 12px; line-height: 20px; color: var(--n5); }
+.motion-ticker-anchor-meta > .motion-ticker-symbol { color: color-mix(in srgb, var(--n9), var(--n5) calc(var(--t) * 100%)); }
+.motion-ticker-market { display: inline-block; vertical-align: top; width: calc(var(--t-marketWidth) * var(--t)); overflow: hidden; white-space: pre; opacity: var(--t); }
+.motion-ticker-anchor-person > .motion-trend { position: absolute; top: 4px; left: calc(var(--t-symbolWidth) + 4px + var(--t-marketWidth) * var(--t)); opacity: calc(1 - var(--t)); }
+.motion-ticker-shell { position: absolute; left: calc(var(--t-sx) * (1 - var(--t))); top: calc(var(--t-sy) * (1 - var(--t)) - 4px * var(--t)); width: calc(var(--t-sw) + var(--t-dw) * var(--t)); height: calc(var(--t-sh) + var(--t-dh) * var(--t)); border-radius: calc(6px * (1 - var(--t))); background: var(--br05); opacity: calc(1 - var(--t)); }
 .motion-toast { position: absolute; z-index: 100; bottom: calc(var(--home-h) + 60px); left: 50%; transform: translateX(-50%); padding: 8px 16px; border-radius: 8px; color: var(--nr10); background: var(--n9); font-size: 12px; line-height: 20px; white-space: nowrap; }
 .motion-desktop { display: none; }
 .motion-demo .system-bar, .motion-demo .home-indicator { display: none; background: var(--bg-container); }
