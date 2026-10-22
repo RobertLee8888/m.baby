@@ -41,11 +41,29 @@ fs.mkdirSync(output, { recursive: true });
     });
     const startAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
     assert.ok(Math.abs(firstAvatar.x - startAvatar.x) < 1 && Math.abs(firstAvatar.y - startAvatar.y) < 1, 'entry starts at the source avatar');
+    assert.equal(await page.evaluate(() => document.getAnimations().length), 1, 'one animation drives the entire card');
+    let previousChartY = initial.chart.y;
+    for (const time of [0, 28, 56, 84, 112, 140, 168, 196, 224, 252, 279]) {
+      await page.evaluate(t => document.getAnimations().forEach(a => a.currentTime = t), time);
+      const sample = await page.evaluate(() => {
+        const copy = document.querySelector('.motion-card-copy');
+        return { chartY:copy.querySelector('.motion-chart').getBoundingClientRect().y,
+          textOpacity:[...copy.querySelectorAll('.motion-body-wrap')].reduce((sum, node) => sum + Number(getComputedStyle(node).opacity), 0),
+          sourceWidth:copy.querySelector('.motion-body-wrap.from').getBoundingClientRect().width };
+      });
+      assert.ok(sample.chartY <= previousChartY + .5, 'chart never jumps downward as text changes line wrap');
+      assert.ok(Math.abs(sample.textOpacity - 1) < .001, 'paragraph never fades through an empty state');
+      near(sample.sourceWidth, 361);
+      previousChartY = sample.chartY;
+    }
+    const lastFrameChart = await page.locator('[data-motion-shared="chart-0"]').boundingBox();
     await page.evaluate(() => document.getAnimations().forEach(a => a.currentTime = 140));
     const midAvatar = await page.locator('[data-motion-shared="avatar"]').boundingBox();
     assert.ok(midAvatar.y < startAvatar.y && midAvatar.y > 10, 'identity moves upward through the transition');
     await capture('expansion-midpoint');
     await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitOpen();
+    const settledChart = await page.locator('#detail .motion-chart').first().boundingBox();
+    near(lastFrameChart.x, settledChart.x); near(lastFrameChart.y, settledChart.y);
     assert.equal(await page.locator('#detail .motion-name').first().textContent(), 'Satya Nadella');
     assert.equal(await page.locator('#detail .motion-body').first().textContent(), await page.locator('[data-post="satya"] .motion-body').textContent());
     await page.locator('#detail').getByRole('button', { name: 'Bookmark', exact: true }).click();
@@ -102,11 +120,44 @@ fs.mkdirSync(output, { recursive: true });
       near(chartDuring.x, chartBefore.x); near(chartDuring.y, chartBefore.y);
       await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitOpen();
       assert.equal(await page.locator('#detail .motion-charts').evaluate(n => n.scrollLeft), 180);
-      await capture('detail-' + width); await back();
+      await capture('detail-' + width);
+      await page.locator('#detail .motion-charts').evaluate(n => n.scrollLeft = 300);
+      const returnFrom = await page.locator('#detail .motion-chart').first().boundingBox();
+      await page.evaluate(() => {
+        const animate = Element.prototype.animate;
+        Element.prototype.animate = function (...args) {
+          const animation = animate.apply(this, args); animation.pause(); animation.currentTime = 0; return animation;
+        };
+        document.querySelector('[aria-label="Back to For You"]').click();
+      });
+      await page.waitForFunction(() => document.querySelector('#detail').dataset.transition === 'closing');
+      const returnCopy = await page.locator('[data-motion-shared="chart-0"]').boundingBox();
+      near(returnCopy.x, returnFrom.x); near(returnCopy.y, returnFrom.y);
+      await page.evaluate(() => document.getAnimations().forEach(a => a.play())); await waitClosed();
       assert.equal(await gallery.evaluate(n => n.scrollLeft), 180);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
       assert.equal(overflow, false);
     }
+
+    // Timeline structure is shared by every detail, including entries without media.
+    await page.goto(base + 'thesis-motion.html'); await ready();
+    for (const id of ['satya', 'gavin', 'traderstewie', 'berkshire', 'sam', 'reuters']) {
+      await page.locator(`[data-post="${id}"]`).scrollIntoViewIfNeeded();
+      await page.locator(`[data-post="${id}"] .motion-body`).click(); await waitOpen();
+      assert.equal(await page.locator('.motion-timeline > .motion-rail').count(), 1);
+      assert.equal(await page.locator('.motion-timeline > .motion-dot').count(), 2);
+      assert.equal(await page.getByRole('button', { name: 'View all 12 updates' }).count(), 1);
+      await back();
+    }
+
+    await page.evaluate(() => {
+      document.querySelector('[data-post="reuters"] .motion-body').click();
+      document.getAnimations().forEach(a => { a.pause(); a.currentTime = 70; });
+      document.querySelector('.motion-detail-scroll').scrollTop = 120;
+    });
+    await waitOpen();
+    assert.equal(await page.locator('.motion-card-copy').count(), 0, 'scrolling can interrupt entry without leaving a duplicate card');
+    await back();
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.locator('[data-post="gavin"] .motion-body').click(); await waitOpen();
@@ -134,6 +185,6 @@ fs.mkdirSync(output, { recursive: true });
     await page.waitForFunction(() => document.querySelector('iframe').contentDocument.documentElement.dataset.theme === document.documentElement.dataset.theme);
     assert.equal(await frame.locator('html').getAttribute('data-theme'), shellTheme);
     assert.deepEqual(errors, []);
-    console.log('PASS: Figma geometry, shared entry frames, reverse/interrupt, history, bookmarks, pinned tabs, 320/360/393/430, reduced motion, deep links and Android gallery.');
+    console.log('PASS: Figma geometry, one continuous transition, visible text and monotonic charts, complete timelines, reverse/interrupt, history, gallery continuity, pinned tabs, 320/360/393/430, reduced motion, deep links and Android gallery.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
