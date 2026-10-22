@@ -188,9 +188,9 @@ fs.mkdirSync(output, { recursive: true });
     const insets = await frame.locator('#profile').evaluate(node => {
       const rect = node.getBoundingClientRect(), header = node.querySelector('header').getBoundingClientRect();
       const css = getComputedStyle(document.documentElement);
-      return { top:rect.top, bottom:innerHeight-rect.bottom, status:parseFloat(css.getPropertyValue('--status-h')), home:parseFloat(css.getPropertyValue('--home-h')), header:header.height };
+      return { top:rect.top, bottom:innerHeight-rect.bottom, status:parseFloat(css.getPropertyValue('--status-h')), home:parseFloat(css.getPropertyValue('--home-h')), header:header.height, headerTop:header.top, contentBottom:innerHeight-node.querySelector('.motion-profile-scroll').getBoundingClientRect().bottom };
     });
-    near(insets.top, insets.status); near(insets.bottom, insets.home); near(insets.header, 56);
+    near(insets.top, 0); near(insets.bottom, 0); near(insets.headerTop, insets.status); near(insets.contentBottom, insets.home); near(insets.header, 56);
     await page.screenshot({ path: output + '/profile-android.png' });
     assert.deepEqual(errors, []);
     console.log('PASS: profile design coordinates, high-resolution identity, curved shared anchor, no overlapping page text, reversal, nested history/scroll, compact header return, stable empty tabs, responsive widths, deep links, reduced motion and Android insets.');

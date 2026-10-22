@@ -12,6 +12,8 @@ const feedScroll = document.querySelector('#feedScroll');
 const feedItems = document.querySelector('#feedItems');
 const feedTitle = feed.querySelector('.motion-title h1');
 const detail = document.querySelector('#detail');
+const pageChrome = document.querySelector('#motionPageChrome');
+feed.append(pageChrome.content.cloneNode(true));
 const cards = new Map();
 const saved = new Set();
 const followed = new Set();
@@ -318,6 +320,7 @@ const navigation = new MotionNavigation({
       }
       transition = new CardTransition({ app, feed: underlay, detail: root, onSettled });
     }
+    root.append(pageChrome.content.cloneNode(true));
     return { root, transition, source, dispose };
   },
 });
