@@ -36,11 +36,11 @@
   const PROTOTYPES = [
     {
       title: 'Thesis · Navigation motion',
-      subtitle: 'For You, thesis detail and profile.',
+      subtitle: 'For You, thesis detail, profile and ticker.',
       edited: '2026-10-22',
       slug: 'thesis-motion',
-      href: 'thesis-motion.html?v=4',
-      meta: 'Mobile · 3 screens',
+      href: 'thesis-motion.html?v=5',
+      meta: 'Mobile · 4 screens',
       figma: {
         label: 'Feed Mobile MVP · For You / V5',
         url: 'https://www.figma.com/design/EHag6olZJxmlkf1hbAzSi7/Feed-Mobile-MVP?node-id=5742-114415',

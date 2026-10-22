@@ -1,0 +1,68 @@
+import { ProgressTransition } from './thesis-motion-progress.js?v=1';
+
+// Logo and symbol keep their identity as the chip becomes the company header.
+export class TickerTransition extends ProgressTransition {
+  constructor({ app, feed, detail, onSettled }) {
+    super(detail, '--ticker-progress');
+    Object.assign(this, { app, feed, detail, onSettled });
+    this.hiddenNodes = [];
+  }
+
+  setOpen(open, source) {
+    if (this.running) {
+      if (open !== this.opened) {
+        this.opened = open;
+        this.detail.dataset.transition = open ? 'opening' : 'closing';
+        this.animateTo(open, this.sampleMotion());
+      }
+      return;
+    }
+    this.opened = open; this.running = true; this.source = source;
+    const { app, feed, detail } = this;
+    detail.hidden = false; detail.inert = false;
+    feed.inert = true; feed.setAttribute('aria-hidden', 'true');
+    detail.dataset.transition = open ? 'opening' : 'closing';
+    this.setDistance(0);
+    if (this.reduceMotion.matches || !CSS.registerProperty) { this.finish(); return; }
+    const fromLogo = source?.querySelector('.motion-ticker-logo');
+    if (fromLogo) {
+      const scale = app.getBoundingClientRect().width / app.offsetWidth;
+      const page = detail.getBoundingClientRect();
+      const bounds = node => {
+        const r = node.getBoundingClientRect();
+        return { x: (r.x - page.x) / scale, y: (r.y - page.y) / scale, w: r.width / scale, h: r.height / scale };
+      };
+      const toLogo = detail.querySelector('.motion-ticker-logo');
+      const fromSymbol = source.querySelector('.motion-ticker-symbol'), toSymbol = detail.querySelector('.motion-ticker-symbol');
+      const a = bounds(fromLogo), b = bounds(toLogo), c = bounds(fromSymbol), d = bounds(toSymbol), chip = bounds(source);
+      this.setDistance(Math.hypot(b.x - a.x, b.y - a.y));
+      const copy = document.createElement('div'); copy.className = 'motion-ticker-anchor';
+      copy.inert = true; copy.setAttribute('aria-hidden', 'true');
+      const shell = source.cloneNode(true); shell.className = 'motion-ticker motion-ticker-shell';
+      shell.removeAttribute('data-shared'); shell.removeAttribute('data-ticker'); shell.tabIndex = -1;
+      shell.querySelectorAll('.motion-ticker-logo, .motion-ticker-symbol').forEach(node => { node.style.visibility = 'hidden'; });
+      const label = fromSymbol.cloneNode(true), logo = fromLogo.cloneNode(true);
+      copy.append(shell, logo, label);
+      const vars = { x: a.x, y: a.y, dx: b.x - a.x, dy: b.y - a.y, size: a.w, ds: b.w - a.w,
+        tx: c.x - a.x, ty: c.y - a.y, dtx: d.x - b.x - c.x + a.x, dty: d.y - b.y - c.y + a.y,
+        sx: chip.x - a.x, sy: chip.y - a.y, sw: chip.w, sh: chip.h,
+        bend: Math.min(8, Math.abs(b.y - a.y) / 12),
+      };
+      Object.entries(vars).forEach(([key, value]) => copy.style.setProperty('--t-' + key, value + 'px'));
+      [source, toLogo, toSymbol].forEach(node => { this.hiddenNodes.push([node, node.style.visibility]); node.style.visibility = 'hidden'; });
+      detail.append(copy); this.copy = copy;
+    }
+    detail.classList.add('is-ticker-moving'); this.animateTo(open);
+  }
+
+  finish() {
+    this.animation?.cancel(); this.animation = null;
+    this.copy?.remove(); this.copy = null;
+    this.hiddenNodes.forEach(([node, visibility]) => { node.style.visibility = visibility; }); this.hiddenNodes = [];
+    this.running = false; this.detail.classList.remove('is-ticker-moving');
+    this.detail.hidden = !this.opened; this.detail.inert = !this.opened;
+    this.detail.dataset.transition = this.opened ? 'open' : 'closed';
+    this.feed.inert = this.opened; this.feed.setAttribute('aria-hidden', String(this.opened));
+    this.onSettled(this.opened, this.source);
+  }
+}

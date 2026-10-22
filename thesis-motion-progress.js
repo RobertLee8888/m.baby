@@ -1,4 +1,4 @@
-// Shared timing and velocity continuity for card and profile navigation.
+// Shared timing and velocity continuity for card, profile and ticker navigation.
 const timing = { near: 240, far: 280, retarget: 200, short: 120, easing: 'cubic-bezier(.4,0,.2,1)' };
 const registered = new Set();
 
